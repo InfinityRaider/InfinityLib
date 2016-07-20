@@ -117,20 +117,24 @@ public class BoundingBox implements Iterable<BlockPos> {
     }
 
     public BoundingBox expandToFit(BlockPos pos) {
-        if(pos.getX() > maxX) {
-            maxX = pos.getX();
-        } else if(pos.getX() < minX) {
-            minX = pos.getX();
+        return this.expandToFit(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public BoundingBox expandToFit(int x, int y, int z) {
+        if(x >= maxX) {
+            maxX = x;
+        } else if(x < minX) {
+            minX = x;
         }
-        if(pos.getY() > maxY) {
-            maxY = pos.getY();
-        } else if(pos.getY() < minY) {
-            minY = pos.getY();
+        if(y >= maxY) {
+            maxY = y;
+        } else if(y < minY) {
+            minY = y;
         }
-        if(pos.getZ() > maxZ) {
-            maxZ = pos.getZ();
-        } else if(pos.getZ() < minZ) {
-            minZ = pos.getZ();
+        if(z >= maxZ) {
+            maxZ = z;
+        } else if(z < minZ) {
+            minZ = z;
         }
         return this;
     }
