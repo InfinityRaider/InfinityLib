@@ -232,8 +232,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 x1 = x2 = x3 = x4 = min + offset;
                 u1 = u2 = maxX % uv;
                 u3 = u4 = minX % uv;
-                v1 = v4 = 16 - (maxY % uv);
-                v2 = v3 = 16 - (minY % uv);
+                v1 = v4 = (maxY % uv);
+                v2 = v3 = (minY % uv);
                 break;
             }
             case EAST: {
@@ -244,8 +244,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 x1 = x2 = x3 = x4 = min + offset;
                 u1 = u2 = minX % uv;
                 u3 = u4 = maxX % uv;
-                v1 = v4 = 16 - (maxY % uv);
-                v2 = v3 = 16 - (minY % uv);
+                v1 = v4 = (maxY % uv);
+                v2 = v3 = (minY % uv);
                 break;
             }
             case NORTH: {
@@ -256,8 +256,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 z1 = z2 = z3 = z4 = min + offset;
                 u1 = u2 = minX % uv;
                 u3 = u4 = maxX % uv;
-                v1 = v4 = 16 - (maxY % uv);
-                v2 = v3 = 16 - (minY % uv);
+                v1 = v4 = (maxY % uv);
+                v2 = v3 = (minY % uv);
                 break;
             }
             case SOUTH: {
@@ -268,8 +268,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 z1 = z2 = z3 = z4 = min + offset;
                 u1 = u2 = maxX % uv;
                 u3 = u4 = minX % uv;
-                v1 = v4 = 16 - (maxY % uv);
-                v2 = v3 = 16 - (minY % uv);
+                v1 = v4 = (maxY % uv);
+                v2 = v3 = (minY % uv);
                 break;
             }
             default: return;
