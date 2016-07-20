@@ -67,6 +67,7 @@ public class BlockRendererRegistry implements ICustomModelLoader {
         Block block = (Block) customRenderedBlock;
         IBlockRenderingHandler renderer = customRenderedBlock.getRenderer();
         //set custom state mapper
+        ResourceLocation loc = customRenderedBlock.getBlockModelResourceLocation();
         StateMapperBase stateMapper = new StateMapperBase() {
             @Override
             protected ModelResourceLocation getModelResourceLocation(IBlockState state) {

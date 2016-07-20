@@ -11,17 +11,19 @@ public abstract class RegisterHelper {
     }
 
     public static void registerBlock(Block block, String modId, String name, Class<? extends ItemBlock> itemClass) {
-        block.setUnlocalizedName(modId.toLowerCase() + ':' + name);
+        String unlocalized = modId.toLowerCase() + ':' + name;
+        block.setUnlocalizedName(unlocalized);
         if (itemClass != null) {
-            GameRegistry.registerBlock(block, itemClass, name);
+            GameRegistry.registerBlock(block, unlocalized);
         } else {
-            GameRegistry.registerBlock(block, name);
+            GameRegistry.registerBlock(block, unlocalized);
         }
     }
 
 
     public static void registerItem(Item item, String modId, String name) {
-        item.setUnlocalizedName(modId.toLowerCase()+':'+name);
-        GameRegistry.registerItem(item, name);
+        String unlocalized = modId.toLowerCase() + ':' + name;
+        item.setUnlocalizedName(unlocalized);
+        GameRegistry.registerItem(item, unlocalized);
     }
 }
