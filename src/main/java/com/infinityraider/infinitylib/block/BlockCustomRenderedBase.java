@@ -2,12 +2,8 @@ package com.infinityraider.infinitylib.block;
 
 import com.infinityraider.infinitylib.block.blockstate.BlockStateSpecial;
 import com.infinityraider.infinitylib.block.blockstate.IBlockStateSpecial;
-import com.infinityraider.infinitylib.reference.Reference;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -27,22 +23,6 @@ public abstract class BlockCustomRenderedBase extends BlockBase implements ICust
     @SuppressWarnings("unchecked")
     public final IBlockStateSpecial<?, ? extends IBlockState> getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
         return new BlockStateSpecial<>(state, pos, null);
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public ModelResourceLocation getBlockModelResourceLocation() {
-        return new ModelResourceLocation(Reference.MOD_ID.toLowerCase()+":"+getInternalName());
-    }
-
-    @Override
-    protected IProperty[] getPropertyArray() {
-        return new IProperty[0];
-    }
-
-    @Override
-    public Class<? extends ItemBlock> getItemBlockClass() {
-        return null;
     }
 
     @SideOnly(Side.CLIENT)
