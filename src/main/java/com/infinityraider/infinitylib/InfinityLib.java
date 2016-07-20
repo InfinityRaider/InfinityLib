@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib;
 
 import com.infinityraider.infinitylib.network.INetworkWrapper;
-import com.infinityraider.infinitylib.proxy.IProxy;
+import com.infinityraider.infinitylib.proxy.IProxyBase;
 import com.infinityraider.infinitylib.reference.Reference;
 import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraftforge.fml.common.Mod;
@@ -16,7 +16,7 @@ public class InfinityLib implements IInfinityMod {
     public static InfinityLib instance;
 
     @SidedProxy(clientSide = Reference.CLIENT_PROXY_CLASS, serverSide = Reference.SERVER_PROXY_CLASS)
-    public static IProxy proxy;
+    public static IProxyBase proxy;
 
     @Override
     public String getModId() {

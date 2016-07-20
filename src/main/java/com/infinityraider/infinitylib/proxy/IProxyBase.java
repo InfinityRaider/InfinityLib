@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.proxy;
 
+import com.infinityraider.infinitylib.InfinityModRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -7,7 +8,7 @@ import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.relauncher.Side;
 
 @SuppressWarnings("unused")
-public interface IProxy {
+public interface IProxyBase {
     /**
      * @return The physical side, is always Side.SERVER on the server and Side.CLIENT on the client
      */
@@ -21,42 +22,50 @@ public interface IProxy {
     /**
      * Performs all needed operations for the proxy's side during FML's pre init stage
      */
-    void preInit(FMLPreInitializationEvent event);
+    default void preInit(FMLPreInitializationEvent event) {
+            this.initConfiguration(event);
+            this.registerEventHandlers();
+            InfinityModRegistry.getInstance().preInit(event);
+    }
 
     /**
      * Performs all needed operations for the proxy's side during FML's init stage
      */
-    void init(FMLInitializationEvent event);
+    default void init(FMLInitializationEvent event){
+        InfinityModRegistry.getInstance().init(event);
+    }
 
     /**
      * Performs all needed operations for the proxy's side during FML's post init stage
      */
-    void postInit(FMLPostInitializationEvent event);
+    default void postInit(FMLPostInitializationEvent event) {
+        InfinityModRegistry.getInstance().postInit(event);
+    }
 
     /**
      * Performs all needed operations for the proxy's side when the server is about to start
      */
-    void onServerAboutToStart(FMLServerAboutToStartEvent event);
+    default void onServerAboutToStart(FMLServerAboutToStartEvent event) {}
 
     /**
      * Performs all needed operations for the proxy's side when the server is starting
      */
-    void onServerStarting(FMLServerStartingEvent event);
+    default void onServerStarting(FMLServerStartingEvent event) {}
 
     /**
      * Performs all needed operations for the proxy's side when the server is started
      */
-    void onServerStarted(FMLServerStartedEvent event);
+    default void onServerStarted(FMLServerStartedEvent event) {}
 
     /**
      * Performs all needed operations for the proxy's side when the server is stopping
      */
-    void onServerStopping(FMLServerStoppingEvent event);
+    default void onServerStopping(FMLServerStoppingEvent event) {}
 
     /**
      * Performs all needed operations for the proxy's side when the server is stopped
      */
-    void onServerStopped(FMLServerStoppedEvent event);
+    default void onServerStopped(FMLServerStoppedEvent event) {}
 
     /**
      * Registers the relevant event handlers for each side
@@ -92,12 +101,16 @@ public interface IProxy {
      * @param id entity id
      * @return the entity
      */
-    Entity getEntityById(int dimension, int id);
+    default Entity getEntityById(int dimension, int id) {
+        return getEntityById(getWorldByDimensionId(dimension), id);
+    }
 
     /**
      *  @return  the entity in that World object with that id
      */
-    Entity getEntityById(World world, int id);
+    default Entity getEntityById(World world, int id) {
+        return world.getEntityByID(id);
+    }
 
     /** Queues a task to be executed on this side */
     void queueTask(Runnable task);
