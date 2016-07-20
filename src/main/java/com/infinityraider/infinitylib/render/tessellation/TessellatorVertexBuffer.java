@@ -122,8 +122,8 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      */
     private TessellatorVertexBuffer reset() {
         this.resetMatrix();
-        this.setColorRGBA(1, 1, 1, 1);
-        this.setBrightness(15 << 24);
+        this.setColorRGBA(STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR);
+        this.setBrightness(STANDARD_BRIGHTNESS);
         return this;
     }
 }

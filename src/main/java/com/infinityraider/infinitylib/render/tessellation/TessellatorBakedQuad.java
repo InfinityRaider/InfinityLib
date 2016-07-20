@@ -127,7 +127,9 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
                 .setNormal(getNormal().x, getNormal().y, getNormal().z));
         if(vertexData.size() == drawMode) {
             UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(getVertexFormat());
+            int tintIndex = getTintIndex();
             quadBuilder.setQuadTint(getTintIndex());
+            boolean diffuseLighting = getApplyDiffuseLighting();
             quadBuilder.setApplyDiffuseLighting(getApplyDiffuseLighting());
             for(VertexData vertex : vertexData) {
                 vertex.applyVertexData(quadBuilder);

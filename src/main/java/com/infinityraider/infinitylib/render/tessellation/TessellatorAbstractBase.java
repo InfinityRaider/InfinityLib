@@ -13,7 +13,6 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.awt.*;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -21,7 +20,9 @@ import java.util.Deque;
 @SuppressWarnings("unused")
 public abstract class TessellatorAbstractBase implements ITessellator {
     /** Default color (white) */
-    public static final Color STANDARD_COLOR = new Color(255, 255, 255, 255);
+    public static final int STANDARD_COLOR = 255;
+    /** Default brightness (max) */
+    public static final int STANDARD_BRIGHTNESS = 15 << 24;
     /** Default normal (up) */
     public static final Vec3f STANDARD_NORMAL = new Vec3f(0, 1, 0);
 
@@ -33,7 +34,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     /** Current normal */
     private Vec3f normal;
     /** Current color*/
-    private Color color;
+    private int r, g, b, a;
     /** Current brightness value */
     private int l;
     /** Current tint index for the quad */
@@ -44,7 +45,6 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     protected TessellatorAbstractBase() {
         this.matrices = new ArrayDeque<>();
         this.normal = STANDARD_NORMAL;
-        this.color = STANDARD_COLOR;
         this.tintIndex = -1;
         this.applyDiffuseLighting = false;
         this.resetMatrix();
@@ -72,7 +72,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         this.onDrawCall();
         this.format = null;
         this.normal = STANDARD_NORMAL;
-        this.color = STANDARD_COLOR;
+        this.setColorRGBA(STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR);
+        this.setBrightness(STANDARD_BRIGHTNESS);
         this.tintIndex = -1;
         this.applyDiffuseLighting = false;
         this.resetMatrix();
@@ -220,8 +221,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 y1 = y2 = y3 = y4 = min + offset;
                 u1 = u2 = maxX % uv;
                 u3 = u4 = minX % uv;
-                v1 = v4 = minY % uv;
-                v2 = v3 = maxY % uv;
+                v1 = v4 = 16 - (minY % uv);
+                v2 = v3 = 16 - (maxY % uv);
                 break;
             }
             case WEST: {
@@ -242,8 +243,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 y1 = y4 = minY;
                 y2 = y3 = maxY;
                 x1 = x2 = x3 = x4 = min + offset;
-                u1 = u2 = minX % uv;
-                u3 = u4 = maxX % uv;
+                u1 = u2 = 16 - (minX % uv);
+                u3 = u4 = 16 - (maxX % uv);
                 v1 = v4 = (maxY % uv);
                 v2 = v3 = (minY % uv);
                 break;
@@ -254,8 +255,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 y1 = y4 = minY ;
                 y2 = y3 = maxY;
                 z1 = z2 = z3 = z4 = min + offset;
-                u1 = u2 = minX % uv;
-                u3 = u4 = maxX % uv;
+                u1 = u2 = 16 - (minX % uv);
+                u3 = u4 =  16 - (maxX % uv);
                 v1 = v4 = (maxY % uv);
                 v2 = v3 = (minY % uv);
                 break;
@@ -274,11 +275,13 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             }
             default: return;
         }
+        color = 16777215;
+        this.applyColorMultiplier(color, face);
         this.setNormal(new Vec3f(face.getFrontOffsetX(), face.getFrontOffsetY(), face.getFrontOffsetZ()));
-        addScaledVertexWithUV(x1, y1, z1, icon, u1, v1, color);
-        addScaledVertexWithUV(x2, y2, z2, icon, u2, v2, color);
         addScaledVertexWithUV(x3, y3, z3, icon, u3, v3, color);
         addScaledVertexWithUV(x4, y4, z4, icon, u4, v4, color);
+        addScaledVertexWithUV(x1, y1, z1, icon, u1, v1, color);
+        addScaledVertexWithUV(x2, y2, z2, icon, u2, v2, color);
     }
 
     /**
@@ -523,7 +526,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public TessellatorAbstractBase setColor(int color) {
-        this.color = new Color(color, false);
+        this.setColorTransparent(color);
+        this.a = 255;
         return this;
     }
 
@@ -534,8 +538,11 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public TessellatorAbstractBase setColorTransparent(int color) {
-        this.color = new Color(color, true);
-        return this;
+        int red = color >> 16 & 255;
+        int green = color >> 8 & 255;
+        int blue = color & 255;
+        int alpha = this.a;
+        return this.setColorRGBA(red, green, blue, alpha);
     }
 
     /**
@@ -544,7 +551,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public int getColor() {
-        return this.color.getRGB();
+        return this.r << 16 + this.g << 8 + this.b;
     }
 
     /**
@@ -555,8 +562,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      * @return this
      */
     @Override
-    public TessellatorAbstractBase setColorRGB(float red, float green, float blue) {
-        return this.setColorRGBA(red, green, blue, 1);
+    public TessellatorAbstractBase setColorRGB_F(float red, float green, float blue) {
+        return this.setColorRGBA_F(red, green, blue, 1.0F);
     }
 
     /**
@@ -568,9 +575,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      * @return this
      */
     @Override
-    public TessellatorAbstractBase setColorRGBA(float red, float green, float blue, float alpha) {
-        this.color = new Color(red, green, blue, alpha);
-        return this;
+    public TessellatorAbstractBase setColorRGBA_F(float red, float green, float blue, float alpha) {
+        return this.setColorRGBA((int) (red * 255),(int) (green * 255),(int) (blue * 255),(int) (alpha * 255));
     }
 
     /**
@@ -595,7 +601,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public TessellatorAbstractBase setColorRGBA(int red, int green, int blue, int alpha) {
-        this.color = new Color(red, green, blue, alpha);
+        this.r = red;
+        this.g = green;
+        this.b = blue;
+        this.a = alpha;
         return this;
     }
 
@@ -636,7 +645,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public int getRedValueInt() {
-        return this.color.getRed();
+        return this.r;
     }
 
     /**
@@ -644,7 +653,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public int getGreenValueInt() {
-        return this.color.getGreen();
+        return this.g;
     }
 
     /**
@@ -652,7 +661,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public int getBlueValueInt() {
-        return this.color.getBlue();
+        return this.b;
     }
 
     /**
@@ -660,7 +669,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public int getAlphaValueInt() {
-        return this.color.getAlpha();
+        return this.a;
     }
 
     /**
@@ -721,5 +730,52 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     @Override
     public boolean getApplyDiffuseLighting() {
         return this.applyDiffuseLighting;
+    }
+
+    private void applyColorMultiplier(int colorMultiplier, EnumFacing side) {
+        float preMultiplier = getMultiplier(transformSide(side));
+        float r = preMultiplier * ((float) (colorMultiplier >> 16 & 255))/255.0F;
+        float g = preMultiplier * ((float) (colorMultiplier >> 8 & 255))/255.0F;
+        float b = preMultiplier * ((float) (colorMultiplier & 255))/255.0F;
+        this.setColorRGB_F(r, g, b);
+    }
+
+    protected EnumFacing transformSide(EnumFacing dir) {
+        if(dir == null) {
+            return null;
+        }
+        double[] coords = this.getTransformationMatrix().transform(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ());
+        double[] translation = this.getTransformationMatrix().getTranslation();
+        coords[0] = coords[0] - translation[0];
+        coords[1] = coords[1] - translation[1];
+        coords[2] = coords[2] - translation[2];
+        double x = Math.abs(coords[0]);
+        double y = Math.abs(coords[1]);
+        double z = Math.abs(coords[2]);
+        if(x > z) {
+            if(x > y) {
+                return coords[0] > 0 ? EnumFacing.EAST : EnumFacing.WEST;
+            }
+        } else {
+            if(z > y) {
+                return coords[2] > 0 ? EnumFacing.SOUTH : EnumFacing.NORTH;
+            }
+        }
+        return coords[1] > 0 ? EnumFacing.UP : EnumFacing.DOWN;
+    }
+
+    protected float getMultiplier(EnumFacing side) {
+        switch (side) {
+            case DOWN:
+                return 0.5F;
+            case NORTH:
+            case SOUTH:
+                return 0.8F;
+            case EAST:
+            case WEST:
+                return 0.6F;
+            default:
+                return 1;
+        }
     }
 }

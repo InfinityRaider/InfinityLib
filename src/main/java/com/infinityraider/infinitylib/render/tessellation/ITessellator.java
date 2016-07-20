@@ -298,7 +298,7 @@ public interface ITessellator {
      * @param blue the rgb blue value
      * @return this
      */
-    ITessellator setColorRGB(float red, float green, float blue);
+    ITessellator setColorRGB_F(float red, float green, float blue);
 
     /**
      * Sets the current color value based on red, green, blue and alpha values, all arguments should be between 0F and 1F
@@ -308,7 +308,7 @@ public interface ITessellator {
      * @param alpha the rgb alpha value
      * @return this
      */
-    ITessellator setColorRGBA(float red, float green, float blue, float alpha);
+    ITessellator setColorRGBA_F(float red, float green, float blue, float alpha);
 
     /**
      * Sets the current color value based on red, green and blue int values, all arguments should be between 0 and 255
