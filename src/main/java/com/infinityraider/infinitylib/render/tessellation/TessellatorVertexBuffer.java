@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
@@ -103,10 +104,9 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      * @param z the z-coordinate for the vertex
      * @param u u value for the vertex
      * @param v v value for the vertex
-     * @param color color modifier
      */
     @Override
-    public void addVertexWithUV(float x, float y, float z, float u, float v, int color) {
+    public void addVertexWithUV(float x, float y, float z, float u, float v) {
         double[] coords = this.getTransformationMatrix().transform(x, y, z);
         buffer.pos(coords[0], coords[1], coords[2]);
         buffer.color(getRedValueInt(), getGreenValueInt(), getBlueValueInt(), getAlphaValueInt());
@@ -125,5 +125,53 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         this.setColorRGBA(STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR);
         this.setBrightness(STANDARD_BRIGHTNESS);
         return this;
+    }
+
+    @Override
+    protected void applyColorMultiplier(EnumFacing side) {
+        float preMultiplier = getMultiplier(transformSide(side));
+        float r = preMultiplier * ((float) (this.getRedValueInt()))/255.0F;
+        float g = preMultiplier * ((float) (this.getGreenValueInt()))/255.0F;
+        float b = preMultiplier * ((float) (this.getBlueValueInt()))/255.0F;
+        this.setColorRGB_F(r, g, b);
+    }
+
+    private EnumFacing transformSide(EnumFacing dir) {
+        if(dir == null) {
+            return null;
+        }
+        double[] coords = this.getTransformationMatrix().transform(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ());
+        double[] translation = this.getTransformationMatrix().getTranslation();
+        coords[0] = coords[0] - translation[0];
+        coords[1] = coords[1] - translation[1];
+        coords[2] = coords[2] - translation[2];
+        double x = Math.abs(coords[0]);
+        double y = Math.abs(coords[1]);
+        double z = Math.abs(coords[2]);
+        if(x > z) {
+            if(x > y) {
+                return coords[0] > 0 ? EnumFacing.EAST : EnumFacing.WEST;
+            }
+        } else {
+            if(z > y) {
+                return coords[2] > 0 ? EnumFacing.SOUTH : EnumFacing.NORTH;
+            }
+        }
+        return coords[1] > 0 ? EnumFacing.UP : EnumFacing.DOWN;
+    }
+
+    private float getMultiplier(EnumFacing side) {
+        switch (side) {
+            case DOWN:
+                return 0.5F;
+            case NORTH:
+            case SOUTH:
+                return 0.8F;
+            case EAST:
+            case WEST:
+                return 0.6F;
+            default:
+                return 1;
+        }
     }
 }

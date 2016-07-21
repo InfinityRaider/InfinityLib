@@ -59,34 +59,11 @@ public interface ITessellator {
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex
      * @param z the z-coordinate for the vertex
-     * @param u u value for the vertex
-     * @param v v value for the vertex
-     * @param color color modifier
-     */
-    void addVertexWithUV(float x, float y, float z, float u, float v, int color);
-
-    /**
-     * Adds a vertex
-     * @param x the x-coordinate for the vertex
-     * @param y the y-coordinate for the vertex
-     * @param z the z-coordinate for the vertex
      * @param icon the icon
      * @param u u value for the vertex
      * @param v v value for the vertex
      */
     void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v);
-
-    /**
-     * Adds a vertex
-     * @param x the x-coordinate for the vertex
-     * @param y the y-coordinate for the vertex
-     * @param z the z-coordinate for the vertex
-     * @param icon the icon
-     * @param u u value for the vertex
-     * @param v v value for the vertex
-     * @param color color modifier
-     */
-    void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v, int color);
 
     /**
      * Adds a vertex scaled by 1/16th of a block
@@ -100,18 +77,6 @@ public interface ITessellator {
     void addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v);
 
     /**
-     * Adds a vertex scaled by 1/16th of a block
-     * @param x the x-coordinate for the vertex
-     * @param y the y-coordinate for the vertex
-     * @param z the z-coordinate for the vertex
-     * @param icon the icon
-     * @param u u value for the vertex
-     * @param v v value for the vertex
-     * @param color color modifier
-     */
-    void addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v, int color);
-
-    /**
      * Adds a quad for a scaled face, the face is defined by minimum and maximum coordinates
      * @param minX minimum 2D x-coordinate of the face
      * @param minY minimum 2D y-coordinate of the face
@@ -122,19 +87,6 @@ public interface ITessellator {
      * @param offset offset of the face along its normal
      */
     void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset);
-
-    /**
-     * Adds a quad for a scaled face, the face is defined by minimum and maximum 2D coordinates
-     * @param minX minimum 2D x-coordinate of the face
-     * @param minY minimum 2D y-coordinate of the face
-     * @param maxX maximum 2D x-coordinate of the face
-     * @param maxY maximum 2D y-coordinate of the face
-     * @param face orientation of the face
-     * @param icon icon to render the face with
-     * @param offset offset of the face along its normal
-     * @param color color multiplier
-     */
-    void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset, int color);
 
     /**
      * Adds two quads for a scaled face, this face will have both sides drawn.
@@ -150,20 +102,6 @@ public interface ITessellator {
     void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset);
 
     /**
-     * Adds two quads for a scaled face, this face will have both sides drawn.
-     * The face is defined by minimum and maximum coordinates
-     * @param minX minimum 2D x-coordinate of the face
-     * @param minY minimum 2D y-coordinate of the face
-     * @param maxX maximum 2D x-coordinate of the face
-     * @param maxY maximum 2D y-coordinate of the face
-     * @param face orientation of the face
-     * @param icon icon to render the face with
-     * @param offset offset of the face along its normal
-     * @param color color multiplier
-     */
-    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset, int color);
-
-    /**
      * Adds 6 quads for a scaled prism, the prism is defined by maximum and minimum 3D coordinates
      * @param minX minimum x-coordinate of the face
      * @param minY minimum y-coordinate of the face
@@ -174,19 +112,6 @@ public interface ITessellator {
      * @param icon icon to render the prism with
      */
     void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon);
-
-    /**
-     * Adds 6 quads for a scaled prism, the prism is defined by maximum and minimum 3D coordinates
-     * @param minX minimum x-coordinate of the face
-     * @param minY minimum y-coordinate of the face
-     * @param minZ maximum z-coordinate of the face
-     * @param maxX maximum x-coordinate of the face
-     * @param maxY maximum y-coordinate of the face
-     * @param maxZ maximum z-coordinate of the face
-     * @param icon icon to render the prism with
-     * @param color color multiplier
-     */
-    void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon, int color);
 
     /**
      * Sets the translation components relative to the absolute coordinate system

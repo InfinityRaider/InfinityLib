@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.render.tessellation;
 import com.google.common.base.Function;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import net.minecraftforge.fml.relauncher.Side;
@@ -114,10 +115,9 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
      * @param z the z-coordinate for the vertex
      * @param u u value for the vertex
      * @param v v value for the vertex
-     * @param color color modifier
      */
     @Override
-    public void addVertexWithUV(float x, float y, float z, float u, float v, int color) {
+    public void addVertexWithUV(float x, float y, float z, float u, float v) {
         if(drawMode == DRAW_MODE_NOT_DRAWING) {
             throw new RuntimeException("NOT CONSTRUCTING VERTICES");
         }
@@ -131,6 +131,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
             quadBuilder.setQuadTint(getTintIndex());
             boolean diffuseLighting = getApplyDiffuseLighting();
             quadBuilder.setApplyDiffuseLighting(getApplyDiffuseLighting());
+            quadBuilder.setQuadOrientation(EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z));
             for(VertexData vertex : vertexData) {
                 vertex.applyVertexData(quadBuilder);
             }
@@ -147,6 +148,9 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
             return this.textureFunction.apply(loc);
         }
     }
+
+    @Override
+    protected void applyColorMultiplier(EnumFacing side) {}
 
     public TessellatorBakedQuad setTextureFunction(Function<ResourceLocation, TextureAtlasSprite> function) {
         this.textureFunction = function;

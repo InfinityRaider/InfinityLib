@@ -98,43 +98,18 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex
      * @param z the z-coordinate for the vertex
-     * @param u u value for the vertex
-     * @param v v value for the vertex
-     */
-    public void addVertexWithUV(float x, float y, float z, float u, float v) {
-        this.addVertexWithUV(x, y, z, u, v, getColor());
-    }
-
-    /**
-     * Adds a vertex
-     * @param x the x-coordinate for the vertex
-     * @param y the y-coordinate for the vertex
-     * @param z the z-coordinate for the vertex
      * @param icon the icon
      * @param u u value for the vertex
      * @param v v value for the vertex
      */
     @Override
     public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v) {
-        this.addVertexWithUV(x, y, z, icon, u, v, getColor());
-    }
-
-    /**
-     * Adds a vertex
-     * @param x the x-coordinate for the vertex
-     * @param y the y-coordinate for the vertex
-     * @param z the z-coordinate for the vertex
-     * @param icon the icon
-     * @param u u value for the vertex
-     * @param v v value for the vertex
-     */
-    @Override
-    public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v, int color) {
         if(icon == null) {
             icon = Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
         }
-        this.addVertexWithUV(x, y, z, icon.getInterpolatedU(u), icon.getInterpolatedV(v), getColor());
+        this.addVertexWithUV(x, y, z, icon.getInterpolatedU(u), icon.getInterpolatedV(v));
     }
+
     /**
      * Adds a vertex scaled by 1/16th of a block
      * @param x the x-coordinate for the vertex
@@ -146,37 +121,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public void addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v) {
-        this.addScaledVertexWithUV(x, y, z, icon, u, v, getColor());
-    }
-
-    /**
-     * Adds a vertex scaled by 1/16th of a block
-     * @param x the x-coordinate for the vertex
-     * @param y the y-coordinate for the vertex
-     * @param z the z-coordinate for the vertex
-     * @param icon the icon
-     * @param u u value for the vertex
-     * @param v v value for the vertex
-     * @param color color modifier
-     */
-    @Override
-    public void addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v, int color) {
-        addVertexWithUV(x * Constants.UNIT, y * Constants.UNIT, z * Constants.UNIT, icon, u, v, color);
-    }
-
-    /**
-     * Adds a quad for a scaled face, the face is defined by minimum and maximum coordinates
-     * @param minX minimum 2D x-coordinate of the face
-     * @param minY minimum 2D y-coordinate of the face
-     * @param maxX maximum 2D x-coordinate of the face
-     * @param maxY maximum 2D y-coordinate of the face
-     * @param face orientation of the face
-     * @param icon icon to render the face with
-     * @param offset offset of the face along its normal
-     */
-    @Override
-    public void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
-        this.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset, getColor());
+        addVertexWithUV(x * Constants.UNIT, y * Constants.UNIT, z * Constants.UNIT, icon, u, v);
     }
 
     /**
@@ -188,10 +133,9 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      * @param face orientation of the face
      * @param icon icon to render the face with
      * @param offset offset of the face along its normal
-     * @param color color multiplier
      */
     @Override
-    public void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset, int color) {
+    public void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
         float x1, x2, x3, x4;
         float y1, y2, y3, y4;
         float z1, z2, z3, z4;
@@ -275,13 +219,12 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             }
             default: return;
         }
-        color = 16777215;
-        this.applyColorMultiplier(color, face);
+        this.applyColorMultiplier(face);
         this.setNormal(new Vec3f(face.getFrontOffsetX(), face.getFrontOffsetY(), face.getFrontOffsetZ()));
-        addScaledVertexWithUV(x3, y3, z3, icon, u3, v3, color);
-        addScaledVertexWithUV(x4, y4, z4, icon, u4, v4, color);
-        addScaledVertexWithUV(x1, y1, z1, icon, u1, v1, color);
-        addScaledVertexWithUV(x2, y2, z2, icon, u2, v2, color);
+        addScaledVertexWithUV(x3, y3, z3, icon, u3, v3);
+        addScaledVertexWithUV(x4, y4, z4, icon, u4, v4);
+        addScaledVertexWithUV(x1, y1, z1, icon, u1, v1);
+        addScaledVertexWithUV(x2, y2, z2, icon, u2, v2);
     }
 
     /**
@@ -297,23 +240,6 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
-        this.drawScaledFaceDouble(minX, minY, maxX, maxY, face, icon, offset, getColor());
-    }
-
-    /**
-     * Adds two quads for a scaled face, this face will have both sides drawn.
-     * The face is defined by minimum and maximum coordinates
-     * @param minX minimum 2D x-coordinate of the face
-     * @param minY minimum 2D y-coordinate of the face
-     * @param maxX maximum 2D x-coordinate of the face
-     * @param maxY maximum 2D y-coordinate of the face
-     * @param face orientation of the face
-     * @param icon icon to render the face with
-     * @param offset offset of the face along its normal
-     * @param color color multiplier
-     */
-    @Override
-    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset, int color) {
         EnumFacing opposite;
         switch(face) {
             case NORTH: opposite = EnumFacing.SOUTH; break;
@@ -325,8 +251,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             default:
                 return;
         }
-        this.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset, color);
-        this.drawScaledFace(minX, minY, maxX, maxY, opposite, icon, offset, color);
+        this.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset);
+        this.drawScaledFace(minX, minY, maxX, maxY, opposite, icon, offset);
     }
 
     /**
@@ -341,34 +267,18 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon) {
-        this.drawScaledPrism(minX, minY, minZ, maxX, maxY, maxZ, icon, getColor());
-    }
-
-    /**
-     * Adds 6 quads for a scaled prism, the prism is defined by maximum and minimum 3D coordinates
-     * @param minX minimum x-coordinate of the face
-     * @param minY minimum y-coordinate of the face
-     * @param minZ maximum z-coordinate of the face
-     * @param maxX maximum x-coordinate of the face
-     * @param maxY maximum y-coordinate of the face
-     * @param maxZ maximum z-coordinate of the face
-     * @param icon icon to render the prism with
-     * @param color color multiplier
-     */
-    @Override
-    public void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon, int color) {
         //bottom
-        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.DOWN, icon, minY, color);
+        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.DOWN, icon, minY);
         //top
-        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.UP, icon, maxY, color);
+        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.UP, icon, maxY);
         //north
-        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.NORTH, icon, minZ, color);
+        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.NORTH, icon, minZ);
         //south
-        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.SOUTH, icon, maxZ, color);
+        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.SOUTH, icon, maxZ);
         //west
-        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.WEST, icon, minX, color);
+        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.WEST, icon, minX);
         //east
-        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.EAST, icon, maxX, color);
+        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.EAST, icon, maxX);
     }
 
     /**
@@ -551,7 +461,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     @Override
     public int getColor() {
-        return this.r << 16 + this.g << 8 + this.b;
+        return (this.r << 16) | (this.g << 8) | (this.b);
     }
 
     /**
@@ -732,50 +642,5 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         return this.applyDiffuseLighting;
     }
 
-    private void applyColorMultiplier(int colorMultiplier, EnumFacing side) {
-        float preMultiplier = getMultiplier(transformSide(side));
-        float r = preMultiplier * ((float) (colorMultiplier >> 16 & 255))/255.0F;
-        float g = preMultiplier * ((float) (colorMultiplier >> 8 & 255))/255.0F;
-        float b = preMultiplier * ((float) (colorMultiplier & 255))/255.0F;
-        this.setColorRGB_F(r, g, b);
-    }
-
-    protected EnumFacing transformSide(EnumFacing dir) {
-        if(dir == null) {
-            return null;
-        }
-        double[] coords = this.getTransformationMatrix().transform(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ());
-        double[] translation = this.getTransformationMatrix().getTranslation();
-        coords[0] = coords[0] - translation[0];
-        coords[1] = coords[1] - translation[1];
-        coords[2] = coords[2] - translation[2];
-        double x = Math.abs(coords[0]);
-        double y = Math.abs(coords[1]);
-        double z = Math.abs(coords[2]);
-        if(x > z) {
-            if(x > y) {
-                return coords[0] > 0 ? EnumFacing.EAST : EnumFacing.WEST;
-            }
-        } else {
-            if(z > y) {
-                return coords[2] > 0 ? EnumFacing.SOUTH : EnumFacing.NORTH;
-            }
-        }
-        return coords[1] > 0 ? EnumFacing.UP : EnumFacing.DOWN;
-    }
-
-    protected float getMultiplier(EnumFacing side) {
-        switch (side) {
-            case DOWN:
-                return 0.5F;
-            case NORTH:
-            case SOUTH:
-                return 0.8F;
-            case EAST:
-            case WEST:
-                return 0.6F;
-            default:
-                return 1;
-        }
-    }
+    protected abstract void applyColorMultiplier(EnumFacing side);
 }
