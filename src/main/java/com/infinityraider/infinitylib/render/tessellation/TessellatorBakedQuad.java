@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
@@ -71,13 +72,11 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     /**
      * Method to get all quads constructed
-     * @return list of quads, may be emtpy but never null
+     * @return list of quads, may be empty but never null
      */
     @Override
     public List<BakedQuad> getQuads() {
-        List<BakedQuad> list = new ArrayList<>();
-        list.addAll(this.quads);
-        return list;
+        return ImmutableList.copyOf(this.quads);
     }
 
     /**
