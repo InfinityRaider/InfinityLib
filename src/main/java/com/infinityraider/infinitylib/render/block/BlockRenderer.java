@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.render.block;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.blockstate.IBlockStateSpecial;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
@@ -34,15 +35,15 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
 import javax.vecmath.Matrix4f;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @SideOnly(Side.CLIENT)
 public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRenderer<T> implements IModel {
+    private final ICustomRenderedBlock<T> block;
     private final IBlockRenderingHandler<T> renderer;
 
-    public BlockRenderer(IBlockRenderingHandler<T> renderer) {
+    public BlockRenderer(ICustomRenderedBlock<T> block, IBlockRenderingHandler<T> renderer) {
+        this.block = block;
         this.renderer = renderer;
     }
 
@@ -58,7 +59,7 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
 
     @Override
     public BakedBlockModel<T> bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-        return new BakedBlockModel<>(format, renderer, bakedTextureGetter, renderer.doInventoryRendering());
+        return new BakedBlockModel<>(block, format, renderer, bakedTextureGetter, renderer.doInventoryRendering());
     }
 
     @Override
@@ -92,45 +93,63 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
     }
 
     public static class BakedBlockModel<T extends TileEntityBase> implements IBakedModel {
+        private final ICustomRenderedBlock<T> block;
         private final VertexFormat format;
         private final IBlockRenderingHandler<T> renderer;
         private final Function<ResourceLocation, TextureAtlasSprite> textures;
         private final ItemRenderer itemRenderer;
 
-        private BakedBlockModel(VertexFormat format, IBlockRenderingHandler<T> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
+        private Map<EnumFacing, List<BakedQuad>> cachedQuads;
+        private IBlockState prevState;
+
+        private BakedBlockModel(ICustomRenderedBlock<T> block, VertexFormat format, IBlockRenderingHandler<T> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
+            this.block = block;
             this.format = format;
             this.renderer = renderer;
             this.textures = textures;
             this.itemRenderer = inventory ? new ItemRenderer<>(this.renderer, format, textures) : null;
+            this.cachedQuads = new HashMap<>();
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-            List<BakedQuad> list;
-            if(side == null && (state instanceof IBlockStateSpecial)) {
+            if((state instanceof IBlockStateSpecial)) {
                 World world = Minecraft.getMinecraft().theWorld;
-                T tile = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getTileEntity();
-                BlockPos pos = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getPos();
                 Block block = state.getBlock();
+                T tile = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getTileEntity();
                 IBlockState extendedState = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getWrappedState();
-                ITessellator tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(this.textures);
+                BlockPos pos = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getPos();
 
-                tessellator.startDrawingQuads(this.format);
+                boolean update;
+                if(tile == null) {
+                    update = !extendedState.equals(prevState);
+                } else {
+                    update = !cachedQuads.containsKey(side) || this.block.needsRenderUpdate(world, pos, extendedState, tile);
+                }
 
-                this.renderer.renderWorldBlock(tessellator, world, pos, pos.getX(), pos.getY(), pos.getZ(), extendedState, block, tile, false, 1, 0);
+                if(update) {
+                    TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(this.textures).setCurrentFace(side);
 
-                list = tessellator.getQuads();
-                tessellator.draw();
+                    tessellator.startDrawingQuads(this.format);
+
+                    this.renderer.renderWorldBlock(tessellator, world, pos, pos.getX(), pos.getY(), pos.getZ(), extendedState, block, tile, false, 1, 0);
+
+                    cachedQuads.put(side, tessellator.getQuads());
+                    prevState = extendedState;
+
+                    tessellator.draw();
+                }
+
             } else {
-                list = ImmutableList.of();
+                return ImmutableList.of();
             }
-            return list;
+            return cachedQuads.get(side);
         }
 
         @Override
         public boolean isAmbientOcclusion() {
-            return false;
+            return true;
         }
 
         @Override
@@ -211,25 +230,20 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
 
         @Override
         public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-            List<BakedQuad> list;
-            if(side == null) {
-                ITessellator tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(bakedTextureGetter);
+            ITessellator tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(bakedTextureGetter).setCurrentFace(side);
 
-                tessellator.startDrawingQuads(format);
+            tessellator.startDrawingQuads(format);
 
-                this.renderer.renderInventoryBlock(tessellator, world, state, block, tile, stack, entity, transformType);
+            this.renderer.renderInventoryBlock(tessellator, world, state, block, tile, stack, entity, transformType);
 
-                list = tessellator.getQuads();
-                tessellator.draw();
-            } else {
-                list = ImmutableList.of();
-            }
+            List<BakedQuad> list = tessellator.getQuads();
+            tessellator.draw();
             return list;
         }
 
         @Override
         public boolean isAmbientOcclusion() {
-            return false;
+            return true;
         }
 
         @Override

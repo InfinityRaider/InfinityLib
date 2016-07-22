@@ -83,11 +83,11 @@ public class VertexData {
                 break;
             case PADDING:
                 //TODO: figure this one out
-                builder.put(index, 1, 1, 1, 1);
+                builder.put(index);
                 break;
             case GENERIC:
                 //TODO: figure this one out
-                builder.put(index, 1, 1, 1, 1);
+                builder.put(index);
 
         }
     }

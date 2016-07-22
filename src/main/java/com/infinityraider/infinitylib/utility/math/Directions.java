@@ -63,6 +63,7 @@ public class Directions {
          */
         UNKNOWN(0, 0, 0, null, Axis.X);
 
+
         public final Axis axis;
         public final int offsetX;
         public final int offsetY;

@@ -39,6 +39,8 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     /** Current drawing mode */
     private int drawMode;
+    /** Face being drawn */
+    private EnumFacing face;
     /** Texture function */
     private Function<ResourceLocation, TextureAtlasSprite> textureFunction;
 
@@ -89,6 +91,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
             vertexData.clear();
             this.drawMode = DRAW_MODE_NOT_DRAWING;
             this.textureFunction = null;
+            this.face = null;
         } else {
             throw new RuntimeException("NOT CONSTRUCTING VERTICES");
         }
@@ -126,16 +129,22 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
                 .setNormal(getNormal().x, getNormal().y, getNormal().z));
         if(vertexData.size() == drawMode) {
             UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(getVertexFormat());
-            int tintIndex = getTintIndex();
             quadBuilder.setQuadTint(getTintIndex());
-            boolean diffuseLighting = getApplyDiffuseLighting();
             quadBuilder.setApplyDiffuseLighting(getApplyDiffuseLighting());
+            EnumFacing dir = EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z);
             quadBuilder.setQuadOrientation(EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z));
             for(VertexData vertex : vertexData) {
                 vertex.applyVertexData(quadBuilder);
             }
             quads.add(quadBuilder.build());
             vertexData.clear();
+        }
+    }
+
+    @Override
+    public void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
+        if(this.face == face) {
+            super.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset);
         }
     }
 
@@ -153,6 +162,11 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     public TessellatorBakedQuad setTextureFunction(Function<ResourceLocation, TextureAtlasSprite> function) {
         this.textureFunction = function;
+        return this;
+    }
+
+    public TessellatorBakedQuad setCurrentFace(EnumFacing face) {
+        this.face = face;
         return this;
     }
 }
