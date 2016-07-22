@@ -5,7 +5,7 @@ import com.infinityraider.infinitylib.render.block.IBlockRenderingHandler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -27,6 +27,15 @@ public interface ICustomRenderedBlock<T extends TileEntityBase> {
     @SideOnly(Side.CLIENT)
     ModelResourceLocation getBlockModelResourceLocation();
 
+    /**
+     * Quads are cached and only recalculated when a render update is necessary. If this block does not have a tile entity, this method will not be called,
+     * instead the previous block state is compared with the new block state to determine if a render update is needed.
+     * @param world world object
+     * @param pos position of the block
+     * @param state block state of the block
+     * @param tile tile entity at the passed position
+     * @return if the appearance of the block has changed and quads need to be redrawn
+     */
     @SideOnly(Side.CLIENT)
-    boolean needsRenderUpdate(IBlockAccess world, BlockPos pos, IBlockState state, T tile);
+    boolean needsRenderUpdate(World world, BlockPos pos, IBlockState state, T tile);
 }
