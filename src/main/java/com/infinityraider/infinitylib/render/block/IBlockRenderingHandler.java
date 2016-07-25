@@ -1,14 +1,14 @@
 package com.infinityraider.infinitylib.render.block;
 
+import com.infinityraider.infinitylib.block.BlockBase;
+import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -19,14 +19,14 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
-public interface IBlockRenderingHandler<T extends TileEntityBase> {
+public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> {
     /**
      * Gets the block tied to this renderer, used for registering this renderer.
      * A pointer to the Block is saved and referenced.
      *
      * @return the block for this renderer
      */
-    Block getBlock();
+    B getBlock();
 
     /**
      * Gets the TileEntity for this renderer (this should be a new TileEntity which is not physically in a World),
@@ -65,7 +65,7 @@ public interface IBlockRenderingHandler<T extends TileEntityBase> {
      * @param destroyStage destroy stage, only useful for dynamic rendering
      */
     void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
-                          IBlockState state, Block block, @Nullable T tile, boolean dynamicRender, float partialTick, int destroyStage);
+                          IBlockState state, B block, @Nullable T tile, boolean dynamicRender, float partialTick, int destroyStage);
 
     /**
      * Called to render the block in an inventory
@@ -80,7 +80,7 @@ public interface IBlockRenderingHandler<T extends TileEntityBase> {
      * @param entity entity holding the stack
      * @param type camera transform type
      */
-    void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, Block block,
+    void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
                               @Nullable T tile, ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type);
 
     /**

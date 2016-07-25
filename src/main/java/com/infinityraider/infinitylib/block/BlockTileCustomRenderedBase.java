@@ -9,7 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
 @SuppressWarnings("unused")
-public abstract class BlockTileCustomRenderedBase<T extends TileEntityBase> extends BlockBaseTile<T> implements ICustomREnderedBlockWithTile<T> {
+public abstract class BlockTileCustomRenderedBase<T extends TileEntityBase> extends BlockBaseTile<T> implements ICustomRenderedBlockWithTile<T> {
     public BlockTileCustomRenderedBase(String name, Material blockMaterial) {
         super(name, blockMaterial);
     }

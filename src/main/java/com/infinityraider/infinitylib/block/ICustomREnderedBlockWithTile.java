@@ -13,7 +13,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * Implemented in a Block class to have special rendering handling for the block
  * @param <T> TileEntity class for this block, can be simple TileEntity if this block doesn't have a tile entity
  */
-public interface ICustomREnderedBlockWithTile<T extends TileEntityBase> extends ICustomRenderedBlock {
+public interface ICustomRenderedBlockWithTile<T extends TileEntityBase> extends ICustomRenderedBlock<T> {
     /**
      * This is here to make sure a block state containing the tile entity and block position of the block are passed in the block's getExtendedState method
      * @param state the block's in world state (can be an IExtendedState)
@@ -30,5 +30,5 @@ public interface ICustomREnderedBlockWithTile<T extends TileEntityBase> extends 
      */
     @Override
     @SideOnly(Side.CLIENT)
-    IBlockRenderingHandler<T> getRenderer();
+    IBlockRenderingHandler<? extends BlockBase, T> getRenderer();
 }

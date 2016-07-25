@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -59,6 +60,17 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
             buf.writeInt(e.getEntityId());
             buf.writeInt(e.worldObj.provider.getDimension());
         }
+    }
+
+    protected BlockPos readBlockPosFromByteBuf(ByteBuf buf) {
+        return new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
+    }
+
+    protected ByteBuf writeBlockPosToByteBuf(ByteBuf buf, BlockPos pos) {
+        buf.writeInt(pos.getX());
+        buf.writeInt(pos.getY());
+        buf.writeInt(pos.getZ());
+        return buf;
     }
 
     protected Item readItemFromByteBuf(ByteBuf buf) {

@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.block;
 
 import com.infinityraider.infinitylib.block.blockstate.BlockStateSpecial;
 import com.infinityraider.infinitylib.block.blockstate.IBlockStateSpecial;
+import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
@@ -14,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public abstract class BlockCustomRenderedBase extends BlockBase implements ICustomRenderedBlock {
+public abstract class BlockCustomRenderedBase extends BlockBase implements ICustomRenderedBlock<TileEntityBase> {
     public BlockCustomRenderedBase(String name, Material blockMaterial) {
         super(name, blockMaterial);
     }
@@ -25,6 +26,7 @@ public abstract class BlockCustomRenderedBase extends BlockBase implements ICust
         return new BlockStateSpecial<>(state, pos, null);
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public List<ResourceLocation> getTextures() {
         return Collections.emptyList();

@@ -4,10 +4,13 @@ import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.render.block.IBlockRenderingHandler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.List;
 
 /**
  * Implemented in a Block class to have special rendering handling for the block
@@ -38,4 +41,6 @@ public interface ICustomRenderedBlock<T extends TileEntityBase> {
      */
     @SideOnly(Side.CLIENT)
     boolean needsRenderUpdate(World world, BlockPos pos, IBlockState state, T tile);
+
+    List<ResourceLocation> getTextures();
 }

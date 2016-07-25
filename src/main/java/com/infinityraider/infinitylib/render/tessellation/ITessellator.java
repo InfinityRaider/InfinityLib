@@ -45,6 +45,16 @@ public interface ITessellator {
     void addQuads(List<BakedQuad> quads);
 
     /**
+     * Pushes the current transformation matrix onto the stack.
+     */
+    void pushMatrix();
+
+    /**
+     * Pops the last matrix from the stack.
+     */
+    void popMatrix();
+
+    /**
      * Adds a vertex
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex

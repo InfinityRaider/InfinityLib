@@ -1,8 +1,8 @@
 package com.infinityraider.infinitylib.render.block;
 
 import com.google.common.collect.ImmutableList;
+import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -32,7 +32,7 @@ public class BlockRendererRegistry implements ICustomModelLoader {
         return INSTANCE;
     }
 
-    private final Map<ResourceLocation, BlockRenderer<? extends TileEntity>> renderers;
+    private final Map<ResourceLocation, BlockRenderer<? extends BlockBase, ? extends TileEntity>> renderers;
     private final List<ICustomRenderedBlock> blocks;
 
     private BlockRendererRegistry() {
@@ -61,10 +61,10 @@ public class BlockRendererRegistry implements ICustomModelLoader {
     @SideOnly(Side.CLIENT)
     @SuppressWarnings("unchecked")
     public void registerCustomBlockRenderer(ICustomRenderedBlock customRenderedBlock) {
-        if (customRenderedBlock == null || !(customRenderedBlock instanceof Block)) {
+        if (customRenderedBlock == null || !(customRenderedBlock instanceof BlockBase)) {
             return;
         }
-        Block block = (Block) customRenderedBlock;
+        BlockBase block = (BlockBase) customRenderedBlock;
         IBlockRenderingHandler renderer = customRenderedBlock.getRenderer();
         //set custom state mapper
         StateMapperBase stateMapper = new StateMapperBase() {
@@ -76,7 +76,7 @@ public class BlockRendererRegistry implements ICustomModelLoader {
         //register renderers
         ModelLoader.setCustomStateMapper(block, stateMapper);
         if (renderer != null) {
-            BlockRenderer instance = new BlockRenderer<>(customRenderedBlock, renderer);
+            BlockRenderer instance = new BlockRenderer(block, renderer);
             ModelResourceLocation blockModel = customRenderedBlock.getBlockModelResourceLocation();
             if (renderer.hasStaticRendering()) {
                 renderers.put(blockModel, instance);

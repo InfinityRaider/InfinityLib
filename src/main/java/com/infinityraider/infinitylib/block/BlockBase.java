@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.block;
 
+import com.infinityraider.infinitylib.block.blockstate.InfinityProperty;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -16,6 +17,7 @@ public abstract class BlockBase extends Block {
     public BlockBase(String name, Material blockMaterial) {
         super(blockMaterial);
         this.internalName = name;
+        this.setDefaultState();
     }
 
     public boolean isEnabled() {
@@ -30,13 +32,25 @@ public abstract class BlockBase extends Block {
 
     @Override
     protected final BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, getPropertyArray());
+        InfinityProperty[] propertyArray = this.getPropertyArray();
+        IProperty[] properties = new IProperty[propertyArray.length];
+        for(int i = 0; i < properties.length; i++) {
+            properties[i] = propertyArray[i].getProperty();
+        }
+        return new BlockStateContainer(this, properties);
+    }
+
+    private void setDefaultState() {
+        IBlockState state = this.blockState.getBaseState();
+        for(InfinityProperty property : this.getPropertyArray()) {
+            state.withProperty(property.getProperty(), property.getDefault());
+        }
     }
 
     /**
      * @return a property array containing all properties for this block's state
      */
-    protected abstract IProperty[] getPropertyArray();
+    protected abstract InfinityProperty[] getPropertyArray();
 
     /**
      * Retrieves the block's ItemBlock class, as a generic class bounded by the

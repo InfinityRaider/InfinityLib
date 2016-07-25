@@ -2,13 +2,13 @@ package com.infinityraider.infinitylib.render.block;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.blockstate.IBlockStateSpecial;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
@@ -38,11 +38,11 @@ import javax.vecmath.Matrix4f;
 import java.util.*;
 
 @SideOnly(Side.CLIENT)
-public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRenderer<T> implements IModel {
-    private final ICustomRenderedBlock<T> block;
-    private final IBlockRenderingHandler<T> renderer;
+public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> extends TileEntitySpecialRenderer<T> implements IModel {
+    private final B block;
+    private final IBlockRenderingHandler<B, T> renderer;
 
-    public BlockRenderer(ICustomRenderedBlock<T> block, IBlockRenderingHandler<T> renderer) {
+    public BlockRenderer(B block, IBlockRenderingHandler<B, T> renderer) {
         this.block = block;
         this.renderer = renderer;
     }
@@ -58,7 +58,7 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
     }
 
     @Override
-    public BakedBlockModel<T> bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+    public BakedBlockModel<B, T> bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
         return new BakedBlockModel<>(block, format, renderer, bakedTextureGetter, renderer.doInventoryRendering());
     }
 
@@ -73,8 +73,7 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
         World world = te.getWorld();
         BlockPos pos = te.getPos();
         IBlockState state = world.getBlockState(pos);
-        Block block = state.getBlock();
-        IBlockState extendedState = block.getExtendedState(state, world, pos);
+        IBlockState extendedState = state.getBlock().getExtendedState(state, world, pos);
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
@@ -92,17 +91,17 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
         GL11.glPopMatrix();
     }
 
-    public static class BakedBlockModel<T extends TileEntityBase> implements IBakedModel {
-        private final ICustomRenderedBlock<T> block;
+    public static class BakedBlockModel<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> implements IBakedModel {
+        private final B block;
         private final VertexFormat format;
-        private final IBlockRenderingHandler<T> renderer;
+        private final IBlockRenderingHandler<B, T> renderer;
         private final Function<ResourceLocation, TextureAtlasSprite> textures;
         private final ItemRenderer itemRenderer;
 
         private Map<EnumFacing, List<BakedQuad>> cachedQuads;
         private IBlockState prevState;
 
-        private BakedBlockModel(ICustomRenderedBlock<T> block, VertexFormat format, IBlockRenderingHandler<T> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
+        private BakedBlockModel(B block, VertexFormat format, IBlockRenderingHandler<B, T> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
             this.block = block;
             this.format = format;
             this.renderer = renderer;
@@ -116,7 +115,6 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
         public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
             if((state instanceof IBlockStateSpecial)) {
                 World world = Minecraft.getMinecraft().theWorld;
-                Block block = state.getBlock();
                 T tile = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getTileEntity();
                 IBlockState extendedState = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getWrappedState();
                 BlockPos pos = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getPos();
@@ -178,14 +176,14 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
         }
     }
 
-    public static class ItemRenderer<T extends TileEntityBase> extends ItemOverrideList {
-        private final IBlockRenderingHandler<T> renderer;
-        private final Block block;
+    public static class ItemRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> extends ItemOverrideList {
+        private final IBlockRenderingHandler<B, T> renderer;
+        private final B block;
         private final T tile;
         private final VertexFormat format;
         private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
 
-        public ItemRenderer(IBlockRenderingHandler<T> renderer, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+        public ItemRenderer(IBlockRenderingHandler<B, T> renderer, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
             super(ImmutableList.of());
             this.renderer = renderer;
             this.tile = renderer.getTileEntity();
@@ -200,9 +198,9 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
         }
     }
 
-    public static class BakedItemModel<T extends TileEntityBase> implements IBakedModel, IPerspectiveAwareModel {
-        private final IBlockRenderingHandler<T> renderer;
-        private final Block block;
+    public static class BakedItemModel<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> implements IBakedModel, IPerspectiveAwareModel {
+        private final IBlockRenderingHandler<B, T> renderer;
+        private final B block;
         private final T tile;
         private final ItemStack stack;
         private final World world;
@@ -211,7 +209,7 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
         private final VertexFormat format;
         private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
 
-        private BakedItemModel(World world, Block block, T tile, ItemStack stack, EntityLivingBase entity, IBlockRenderingHandler<T> renderer, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+        private BakedItemModel(World world, B block, T tile, ItemStack stack, EntityLivingBase entity, IBlockRenderingHandler<B, T> renderer, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
             this.world = world;
             this.block = block;
             this.tile = tile;
@@ -223,7 +221,7 @@ public class BlockRenderer<T extends TileEntityBase> extends TileEntitySpecialRe
             this.bakedTextureGetter = bakedTextureGetter;
         }
 
-        private BakedItemModel<T> setTransformType(ItemCameraTransforms.TransformType type) {
+        private BakedItemModel<B, T> setTransformType(ItemCameraTransforms.TransformType type) {
             this.transformType = type;
             return this;
         }

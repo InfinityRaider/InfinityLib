@@ -93,6 +93,20 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         return format;
     }
 
+    @Override
+    public void pushMatrix() {
+        this.matrices.push(new TransformationMatrix(this.matrices.getFirst()));
+    }
+
+    @Override
+    public void popMatrix() {
+        if (this.matrices.size() > 1) {
+            this.matrices.pop();
+        } else {
+            throw new IndexOutOfBoundsException("No matrix to pop!");
+        }
+    }
+
     /**
      * Adds a vertex
      * @param x the x-coordinate for the vertex
