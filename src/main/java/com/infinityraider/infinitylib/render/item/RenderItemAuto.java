@@ -2,12 +2,13 @@
  */
 package com.infinityraider.infinitylib.render.item;
 
-import com.agricraft.agricore.core.AgriCore;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.infinityraider.infinitylib.item.ItemBase;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
+import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -20,7 +21,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class RenderItemAuto<T extends Item & IAutoRenderedItem> implements com.infinityraider.agricraft.renderers.items.IItemRenderingHandler {
+public class RenderItemAuto<T extends ItemBase & IAutoRenderedItem> implements IItemRenderingHandler {
 
 	private final Map<String, List<BakedQuad>> models = new ConcurrentHashMap<>();
 	private final T item;
@@ -39,20 +40,19 @@ public class RenderItemAuto<T extends Item & IAutoRenderedItem> implements com.i
 	}
 
 	@Override
-	public void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type) {
-		final String id = item.getModelId(stack);
+	public void renderItem(ITessellator tessellator, World world, Item item, ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type) {
+		final String id = this.item.getModelId(stack);
 		List<BakedQuad> model = models.get(id);
 		if (model == null) {
-			AgriCore.getLogger("AgriCraft").debug("Baking Clipping Model: {0}!", id);
+			LogHelper.debug("Baking Clipping Model: " + id  + " !");
 			model = ItemQuadGenerator.generateItemQuads(
 					DefaultVertexFormats.ITEM,
 					tessellator::getIcon,
-					item.getBaseTexture(stack),
-					item.getOverlayTextures(stack)
+					this.item.getBaseTexture(stack),
+					this.item.getOverlayTextures(stack)
 			);
 			models.put(id, model);
 		}
 		tessellator.addQuads(model);
 	}
-
 }
