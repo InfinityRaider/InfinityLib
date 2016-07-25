@@ -14,12 +14,12 @@ public class ClientProxy extends CommonProxy implements IClientProxyBase {
     @Override
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
+        InfinityModRegistry.getInstance().initRenderers();
     }
 
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
-        InfinityModRegistry.getInstance().initRenderers();
     }
 
     @Override
