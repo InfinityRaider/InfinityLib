@@ -19,12 +19,11 @@ public abstract class RegisterHelper {
         String unlocalized = modId.toLowerCase() + ':' + name;
         block.setUnlocalizedName(unlocalized);
         if (itemClass != null) {
-            GameRegistry.registerBlock(block, unlocalized);
+            GameRegistry.registerBlock(block, itemClass, unlocalized);
         } else {
             GameRegistry.registerBlock(block, unlocalized);
         }
     }
-
 
     public static void registerItem(Item item, String modId, String name) {
         String unlocalized = modId.toLowerCase() + ':' + name;
