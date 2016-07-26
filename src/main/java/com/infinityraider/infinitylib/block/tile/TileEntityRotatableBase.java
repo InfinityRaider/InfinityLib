@@ -21,6 +21,7 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
 
     protected abstract void writeTileNBT(NBTTagCompound tag);
     @Override
+
     public final void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         if (tag.hasKey(Names.NBT.DIRECTION)) {

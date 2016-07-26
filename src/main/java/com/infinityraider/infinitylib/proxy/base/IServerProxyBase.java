@@ -1,4 +1,4 @@
-package com.infinityraider.infinitylib.proxy;
+package com.infinityraider.infinitylib.proxy.base;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;

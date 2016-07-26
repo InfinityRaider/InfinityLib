@@ -1,22 +1,25 @@
 package com.infinityraider.infinitylib;
 
 import com.infinityraider.infinitylib.network.INetworkWrapper;
-import com.infinityraider.infinitylib.proxy.IProxyBase;
+import com.infinityraider.infinitylib.proxy.IProxy;
 import com.infinityraider.infinitylib.reference.Reference;
-import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
 
-@InfinityMod
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION)
-public class InfinityLib implements IInfinityMod {
+public class InfinityLib extends InfinityMod {
 
     @Mod.Instance(Reference.MOD_ID)
     public static InfinityLib instance;
 
     @SidedProxy(clientSide = Reference.CLIENT_PROXY_CLASS, serverSide = Reference.SERVER_PROXY_CLASS)
-    public static IProxyBase proxy;
+    public static IProxy proxy;
+
+    @Override
+    public IProxy proxy() {
+        return proxy;
+    }
 
     @Override
     public String getModId() {
@@ -40,55 +43,49 @@ public class InfinityLib implements IInfinityMod {
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
-    public static void preInit(FMLPreInitializationEvent event) {
-        LogHelper.debug("Starting Pre-Initialization");
-        proxy.preInit(event);
-        LogHelper.debug("Pre-Initialization Complete");
+    public void preInitMod(FMLPreInitializationEvent event) {
+        super.preInit(event);
     }
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
-    public static void init(FMLInitializationEvent event) {
-        LogHelper.debug("Starting Initialization");
-        proxy.init(event);
-        LogHelper.debug("Initialization Complete");
+    public void initMod(FMLInitializationEvent event) {
+        super.init(event);
     }
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
-    public static void postInit(FMLPostInitializationEvent event) {
-        LogHelper.debug("Starting Post-Initialization");
-        proxy.postInit(event);
-        LogHelper.debug("Post-Initialization Complete");
+    public void postInitMod(FMLPostInitializationEvent event) {
+        super.postInit(event);
     }
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
-    public static void onServerAboutToStart(FMLServerAboutToStartEvent event) {
-        proxy.onServerAboutToStart(event);
+    public void onServerAboutToStartCallBack(FMLServerAboutToStartEvent event) {
+        super.onServerAboutToStart(event);
     }
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
-    public static void onServerStarting(FMLServerStartingEvent event) {
-        proxy.onServerStarting(event);
+    public void onServerStartingCallBack(FMLServerStartingEvent event) {
+        super.onServerStarting(event);
     }
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
-    public static void onServerStarted(FMLServerStartedEvent event) {
-        proxy.onServerStarted(event);
+    public void onServerStartedCallBack(FMLServerStartedEvent event) {
+        super.onServerStarted(event);
     }
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
-    public static void onServerStopping(FMLServerStoppingEvent event) {
-        proxy.onServerStopping(event);
+    public void onServerStoppingCallBack(FMLServerStoppingEvent event) {
+        super.onServerStopping(event);
     }
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
-    public static void onServerStopped(FMLServerStoppedEvent event) {
-        proxy.onServerStopped(event);
+    public void onServerStoppedCallBack(FMLServerStoppedEvent event) {
+        super.onServerStopped(event);
     }
 }

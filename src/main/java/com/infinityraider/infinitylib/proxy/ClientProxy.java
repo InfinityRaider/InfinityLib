@@ -1,40 +1,24 @@
 package com.infinityraider.infinitylib.proxy;
 
+import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.handler.ConfigurationHandler;
-import com.infinityraider.infinitylib.InfinityModRegistry;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
+import com.infinityraider.infinitylib.utility.ModHelper;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SuppressWarnings("unused")
 @SideOnly(Side.CLIENT)
-public class ClientProxy extends CommonProxy implements IClientProxyBase {
+public class ClientProxy implements IProxy, IClientProxyBase {
     @Override
-    public void preInit(FMLPreInitializationEvent event) {
-        super.preInit(event);
-        InfinityModRegistry.getInstance().initRenderers();
-    }
-
-    @Override
-    public void init(FMLInitializationEvent event) {
-        super.init(event);
-    }
-
-    @Override
-    public void postInit(FMLPostInitializationEvent event) {
-        super.postInit(event);
-    }
-
-    @Override
-    public void initConfiguration(FMLPreInitializationEvent event) {
-        super.initConfiguration(event);
+    public void preInitStart(FMLPreInitializationEvent event) {
+        IProxy.super.preInitStart(event);
         ConfigurationHandler.getInstance().initClientConfigs(event);
     }
 
     @Override
-    public void registerEventHandlers() {
-        super.registerEventHandlers();
+    public void registerRenderers(InfinityMod mod) {
+        ModHelper.getInstance().initRenderers(mod);
     }
 }

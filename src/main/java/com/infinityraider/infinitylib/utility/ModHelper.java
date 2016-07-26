@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.utility;
 
-import com.infinityraider.infinitylib.IInfinityMod;
+import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.BlockBaseTile;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
@@ -15,9 +15,6 @@ import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -32,7 +29,7 @@ public class ModHelper {
 
     private ModHelper() {}
 
-    public void onPreInit(FMLPreInitializationEvent event, IInfinityMod mod) {
+    public void RegisterBlocksAndItems(InfinityMod mod) {
         //blocks
         LogHelper.debug("Starting Block Registration...");
         ReflectionHelper.forEachIn(mod.getModBlockRegistry(), BlockBase.class, (BlockBase block) -> {
@@ -74,7 +71,7 @@ public class ModHelper {
         mod.registerMessages(NetworkWrapper.getInstance());
     }
 
-    public void onInit(FMLInitializationEvent event, IInfinityMod mod) {
+    public void registerRecipes(InfinityMod mod) {
         LogHelper.debug("Starting Recipe Registration...");
         //blocks
         ReflectionHelper.forEachIn(mod.getModBlockRegistry(), BlockBase.class, (BlockBase block) -> {
@@ -91,12 +88,8 @@ public class ModHelper {
         LogHelper.debug("Finished Recipe Registration!");
     }
 
-    public void onPostInit(FMLPostInitializationEvent event, IInfinityMod mod) {
-
-    }
-
     @SideOnly(Side.CLIENT)
-    public void initRenderers(IInfinityMod mod) {
+    public void initRenderers(InfinityMod mod) {
         LogHelper.debug("Starting Renderer Registration...");
         //blocks
         ReflectionHelper.forEachIn(mod.getModBlockRegistry(), BlockBase.class, (BlockBase block) -> {

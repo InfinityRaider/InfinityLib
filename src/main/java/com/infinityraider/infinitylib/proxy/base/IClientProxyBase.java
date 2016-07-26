@@ -1,10 +1,12 @@
-package com.infinityraider.infinitylib.proxy;
+package com.infinityraider.infinitylib.proxy.base;
 
+import com.infinityraider.infinitylib.utility.ModHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 public interface IClientProxyBase extends IProxyBase {
@@ -45,5 +47,11 @@ public interface IClientProxyBase extends IProxyBase {
         } else {
             FMLClientHandler.instance().getServer().addScheduledTask(task);
         }
+    }
+
+    @Override
+    default void preInit(FMLPreInitializationEvent event) {
+        IProxyBase.super.preInitStart(event);
+        ModHelper.getInstance().initRenderers(mod);
     }
 }
