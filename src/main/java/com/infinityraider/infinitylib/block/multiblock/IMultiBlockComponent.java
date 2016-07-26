@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.block.multiblock;
 
-import com.infinityraider.infinitylib.utility.math.Directions;
 import net.minecraft.util.EnumFacing;
 
 public interface IMultiBlockComponent<M extends IMultiBlockManager<T>, T extends IMultiBlockPartData> {

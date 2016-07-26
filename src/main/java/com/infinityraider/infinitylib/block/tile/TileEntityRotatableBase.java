@@ -1,20 +1,21 @@
 package com.infinityraider.infinitylib.block.tile;
 
 import com.infinityraider.infinitylib.reference.Names;
-import com.infinityraider.infinitylib.utility.math.Directions;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
 public abstract class TileEntityRotatableBase extends TileEntityBase implements IRotatableTile {
-    private Directions.Direction orientation = Directions.Direction.UNKNOWN;
+    public static EnumFacing[] VALID_DIRECTIONS = {EnumFacing.NORTH, EnumFacing.EAST, EnumFacing.SOUTH, EnumFacing.WEST};
+
+    private EnumFacing direction;
 
     @Override
     public final NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-        if(this.orientation == null) {
-            this.orientation = Directions.Direction.UNKNOWN;
+        if(this.direction == null) {
+            this.direction = EnumFacing.NORTH;
         }
-        tag.setByte(Names.NBT.DIRECTION, (byte) this.orientation.ordinal());
+        tag.setByte(Names.NBT.DIRECTION, (byte) this.direction.ordinal());
         this.writeTileNBT(tag);
         return tag;
     }
@@ -32,27 +33,32 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
 
     protected abstract void readTileNBT(NBTTagCompound tag);
 
+    @Override
     public final EnumFacing getOrientation() {
-        return this.orientation.getEnumFacing();
+        return this.direction;
     }
 
+    @Override
     public final void setOrientation(EnumFacing facing) {
-        this.setDirection(Directions.Direction.getFromEnumFacing(facing));
+        this.direction = facing;
     }
 
-    public final Directions.Direction getDirection() {
-        return orientation;
-    }
-
-    public final void setDirection(Directions.Direction orientation) {
-        if (orientation != Directions.Direction.UNKNOWN) {
-            this.orientation = orientation;
-            if (this.worldObj != null && !this.worldObj.isRemote) {
-                this.markForUpdate();
+    @Override
+    public final void incrementRotation(int amount) {
+        if(!worldObj.isRemote) {
+            return;
+        }
+        int index = 0;
+        for(int i = 0; i < VALID_DIRECTIONS.length; i++) {
+            if(VALID_DIRECTIONS[i] == this.getOrientation()) {
+                index = i;
+                break;
             }
         }
+        this.setOrientation(VALID_DIRECTIONS[Math.max((index + amount) % VALID_DIRECTIONS.length, 0)]);
     }
+
     private void setDirection(int orientation) {
-        this.setDirection(Directions.Direction.getOrientation(orientation));
+        this.setOrientation(EnumFacing.values()[orientation]);
     }
 }

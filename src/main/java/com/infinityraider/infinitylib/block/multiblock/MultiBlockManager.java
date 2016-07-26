@@ -2,8 +2,8 @@ package com.infinityraider.infinitylib.block.multiblock;
 
 import com.infinityraider.infinitylib.utility.CoordinateIterator;
 import com.infinityraider.infinitylib.utility.LogHelper;
-import com.infinityraider.infinitylib.utility.math.Directions;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -14,15 +14,12 @@ public class MultiBlockManager implements IMultiBlockManager<MultiBlockPartData>
     @Override
     public void onBlockPlaced(World world, BlockPos pos, IMultiBlockComponent component) {
         boolean flag = false;
-        for (Directions.Direction dir : Directions.Direction.values()) {
-            if (dir == Directions.Direction.UNKNOWN) {
-                continue;
-            }
-            TileEntity te = world.getTileEntity(dir.offset(pos));
+        for (EnumFacing dir : EnumFacing.values()) {
+            TileEntity te = world.getTileEntity(pos.offset(dir));
             if (te != null && te instanceof IMultiBlockComponent && component.isValidComponent((IMultiBlockComponent) te)) {
                 IMultiBlockComponent componentAt = (IMultiBlockComponent) te;
                 if (canCheckForMultiBlock(componentAt)) {
-                    if (checkForMultiBlock(world, dir.offset(pos), componentAt)) {
+                    if (checkForMultiBlock(world, pos.offset(dir), componentAt)) {
                         return;
                     }
                     flag = true;

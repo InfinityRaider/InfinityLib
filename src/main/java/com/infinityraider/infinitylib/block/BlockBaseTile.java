@@ -3,15 +3,14 @@ package com.infinityraider.infinitylib.block;
 import com.infinityraider.infinitylib.block.multiblock.IMultiBlockComponent;
 import com.infinityraider.infinitylib.block.tile.IRotatableTile;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
-import com.infinityraider.infinitylib.utility.math.Directions;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase implements ITileEntityProvider {
@@ -38,8 +37,7 @@ public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase 
         if (te != null && te instanceof TileEntityBase) {
             TileEntityBase tile = (TileEntityBase) world.getTileEntity(pos);
             if (tile instanceof IRotatableTile) {
-                int direction = MathHelper.floor_double(entity.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-                ((IRotatableTile) tile).setDirection(Directions.Direction.getCardinal(direction));
+                ((IRotatableTile) tile).setOrientation(entity.getHorizontalFacing());
             }
             if ((tile instanceof IMultiBlockComponent) && !world.isRemote) {
                 IMultiBlockComponent component = (IMultiBlockComponent) tile;
@@ -65,5 +63,20 @@ public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase 
         super.eventReceived(state, world, pos, id, data);
         TileEntity tileentity = world.getTileEntity(pos);
         return tileentity != null && tileentity.receiveClientEvent(id, data);
+    }
+
+    @Override
+    public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
+        if(axis.getAxis() != EnumFacing.Axis.Y) {
+            return false;
+        }
+        TileEntity tile = world.getTileEntity(pos);
+        if(!(tile instanceof IRotatableTile)) {
+            return false;
+        }
+        int offset = axis.getFrontOffsetY();
+        IRotatableTile rotatable = (IRotatableTile) tile;
+        rotatable.incrementRotation(offset);
+        return true;
     }
 }
