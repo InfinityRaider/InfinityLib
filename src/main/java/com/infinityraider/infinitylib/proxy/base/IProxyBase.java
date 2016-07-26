@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.proxy.base;
 
+import com.infinityraider.infinitylib.InfinityMod;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
