@@ -37,7 +37,11 @@ public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase 
         if (te != null && te instanceof TileEntityBase) {
             TileEntityBase tile = (TileEntityBase) world.getTileEntity(pos);
             if (tile instanceof IRotatableTile) {
-                ((IRotatableTile) tile).setOrientation(entity.getHorizontalFacing());
+                EnumFacing dir = entity.getHorizontalFacing();
+                if(dir.getAxis() == EnumFacing.Axis.X) {
+                    dir = dir.getOpposite();
+                }
+                ((IRotatableTile) tile).setOrientation(dir);
             }
             if ((tile instanceof IMultiBlockComponent) && !world.isRemote) {
                 IMultiBlockComponent component = (IMultiBlockComponent) tile;
