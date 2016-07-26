@@ -90,6 +90,11 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
     TextureAtlasSprite getIcon();
 
     /**
+     * @return true if ambient occlusion should be applied when rendering this block
+     */
+    boolean applyAmbientOcclusion();
+
+    /**
      * Checks if this should have 3D rendering in inventories
      * @return true to have 3D inventory rendering
      */

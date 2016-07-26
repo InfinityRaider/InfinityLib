@@ -147,7 +147,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
 
         @Override
         public boolean isAmbientOcclusion() {
-            return true;
+            return renderer.applyAmbientOcclusion();
         }
 
         @Override
