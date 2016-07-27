@@ -92,7 +92,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      */
     @Override
     public void addQuads(List<BakedQuad> quads) {
-        for(BakedQuad quad : quads) {
+        for(BakedQuad quad : this.transformQuads(quads)) {
             buffer.addVertexData(quad.getVertexData());
         }
     }
