@@ -1,26 +1,41 @@
 package com.infinityraider.infinitylib.block.blockstate;
 
+import com.google.common.collect.ImmutableMap;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
-import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.EnumPushReaction;
+import net.minecraft.block.material.MapColor;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Special block state to pass the tile entity and position of a block to the renderer
- * @param <T> TileEntity type
+ * @param <TE> TileEntity type
  * @param <S> The original block state
  */
-public class BlockStateSpecial<T extends TileEntityBase, S extends IBlockState> extends BlockStateContainer.StateImplementation
-        implements IBlockStateSpecial<T, S> {
-
-    private final T tile;
+public class BlockStateSpecial<TE extends TileEntityBase, S extends IBlockState> implements IBlockStateSpecial<TE, S> {
+    private final TE tile;
     private final BlockPos pos;
     private final S state;
 
-    public BlockStateSpecial(S state, BlockPos pos, T tile) {
-        super(state.getBlock(), state.getProperties());
+    public BlockStateSpecial(S state, BlockPos pos, TE tile) {
         this.state = state;
         this.tile = tile;
         this.pos = pos;
@@ -30,12 +45,12 @@ public class BlockStateSpecial<T extends TileEntityBase, S extends IBlockState> 
      * @return Return the TileEntity for this block state
      */
     @Override
-    public T getTileEntity() {
+    public TE getTileEntity() {
         return tile;
     }
 
     /**
-     * @return The BlockPOs for this block state
+     * @return The BlockPos for this block state
      */
     @Override
     public BlockPos getPos() {
@@ -45,5 +60,231 @@ public class BlockStateSpecial<T extends TileEntityBase, S extends IBlockState> 
     @Override
     public S getWrappedState() {
         return this.state;
+    }
+
+    @Override
+    public Collection<IProperty<?>> getPropertyNames() {
+        return getWrappedState().getPropertyNames();
+    }
+
+    @Override
+    public <T extends Comparable<T>> T getValue(IProperty<T> property) {
+        return getWrappedState().getValue(property);
+    }
+
+    @Override
+    public <T extends Comparable<T>, V extends T> IBlockState withProperty(IProperty<T> property, V value) {
+        return getWrappedState().withProperty(property, value);
+    }
+
+    @Override
+    public <T extends Comparable<T>> IBlockState cycleProperty(IProperty<T> property) {
+        return getWrappedState().cycleProperty(property);
+    }
+
+    @Override
+    public ImmutableMap<IProperty<?>, Comparable<?>> getProperties() {
+        return getWrappedState().getProperties();
+    }
+
+    @Override
+    public Block getBlock() {
+        return getWrappedState().getBlock();
+    }
+
+    @Override
+    public boolean onBlockEventReceived(World worldIn, BlockPos pos, int id, int param) {
+        return getWrappedState().onBlockEventReceived(worldIn, pos, id, param);
+    }
+
+    @Override
+    public void neighborChanged(World worldIn, BlockPos pos, Block block) {
+        getWrappedState().neighborChanged(worldIn, pos, block);
+    }
+
+    @Override
+    public Material getMaterial() {
+        return getWrappedState().getMaterial();
+    }
+
+    @Override
+    public boolean isFullBlock() {
+        return getWrappedState().isFullBlock();
+    }
+
+    @Override
+    public boolean func_189884_a(Entity entity) {
+        return getWrappedState().func_189884_a(entity);
+    }
+
+    @Override
+    public int getLightOpacity() {
+        return getWrappedState().getLightOpacity();
+    }
+
+    @Override
+    public int getLightOpacity(IBlockAccess world, BlockPos pos) {
+        return getWrappedState().getLightOpacity(world, pos);
+    }
+
+    @Override
+    public int getLightValue() {
+        return getWrappedState().getLightValue();
+    }
+
+    @Override
+    public int getLightValue(IBlockAccess world, BlockPos pos) {
+        return getWrappedState().getLightValue(world, pos);
+    }
+
+    @Override
+    public boolean isTranslucent() {
+        return getWrappedState().isTranslucent();
+    }
+
+    @Override
+    public boolean useNeighborBrightness() {
+        return getWrappedState().useNeighborBrightness();
+    }
+
+    @Override
+    public MapColor getMapColor() {
+        return getWrappedState().getMapColor();
+    }
+
+    @Override
+    public IBlockState withRotation(Rotation rot) {
+        return getWrappedState().withRotation(rot);
+    }
+
+    @Override
+    public IBlockState withMirror(Mirror mirrorIn) {
+        return getWrappedState().withMirror(mirrorIn);
+    }
+
+    @Override
+    public boolean isFullCube() {
+        return getWrappedState().isFullCube();
+    }
+
+    @Override
+    public EnumBlockRenderType getRenderType() {
+        return getWrappedState().getRenderType();
+    }
+
+    @Override
+    public int getPackedLightmapCoords(IBlockAccess source, BlockPos pos) {
+        return getWrappedState().getPackedLightmapCoords(source, pos);
+    }
+
+    @Override
+    public float getAmbientOcclusionLightValue() {
+        return getWrappedState().getAmbientOcclusionLightValue();
+    }
+
+    @Override
+    public boolean isBlockNormalCube() {
+        return getWrappedState().isBlockNormalCube();
+    }
+
+    @Override
+    public boolean isNormalCube() {
+        return getWrappedState().isNormalCube();
+    }
+
+    @Override
+    public boolean canProvidePower() {
+        return getWrappedState().canProvidePower();
+    }
+
+    @Override
+    public int getWeakPower(IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+        return getWrappedState().getWeakPower(blockAccess, pos, side);
+    }
+
+    @Override
+    public boolean hasComparatorInputOverride() {
+        return getWrappedState().hasComparatorInputOverride();
+    }
+
+    @Override
+    public int getComparatorInputOverride(World worldIn, BlockPos pos) {
+        return getWrappedState().getComparatorInputOverride(worldIn, pos);
+    }
+
+    @Override
+    public float getBlockHardness(World worldIn, BlockPos pos) {
+        return getWrappedState().getBlockHardness(worldIn, pos);
+    }
+
+    @Override
+    public float getPlayerRelativeBlockHardness(EntityPlayer player, World worldIn, BlockPos pos) {
+        return getWrappedState().getPlayerRelativeBlockHardness(player, worldIn, pos);
+    }
+
+    @Override
+    public int getStrongPower(IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+        return getWrappedState().getStrongPower(blockAccess, pos, side);
+    }
+
+    @Override
+    public EnumPushReaction getMobilityFlag() {
+        return getWrappedState().getMobilityFlag();
+    }
+
+    @Override
+    public IBlockState getActualState(IBlockAccess blockAccess, BlockPos pos) {
+        return getWrappedState().getActualState(blockAccess, pos);
+    }
+
+    @Override
+    public AxisAlignedBB getSelectedBoundingBox(World worldIn, BlockPos pos) {
+        return getWrappedState().getSelectedBoundingBox(worldIn, pos);
+    }
+
+    @Override
+    public boolean shouldSideBeRendered(IBlockAccess blockAccess, BlockPos pos, EnumFacing facing) {
+        return getWrappedState().shouldSideBeRendered(blockAccess, pos, facing);
+    }
+
+    @Override
+    public boolean isOpaqueCube() {
+        return getWrappedState().isOpaqueCube();
+    }
+
+    @Nullable
+    @Override
+    public AxisAlignedBB getCollisionBoundingBox(World worldIn, BlockPos pos) {
+        return getWrappedState().getCollisionBoundingBox(worldIn, pos);
+    }
+
+    @Override
+    public void addCollisionBoxToList(World worldIn, BlockPos pos, AxisAlignedBB box, List<AxisAlignedBB> mask, @Nullable Entity entity) {
+        getWrappedState().addCollisionBoxToList(worldIn, pos, box, mask, entity);
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockAccess blockAccess, BlockPos pos) {
+        return getWrappedState().getBoundingBox(blockAccess, pos);
+    }
+
+    @Override
+    public RayTraceResult collisionRayTrace(World worldIn, BlockPos pos, Vec3d start, Vec3d end) {
+        return getWrappedState().collisionRayTrace(worldIn, pos, start, end);
+    }
+
+    @Override
+    public boolean isFullyOpaque() {
+        return getWrappedState().isFullyOpaque();
+    }
+
+    @Override
+    public boolean doesSideBlockRendering(IBlockAccess world, BlockPos pos, EnumFacing side) {
+        return getWrappedState().doesSideBlockRendering(world, pos, side);
+    }
+
+    @Override
+    public boolean isSideSolid(IBlockAccess world, BlockPos pos, EnumFacing side) {
+        return getWrappedState().isSideSolid(world, pos, side);
     }
 }
