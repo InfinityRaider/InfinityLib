@@ -163,8 +163,8 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 z1 = z2 = minY;
                 z3 = z4 = maxY;
                 y1 = y2 = y3 = y4 = offset;
-                u2 = u3 = (16 - maxX % uv);
-                u1 = u4 = (16 - minX % uv);
+                u2 = u3 = (minX % uv);
+                u1 = u4 = (maxX % uv);
                 v3 = v4 = maxY % uv;
                 v1 = v2 = minY % uv;
                 break;
