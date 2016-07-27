@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.render.model;
 
+import com.infinityraider.infinitylib.reference.Constants;
 import com.infinityraider.infinitylib.render.tessellation.VertexData;
 import com.infinityraider.infinitylib.utility.math.TransformationMatrix;
 import com.google.common.collect.ImmutableList;
@@ -65,7 +66,7 @@ public class ModelTechne<M extends ModelBase> {
         } else {
             List<BakedQuad> list = new ArrayList<>();
             for (Tuple<ModelRenderer, List<TexturedQuad>> tuple : getTexturedQuads()) {
-                list.addAll(tuple.getSecond().stream().map(quad -> createBakedQuad(format, scale, tuple.getFirst(), quad, icon)).collect(Collectors.toList()));
+                list.addAll(tuple.getSecond().stream().map(quad -> createBakedQuad(format, scale * Constants.UNIT, tuple.getFirst(), quad, icon)).collect(Collectors.toList()));
             }
             return ImmutableList.copyOf(list);
         }
@@ -84,7 +85,7 @@ public class ModelTechne<M extends ModelBase> {
     public List<BakedQuad> getBakedQuads(VertexFormat format, double scale) {
         List<BakedQuad> list = new ArrayList<>();
         for(Tuple<ModelRenderer, List<TexturedQuad>> tuple : getTexturedQuads()) {
-            list.addAll(tuple.getSecond().stream().map(quad -> createBakedQuad(format, scale, tuple.getFirst(), quad)).collect(Collectors.toList()));
+            list.addAll(tuple.getSecond().stream().map(quad -> createBakedQuad(format, scale* Constants.UNIT, tuple.getFirst(), quad)).collect(Collectors.toList()));
         }
         return ImmutableList.copyOf(list);
     }
@@ -191,20 +192,24 @@ public class ModelTechne<M extends ModelBase> {
     }
 
     private static TransformationMatrix getTransformationMatrixForRenderer(ModelRenderer renderer, double scale) {
-        TransformationMatrix matrix = new TransformationMatrix(
+        //by default, the model renders upside down and offset
+        TransformationMatrix matrix  = new TransformationMatrix(180, 1, 0, 0);
+        matrix.multiplyRightWith(new TransformationMatrix(8 * scale, - 24 * scale, -  8 * scale));
+
+        matrix.multiplyRightWith(new TransformationMatrix(
                 renderer.offsetX + renderer.rotationPointX*scale,
                 renderer.offsetY + renderer.rotationPointY*scale,
-                renderer.offsetZ + renderer.rotationPointZ*scale);
+                renderer.offsetZ + renderer.rotationPointZ*scale));
+        //apparently in the GL call list, the rotation point is used as the offset, I'm not sure why, but it is the case
         if(renderer.rotateAngleZ != 0) {
-            matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleZ, 0, 0, 1));
+            matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleZ * (180F / (float) Math.PI), 0, 0, 1));
         }
         if(renderer.rotateAngleY != 0) {
-            matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleY, 0, 1, 0));
+            matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleY * (180F / (float) Math.PI), 0, 1, 0));
         }
         if(renderer.rotateAngleX != 0) {
-            matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleX, 1, 0, 0));
+            matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleX * (180F / (float) Math.PI), 1, 0, 0));
         }
-        //apparently in the GL call list, the rotation point is used as the offset, I'm not sure why, but it is the case
         return matrix;
     }
 }
