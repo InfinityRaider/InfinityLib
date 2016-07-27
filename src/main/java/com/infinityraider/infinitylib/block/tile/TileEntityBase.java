@@ -44,10 +44,29 @@ public abstract class TileEntityBase extends TileEntity {
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         this.readFromNBT(pkt.getNbtCompound());
+        worldObj.markBlockRangeForRenderUpdate(getPos(), getPos());
     }
 
+    @Override
+    public final NBTTagCompound writeToNBT(NBTTagCompound tag) {
+        super.writeToNBT(tag);
+        this.writeTileNBT(tag);
+        return tag;
+    }
+
+    @Override
+    public final void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
+        this.readTileNBT(tag);
+    }
+
+    protected abstract void writeTileNBT(NBTTagCompound tag);
+
+    protected abstract void readTileNBT(NBTTagCompound tag);
+
     public void markForUpdate() {
-        this.worldObj.markBlockRangeForRenderUpdate(pos, pos);
+        IBlockState state = worldObj.getBlockState(this.getPos());
+        worldObj.notifyBlockUpdate(getPos(), state, state, 3);
         this.markDirty();
     }
 

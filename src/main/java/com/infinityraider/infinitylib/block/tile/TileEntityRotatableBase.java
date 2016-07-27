@@ -10,28 +10,25 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
     private EnumFacing direction;
 
     @Override
-    public final NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        super.writeToNBT(tag);
+    protected final void writeTileNBT(NBTTagCompound tag) {
         if(this.direction == null) {
             this.direction = EnumFacing.NORTH;
         }
         tag.setByte(Names.NBT.DIRECTION, (byte) this.direction.ordinal());
-        this.writeTileNBT(tag);
-        return tag;
+        this.writeRotatableTileNBT(tag);
     }
 
-    protected abstract void writeTileNBT(NBTTagCompound tag);
     @Override
-
-    public final void readFromNBT(NBTTagCompound tag) {
-        super.readFromNBT(tag);
+    protected final void readTileNBT(NBTTagCompound tag) {
         if (tag.hasKey(Names.NBT.DIRECTION)) {
             this.setDirection(tag.getByte(Names.NBT.DIRECTION));
         }
-        this.readTileNBT(tag);
+        this.readRotatableTileNBT(tag);
     }
 
-    protected abstract void readTileNBT(NBTTagCompound tag);
+    protected abstract void readRotatableTileNBT(NBTTagCompound tag);
+
+    protected abstract void writeRotatableTileNBT(NBTTagCompound tag);
 
     @Override
     public final EnumFacing getOrientation() {

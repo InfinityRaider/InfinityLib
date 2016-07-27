@@ -7,30 +7,23 @@ import com.infinityraider.infinitylib.reference.Names;
 import net.minecraft.nbt.NBTTagCompound;
 
 public abstract class TileEntityMultiBase<M extends IMultiBlockManager<D>, D extends IMultiBlockPartData> extends TileEntityBase implements IMultiBlockComponent<M, D> {
-    @Override
-    public final NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        super.writeToNBT(tag);
-        NBTTagCompound multiBlockTag = new NBTTagCompound();
-        ((IMultiBlockComponent) this).getMultiBlockData().writeToNBT(multiBlockTag);
-        tag.setTag(Names.NBT.MULTI, multiBlockTag);
-        this.writeTileNBT(tag);
-        return tag;
-    }
-
-    protected abstract void writeTileNBT(NBTTagCompound tag);
-
-    /**
-     * Reads the tile entity from an NBTTag.
-     */
-    @Override
-    public final void readFromNBT(NBTTagCompound tag) {
-        super.readFromNBT(tag);
+    protected final void writeTileNBT(NBTTagCompound tag) {
         if (tag.hasKey(Names.NBT.MULTI)) {
             NBTTagCompound multiBlockTag = tag.getCompoundTag(Names.NBT.MULTI);
             ((IMultiBlockComponent) this).getMultiBlockData().readFromNBT(multiBlockTag);
         }
-        this.readTileNBT(tag);
+        this.writeMultiTileNBT(tag);
     }
 
-    protected abstract void readTileNBT(NBTTagCompound tag);
+    protected final void readTileNBT(NBTTagCompound tag) {
+        if (tag.hasKey(Names.NBT.MULTI)) {
+            NBTTagCompound multiBlockTag = tag.getCompoundTag(Names.NBT.MULTI);
+            ((IMultiBlockComponent) this).getMultiBlockData().readFromNBT(multiBlockTag);
+        }
+        this.readMultiTileNBT(tag);
+    }
+
+    protected abstract void writeMultiTileNBT(NBTTagCompound tag);
+
+    protected abstract void readMultiTileNBT(NBTTagCompound tag);
 }
