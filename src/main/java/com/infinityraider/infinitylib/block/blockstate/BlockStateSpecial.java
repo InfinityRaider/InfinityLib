@@ -154,12 +154,14 @@ public class BlockStateSpecial<TE extends TileEntityBase, S extends IBlockState>
 
     @Override
     public IBlockState withRotation(Rotation rot) {
-        return getWrappedState().withRotation(rot);
+        getWrappedState().withRotation(rot);
+        return this;
     }
 
     @Override
     public IBlockState withMirror(Mirror mirrorIn) {
-        return getWrappedState().withMirror(mirrorIn);
+        getWrappedState().withMirror(mirrorIn);
+        return this;
     }
 
     @Override

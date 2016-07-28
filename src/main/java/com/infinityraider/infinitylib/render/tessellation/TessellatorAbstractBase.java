@@ -682,7 +682,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 }
             }
             //create new quad with the transformed vertex data
-            newQuads.add(new UnpackedBakedQuad(vertexData, quad.getTintIndex(), quad.getFace(), quad.getSprite(), quad.shouldApplyDiffuseLighting(), format));
+            newQuads.add(new UnpackedBakedQuad(vertexData, quad.getTintIndex(), quad.getFace(), quad.getSprite(), this.getApplyDiffuseLighting(), format));
         }
         return newQuads;
     }

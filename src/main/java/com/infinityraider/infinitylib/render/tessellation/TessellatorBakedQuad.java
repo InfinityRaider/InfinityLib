@@ -12,6 +12,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Helper class to construct vertices
@@ -104,7 +105,12 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     @Override
     public void addQuads(List<BakedQuad> quads) {
         if(drawMode != DRAW_MODE_NOT_DRAWING) {
-            this.quads.addAll(this.transformQuads(quads));
+            List<BakedQuad> transFormedQuads = this.transformQuads(quads);
+            for(BakedQuad quad : transFormedQuads) {
+                if(quad.getFace() == this.face) {
+                    this.quads.add(quad);
+                }
+            }
         } else {
             throw new RuntimeException("NOT CONSTRUCTING VERTICES");
         }
@@ -128,15 +134,17 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
                 .setRGBA(getRedValueFloat(), getGreenValueFloat(), getBlueValueFloat(), getAlphaValueFloat())
                 .setNormal(getNormal().x, getNormal().y, getNormal().z));
         if(vertexData.size() == drawMode) {
-            UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(getVertexFormat());
-            quadBuilder.setQuadTint(getTintIndex());
-            quadBuilder.setApplyDiffuseLighting(getApplyDiffuseLighting());
             EnumFacing dir = EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z);
-            quadBuilder.setQuadOrientation(EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z));
-            for(VertexData vertex : vertexData) {
-                vertex.applyVertexData(quadBuilder);
+            if(dir == this.face) {
+                UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(getVertexFormat());
+                quadBuilder.setQuadTint(getTintIndex());
+                quadBuilder.setApplyDiffuseLighting(getApplyDiffuseLighting());
+                quadBuilder.setQuadOrientation(EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z));
+                for (VertexData vertex : vertexData) {
+                    vertex.applyVertexData(quadBuilder);
+                }
+                quads.add(quadBuilder.build());
             }
-            quads.add(quadBuilder.build());
             vertexData.clear();
         }
     }
