@@ -154,18 +154,15 @@ public class ItemRenderer<I extends Item> extends RenderUtilBase implements IMod
         @Override
         public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
             List<BakedQuad> list;
-            if(side == null) {
-                ITessellator tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(textures);
+            ITessellator tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(textures).setCurrentFace(side);
 
-                tessellator.startDrawingQuads(format);
+            tessellator.startDrawingQuads(format);
 
-                this.renderer.renderItem(tessellator, world, renderer.getItem(), stack, entity, transformType, format);
+            this.renderer.renderItem(tessellator, world, renderer.getItem(), stack, entity, transformType, format);
 
-                list = tessellator.getQuads();
-                tessellator.draw();
-            } else {
-                list = ImmutableList.of();
-            }
+            list = tessellator.getQuads();
+            tessellator.draw();
+
             return list;
         }
 
