@@ -12,6 +12,7 @@ import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -40,7 +41,8 @@ public class RenderItemAuto<T extends ItemBase & IAutoRenderedItem> implements I
 	}
 
 	@Override
-	public void renderItem(ITessellator tessellator, World world, Item item, ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type) {
+	public void renderItem(ITessellator tessellator, World world, Item item, ItemStack stack,
+						   EntityLivingBase entity, ItemCameraTransforms.TransformType type, VertexFormat format) {
 		final String id = this.item.getModelId(stack);
 		List<BakedQuad> model = models.get(id);
 		if (model == null) {

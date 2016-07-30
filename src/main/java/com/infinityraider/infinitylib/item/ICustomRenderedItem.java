@@ -9,7 +9,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
-public interface ICustomRenderedItem<I extends Item> {
+public interface ICustomRenderedItem<I extends Item> extends IInfinityItem {
     /**
      * Gets called to create the IBlockRenderingHandler instance to render this block with
      * @return a new IItemRenderingHandler object for this block

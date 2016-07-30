@@ -4,9 +4,7 @@ import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.BlockBaseTile;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
-import com.infinityraider.infinitylib.item.ICustomRenderedItem;
-import com.infinityraider.infinitylib.item.IItemWithRecipe;
-import com.infinityraider.infinitylib.item.ItemBase;
+import com.infinityraider.infinitylib.item.*;
 import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
 import com.infinityraider.infinitylib.render.item.ItemRendererRegistry;
@@ -45,12 +43,12 @@ public class ModHelper {
 
         //items
         LogHelper.debug("Starting Item Registration...");
-        ReflectionHelper.forEachIn(mod.getModItemRegistry(), ItemBase.class, (ItemBase item) -> {
-            if(item.isEnabled()) {
+        ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
+            if((item instanceof Item) && item.isEnabled()) {
                 LogHelper.debug("Registering Item: " + item.getInternalName());
-                RegisterHelper.registerItem(item, mod.getModId(), item.getInternalName());
+                RegisterHelper.registerItem((Item) item, mod.getModId(), item.getInternalName());
                 for(String tag: item.getOreTags()) {
-                    OreDictionary.registerOre(tag, item);
+                    OreDictionary.registerOre(tag, (Item) item);
                 }
             }
         });
@@ -101,10 +99,12 @@ public class ModHelper {
             LogHelper.debug("registered custom renderer for " + block.getBlockModelResourceLocation());
         }
         //items
-        ReflectionHelper.forEachIn(mod.getModItemRegistry(), ItemBase.class, (ItemBase item) -> {
-            if (item.isEnabled()) {
-                for (Tuple<Integer, ModelResourceLocation> entry : item.getModelDefinitions()) {
-                    ModelLoader.setCustomModelResourceLocation(item, entry.getFirst(), entry.getSecond());
+        ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
+            if ((item instanceof Item) && item.isEnabled()) {
+                if(item instanceof IItemWithModel) {
+                    for (Tuple<Integer, ModelResourceLocation> entry : ((IItemWithModel) item).getModelDefinitions()) {
+                        ModelLoader.setCustomModelResourceLocation((Item) item, entry.getFirst(), entry.getSecond());
+                    }
                 }
                 if (item instanceof ICustomRenderedItem) {
                     ItemRendererRegistry.getInstance().registerCustomItemRenderer((ICustomRenderedItem<? extends Item>) item);

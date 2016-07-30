@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Interface used to ease model registering
  */
-public interface IItemWithModel {
+public interface IItemWithModel extends IInfinityItem {
     /**
      * @return a list with metadata values and ModelResourceLocations corresponding with it.
      */

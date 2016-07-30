@@ -159,7 +159,7 @@ public class ItemRenderer<I extends Item> extends RenderUtilBase implements IMod
 
                 tessellator.startDrawingQuads(format);
 
-                this.renderer.renderItem(tessellator, world, renderer.getItem(), stack, entity, transformType);
+                this.renderer.renderItem(tessellator, world, renderer.getItem(), stack, entity, transformType, format);
 
                 list = tessellator.getQuads();
                 tessellator.draw();
