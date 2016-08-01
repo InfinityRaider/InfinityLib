@@ -7,6 +7,7 @@ import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.blockstate.IBlockStateSpecial;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.render.DefaultTransforms;
+import com.infinityraider.infinitylib.render.item.BakedInfItemSuperModel;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
@@ -19,23 +20,17 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
-import javax.vecmath.Matrix4f;
 import java.util.*;
 
 @SideOnly(Side.CLIENT)
@@ -85,7 +80,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
         tessellator.setColorRGBA(255, 255, 255, 255);
 
         this.renderer.renderWorldBlock(tessellator, world, pos, x, y, z, extendedState, block, te, true, partialTicks, destroyStage);
-		this.renderer.renderDynamic(tessellator, te);
+		this.renderer.renderDynamic(tessellator, te, partialTicks, destroyStage);
 
         tessellator.draw();
 
@@ -98,7 +93,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
         private final VertexFormat format;
         private final IBlockRenderingHandler<B, T> renderer;
         private final Function<ResourceLocation, TextureAtlasSprite> textures;
-        private final ItemRenderer itemRenderer;
+        private final BakedInfItemSuperModel itemRenderer;
 
         private Map<EnumFacing, List<BakedQuad>> cachedQuads;
         private IBlockState prevState;
@@ -108,7 +103,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
             this.format = format;
             this.renderer = renderer;
             this.textures = textures;
-            this.itemRenderer = inventory ? new ItemRenderer<>(this.renderer, format, textures) : null;
+            this.itemRenderer = inventory ? new BakedInfItemSuperModel(format, this.renderer, textures, DefaultTransforms::getBlockMatrix) : null;
             this.cachedQuads = new HashMap<>();
         }
 
@@ -175,106 +170,8 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
 
         @Override
         public ItemOverrideList getOverrides() {
-            return itemRenderer;
+            return itemRenderer.getOverrides();
         }
     }
 
-    public static class ItemRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> extends ItemOverrideList {
-        private final IBlockRenderingHandler<B, T> renderer;
-        private final B block;
-        private final T tile;
-        private final VertexFormat format;
-        private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
-
-        public ItemRenderer(IBlockRenderingHandler<B, T> renderer, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-            super(ImmutableList.of());
-            this.renderer = renderer;
-            this.tile = renderer.getTileEntity();
-            this.block = renderer.getBlock();
-            this.format = format;
-            this.bakedTextureGetter = bakedTextureGetter;
-        }
-
-        @Override
-        public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity) {
-            return new BakedItemModel<>(world, block, tile, stack, entity, renderer, format, bakedTextureGetter);
-        }
-    }
-
-    public static class BakedItemModel<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> implements IBakedModel, IPerspectiveAwareModel {
-        private final IBlockRenderingHandler<B, T> renderer;
-        private final B block;
-        private final T tile;
-        private final ItemStack stack;
-        private final World world;
-        private final EntityLivingBase entity;
-        private ItemCameraTransforms.TransformType transformType;
-        private final VertexFormat format;
-        private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
-
-        private BakedItemModel(World world, B block, T tile, ItemStack stack, EntityLivingBase entity, IBlockRenderingHandler<B, T> renderer, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-            this.world = world;
-            this.block = block;
-            this.tile = tile;
-            this.stack = stack;
-            this.entity = entity;
-            this.renderer = renderer;
-            this.transformType = ItemCameraTransforms.TransformType.NONE;
-            this.format = format;
-            this.bakedTextureGetter = bakedTextureGetter;
-        }
-
-        private BakedItemModel<B, T> setTransformType(ItemCameraTransforms.TransformType type) {
-            this.transformType = type;
-            return this;
-        }
-
-        @Override
-        public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-            ITessellator tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(bakedTextureGetter).setCurrentFace(side);
-
-            tessellator.startDrawingQuads(format);
-
-            this.renderer.renderInventoryBlock(tessellator, world, state, block, tile, stack, entity, transformType);
-
-            List<BakedQuad> list = tessellator.getQuads();
-            tessellator.draw();
-            return list;
-        }
-
-        @Override
-        public boolean isAmbientOcclusion() {
-            return true;
-        }
-
-        @Override
-        public boolean isGui3d() {
-            return true;
-        }
-
-        @Override
-        public boolean isBuiltInRenderer() {
-            return false;
-        }
-
-        @Override
-        public TextureAtlasSprite getParticleTexture() {
-            return null;
-        }
-
-        @Override
-        public ItemCameraTransforms getItemCameraTransforms() {
-            return ItemCameraTransforms.DEFAULT;
-        }
-
-        @Override
-        public ItemOverrideList getOverrides() {
-            return null;
-        }
-
-        @Override
-        public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
-            return new ImmutablePair<>(this.setTransformType(cameraTransformType), DefaultTransforms.getBlockMatrix(transformType));
-        }
-    }
 }

@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.render;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.function.Function;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraftforge.common.model.TRSRTransformation;
 
@@ -78,4 +79,9 @@ public class DefaultTransforms {
             return TRSRTransformation.identity().getMatrix();
         }
     }
+	
+	public static interface Transformer extends Function<ItemCameraTransforms.TransformType, Matrix4f> {
+		
+	}
+	
 }

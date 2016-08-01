@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.render.block;
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
+import com.infinityraider.infinitylib.render.item.IItemRenderingHandler;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -19,7 +20,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
-public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> {
+public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> extends IItemRenderingHandler {
     /**
      * Gets the block tied to this renderer, used for registering this renderer.
      * A pointer to the Block is saved and referenced.
@@ -40,13 +41,6 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
     T getTileEntity();
 
     /**
-     * Returns a list containing a ResourceLocation for every texture used to render this Block.
-     * Passed textures are stitched to the Minecraft texture map and icons can be retrieved from them.
-     * @return a list of ResourceLocations
-     */
-    List<ResourceLocation> getAllTextures();
-
-    /**
      * Called to render the block at a specific place in the world,
      * startDrawing() has already been called on the tessellator object.
      * The tessellator is also translated to the block's position
@@ -64,28 +58,18 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @param partialTick partial tick, only useful for dynamic rendering
      * @param destroyStage destroy stage, only useful for dynamic rendering
      */
-    void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
-                          IBlockState state, B block, @Nullable T tile, boolean dynamicRender, float partialTick, int destroyStage);
+	@Deprecated
+	default void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
+                          IBlockState state, B block, @Nullable T tile, boolean dynamicRender, float partialTick, int destroyStage){};
 
-	default void renderDynamic(ITessellator tess, T tile){};
+	default void renderDynamic(ITessellator tess, T tile, float partialTicks, int destroyStage){};
 	
 	default void renderStatic(ITessellator tess, IBlockState state){};
-	
-    /**
-     * Called to render the block in an inventory
-     * startDrawing() has already been called on the tessellator object.
-     *
-     * @param tessellator tessellator object to draw quads
-     * @param world the world object
-     * @param state the state of the block
-     * @param block the block
-     * @param tile the tile entity passed from getTileEntity() (can be null if there is no tile entity)
-     * @param stack stack containing this block as an item
-     * @param entity entity holding the stack
-     * @param type camera transform type
-     */
-    void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
-                              @Nullable T tile, ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type);
+
+	@Override
+	default void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity) {
+		// NOPE...
+	}
 
     /**
      * Gets the main icon used for this renderer, used for the particle

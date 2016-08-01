@@ -9,7 +9,6 @@ import java.util.List;
 import javax.vecmath.Matrix4f;
 
 import com.infinityraider.infinitylib.render.DefaultTransforms;
-import com.infinityraider.infinitylib.render.item.IItemRenderingHandler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -32,11 +31,20 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
 	protected final VertexFormat format;
 	protected final T renderer;
 	protected final Function<ResourceLocation, TextureAtlasSprite> textures;
+	protected final DefaultTransforms.Transformer transformer;
 
 	public BakedInfItemSuperModel(VertexFormat format, T renderer, Function<ResourceLocation, TextureAtlasSprite> textures) {
 		this.format = format;
 		this.renderer = renderer;
 		this.textures = textures;
+		this.transformer = DefaultTransforms::getItemMatrix;
+	}
+
+	public BakedInfItemSuperModel(VertexFormat format, T renderer, Function<ResourceLocation, TextureAtlasSprite> textures, DefaultTransforms.Transformer transformer) {
+		this.format = format;
+		this.renderer = renderer;
+		this.textures = textures;
+		this.transformer = transformer;
 	}
 
 	@Override
@@ -70,7 +78,7 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
 	}
 	
 	public Matrix4f handlePerspective(ItemCameraTransforms.TransformType transform) {
-		return DefaultTransforms.getItemMatrix(transform);
+		return this.transformer.apply(transform);
 	}
 	
 	@Override
