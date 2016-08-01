@@ -2,6 +2,7 @@
  */
 package com.infinityraider.infinitylib.render.item;
 
+import com.infinityraider.infinitylib.render.item.ItemModelTexture;
 import java.util.ArrayList;
 import java.util.List;
 

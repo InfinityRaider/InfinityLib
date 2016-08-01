@@ -67,6 +67,10 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
     void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
                           IBlockState state, B block, @Nullable T tile, boolean dynamicRender, float partialTick, int destroyStage);
 
+	default void renderDynamic(ITessellator tess, T tile){};
+	
+	default void renderStatic(ITessellator tess, IBlockState state){};
+	
     /**
      * Called to render the block in an inventory
      * startDrawing() has already been called on the tessellator object.

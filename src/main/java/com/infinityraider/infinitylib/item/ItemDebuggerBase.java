@@ -31,8 +31,8 @@ public abstract class ItemDebuggerBase extends ItemBase {
         this(true);
     }
 
-    public ItemDebuggerBase(boolean isVanilla, String... varients) {
-        super("debugger", isVanilla, varients);
+    public ItemDebuggerBase(boolean isVanilla) {
+        super("debugger", isVanilla);
         this.DEBUG_MODES = new ArrayList<>();
         this.DEBUG_MODES.add(new DebugModeFeedback());
         this.DEBUG_MODES.addAll(getDebugModes());

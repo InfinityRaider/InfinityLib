@@ -6,6 +6,7 @@ import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.blockstate.IBlockStateSpecial;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
+import com.infinityraider.infinitylib.render.DefaultTransforms;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
@@ -84,6 +85,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
         tessellator.setColorRGBA(255, 255, 255, 255);
 
         this.renderer.renderWorldBlock(tessellator, world, pos, x, y, z, extendedState, block, te, true, partialTicks, destroyStage);
+		this.renderer.renderDynamic(tessellator, te);
 
         tessellator.draw();
 
@@ -132,6 +134,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
                     tessellator.startDrawingQuads(this.format);
 
                     this.renderer.renderWorldBlock(tessellator, world, pos, pos.getX(), pos.getY(), pos.getZ(), extendedState, block, tile, false, 1, 0);
+					this.renderer.renderStatic(tessellator, state);
 
                     cachedQuads.put(side, tessellator.getQuads());
                     prevState = extendedState;
@@ -271,7 +274,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
 
         @Override
         public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
-            return new ImmutablePair<>(this.setTransformType(cameraTransformType), null);
+            return new ImmutablePair<>(this.setTransformType(cameraTransformType), DefaultTransforms.getBlockMatrix(transformType));
         }
     }
 }

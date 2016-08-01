@@ -12,7 +12,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Helper class to construct vertices
@@ -158,7 +157,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     @Override
     public TextureAtlasSprite getIcon(ResourceLocation loc) {
-        if(this.textureFunction == null) {
+        if(this.textureFunction == null || loc == null) {
             return super.getIcon(loc);
         } else {
             return this.textureFunction.apply(loc);
