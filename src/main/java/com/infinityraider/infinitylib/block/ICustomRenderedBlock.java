@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.block;
 
-import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.util.ResourceLocation;
@@ -41,7 +40,9 @@ public interface ICustomRenderedBlock {
      */
     @SideOnly(Side.CLIENT)
 	default boolean needsRenderUpdate(World world, BlockPos pos, IBlockState state) {
-		return !world.getBlockState(pos).equals(state);
+		// TODO: Figure out how to update on blockstate change!
+		return true;
+		//return !world.getBlockState(pos).equals(state);
 	}
 
     List<ResourceLocation> getTextures();
