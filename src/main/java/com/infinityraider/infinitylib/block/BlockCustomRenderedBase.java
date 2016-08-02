@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public abstract class BlockCustomRenderedBase extends BlockBase implements ICustomRenderedBlock<TileEntityBase> {
+public abstract class BlockCustomRenderedBase extends BlockBase implements ICustomRenderedBlock {
     public BlockCustomRenderedBase(String name, Material blockMaterial) {
         super(name, blockMaterial);
     }

@@ -34,12 +34,10 @@ import org.lwjgl.opengl.GL11;
 import java.util.*;
 
 @SideOnly(Side.CLIENT)
-public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> extends TileEntitySpecialRenderer<T> implements IModel {
-    private final B block;
-    private final IBlockRenderingHandler<B, T> renderer;
+public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock> implements IModel {
+    private final RenderBlock<B> renderer;
 
-    public BlockRenderer(B block, IBlockRenderingHandler<B, T> renderer) {
-        this.block = block;
+    public BlockRenderer(RenderBlock<B> renderer) {
         this.renderer = renderer;
     }
 
@@ -54,8 +52,8 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
     }
 
     @Override
-    public BakedBlockModel<B, T> bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-        return new BakedBlockModel<>(block, format, renderer, bakedTextureGetter, renderer.doInventoryRendering());
+    public BakedBlockModel<B> bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+        return new BakedBlockModel<>(renderer.getBlock(), format, renderer, bakedTextureGetter, renderer.hasInventoryRendering());
     }
 
     @Override
@@ -63,42 +61,17 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
         return TRSRTransformation.identity();
     }
 
-    @Override
-    public void renderTileEntityAt(T te, double x, double y, double z, float partialTicks, int destroyStage) {
-        ITessellator tessellator = TessellatorVertexBuffer.getInstance(Tessellator.getInstance());
-        World world = te.getWorld();
-        BlockPos pos = te.getPos();
-        IBlockState state = world.getBlockState(pos);
-        IBlockState extendedState = state.getBlock().getExtendedState(state, world, pos);
-
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(x, y, z);
-
-        tessellator.startDrawingQuads(DefaultVertexFormats.BLOCK);
-        tessellator.setColorRGBA(255, 255, 255, 255);
-
-        this.renderer.renderWorldBlock(tessellator, world, pos, x, y, z, extendedState, block, te, true, partialTicks, destroyStage);
-		this.renderer.renderDynamic(tessellator, te, partialTicks, destroyStage);
-
-        tessellator.draw();
-
-        GL11.glTranslated(-x, -y, -z);
-        GL11.glPopMatrix();
-    }
-
-    public static class BakedBlockModel<B extends BlockBase & ICustomRenderedBlock<T>, T extends TileEntityBase> implements IBakedModel {
+    public static class BakedBlockModel<B extends BlockBase & ICustomRenderedBlock> implements IBakedModel {
         private final B block;
         private final VertexFormat format;
-        private final IBlockRenderingHandler<B, T> renderer;
+        private final RenderBlock<B> renderer;
         private final Function<ResourceLocation, TextureAtlasSprite> textures;
         private final BakedInfItemSuperModel itemRenderer;
 
         private Map<EnumFacing, List<BakedQuad>> cachedQuads;
         private IBlockState prevState;
 
-        private BakedBlockModel(B block, VertexFormat format, IBlockRenderingHandler<B, T> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
+        private BakedBlockModel(B block, VertexFormat format, RenderBlock<B> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
             this.block = block;
             this.format = format;
             this.renderer = renderer;
@@ -111,25 +84,19 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
         @SuppressWarnings("unchecked")
         public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
             if((state instanceof IBlockStateSpecial)) {
+				IBlockStateSpecial bs = (IBlockStateSpecial) state;
                 World world = Minecraft.getMinecraft().theWorld;
-                T tile = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getTileEntity();
-                IBlockState extendedState = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getWrappedState();
-                BlockPos pos = ((IBlockStateSpecial<T, ? extends IBlockState>) state).getPos();
+                IBlockState extendedState = bs.getWrappedState();
+                BlockPos pos = bs.getPos();
 
-                boolean update;
-                if(tile == null) {
-                    update = !extendedState.equals(prevState);
-                } else {
-                    update = !cachedQuads.containsKey(side) || this.block.needsRenderUpdate(world, pos, extendedState, tile);
-                }
+                boolean update = !cachedQuads.containsKey(side) || this.block.needsRenderUpdate(world, pos, extendedState);
 
                 if(update) {
                     TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(this.textures).setCurrentFace(side);
 
                     tessellator.startDrawingQuads(this.format);
 
-                    this.renderer.renderWorldBlock(tessellator, world, pos, pos.getX(), pos.getY(), pos.getZ(), extendedState, block, tile, false, 1, 0);
-					this.renderer.renderStatic(tessellator, state);
+					this.renderer.renderStatic(tessellator, world, state, pos);
 
                     cachedQuads.put(side, tessellator.getQuads());
                     prevState = extendedState;
@@ -150,7 +117,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock<T>, T exte
 
         @Override
         public boolean isGui3d() {
-            return renderer.doInventoryRendering();
+            return renderer.hasInventoryRendering();
         }
 
         @Override
