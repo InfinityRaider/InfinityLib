@@ -36,6 +36,13 @@ public abstract class InfinityMod {
     public abstract Object getModItemRegistry();
 
     /**
+     * Used to register the Entities for all the mod's entities.
+     * The object returned by this should have a field for each of its entities
+     * @return Entity registry object or class
+     */
+    public abstract Object getModEntityRegistry();
+
+    /**
      * Register all messages added by this mod
      * @param wrapper NetworkWrapper instance to register messages to
      */
@@ -46,6 +53,7 @@ public abstract class InfinityMod {
         proxy().preInitStart(event);
         ModHelper.getInstance().RegisterBlocksAndItems(this);
         InfinityLib.proxy.registerRenderers(this);
+        InfinityLib.proxy.registerEntities(this);
         proxy().preInitEnd(event);
         LogHelper.debug("Pre-Initialization Complete");
     }

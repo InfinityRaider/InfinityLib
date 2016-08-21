@@ -11,6 +11,10 @@ public abstract class ItemBase extends Item implements IItemWithModel {
     private final boolean isModelVanilla;
     protected final String[] varients;
 
+    public ItemBase(String name) {
+        this(name, true);
+    }
+
     public ItemBase(String name, boolean modelVanilla, String... varients) {
         super();
         this.internalName = name;

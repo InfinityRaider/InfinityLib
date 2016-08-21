@@ -8,6 +8,7 @@ import com.infinityraider.infinitylib.item.*;
 import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
 import com.infinityraider.infinitylib.render.item.ItemRendererRegistry;
+import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
@@ -84,6 +85,27 @@ public class ModHelper {
             }
         });
         LogHelper.debug("Finished Recipe Registration!");
+    }
+
+    public void registerEntities(InfinityMod mod) {
+        LogHelper.debug("Starting Entity Registration...");
+        ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
+            if(entry.isEnabled()) {
+                entry.register(mod);
+            }
+        });
+        com.teaminfinity.elementalinvocations.utility.LogHelper.debug("Finished Entity Registration!");
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void registerEntitiesClient(InfinityMod mod) {
+        LogHelper.debug("Starting Entity Registration...");
+        ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
+            if(entry.isEnabled()) {
+                entry.registerClient(mod);
+            }
+        });
+        com.teaminfinity.elementalinvocations.utility.LogHelper.debug("Finished Entity Registration!");
     }
 
     @SideOnly(Side.CLIENT)

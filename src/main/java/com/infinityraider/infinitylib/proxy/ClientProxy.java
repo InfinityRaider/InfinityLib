@@ -18,6 +18,11 @@ public class ClientProxy implements IProxy, IClientProxyBase {
     }
 
     @Override
+    public void registerEntities(InfinityMod mod) {
+        ModHelper.getInstance().registerEntitiesClient(mod);
+    }
+
+    @Override
     public void registerRenderers(InfinityMod mod) {
         ModHelper.getInstance().initRenderers(mod);
     }
