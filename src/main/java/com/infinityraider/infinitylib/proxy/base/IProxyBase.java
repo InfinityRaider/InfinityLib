@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.proxy.base;
 
-import com.infinityraider.infinitylib.InfinityMod;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -28,12 +27,12 @@ public interface IProxyBase {
     /**
      * Performs all needed operations for the proxy's side during FML's init stage, called before InfinityLib does its standard operations
      */
-    default void initStart(FMLInitializationEvent event){}
+    default void initStart(FMLInitializationEvent event) {}
 
     /**
      * Performs all needed operations for the proxy's side during FML's init stage, called after InfinityLib has done its standard operations
      */
-    default void initEnd(FMLInitializationEvent event){}
+    default void initEnd(FMLInitializationEvent event) {}
 
     /**
      * Performs all needed operations for the proxy's side during FML's post init stage, called before InfinityLib does its standard operations
