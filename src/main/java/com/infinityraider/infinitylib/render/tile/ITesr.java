@@ -3,11 +3,14 @@
 package com.infinityraider.infinitylib.render.tile;
 
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  *
  * @author RlonRyan
  */
+@SideOnly(Side.CLIENT)
 @FunctionalInterface
 public interface ITesr<T extends TileEntity> {
 	

@@ -21,11 +21,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  *
  * @author RlonRyan
  */
+@SideOnly(Side.CLIENT)
 public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements IBakedModel, IItemOverriden {
 
 	protected final VertexFormat format;

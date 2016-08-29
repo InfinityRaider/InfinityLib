@@ -18,6 +18,7 @@ public interface IItemRenderingHandler {
      * Passed textures are stitched to the Minecraft texture map and icons can be retrieved from them.
      * @return a list of ResourceLocations
      */
+    @SideOnly(Side.CLIENT)
     List<ResourceLocation> getAllTextures();
 
     /**
@@ -30,6 +31,7 @@ public interface IItemRenderingHandler {
      * @param entity entity holding the stack
      * @param type camera transform type
      */
+    @SideOnly(Side.CLIENT)
     void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity);
 
 }

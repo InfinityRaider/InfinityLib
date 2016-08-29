@@ -4,11 +4,14 @@ package com.infinityraider.infinitylib.render.tile;
 
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  *
  * @author RlonRyan
  */
+@SideOnly(Side.CLIENT)
 public class TesrWrapper<T extends TileEntity> extends TileEntitySpecialRenderer<T> {
 	
 	private final ITesr<T> tesr;

@@ -21,12 +21,15 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.IPerspectiveAwareModel;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
  *
  * @author RlonRyan
  */
+@SideOnly(Side.CLIENT)
 public class BakedInfItemModel implements IPerspectiveAwareModel {
 
 	private final BakedInfItemSuperModel parent;

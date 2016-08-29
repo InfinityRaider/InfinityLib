@@ -16,12 +16,14 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 /**
  *
  * @author RlonRyan
- */
+ */@SideOnly(Side.CLIENT)
 public abstract class RenderBlockTile<B extends BlockBase & ICustomRenderedBlock, T extends TileEntityBase> extends RenderBlock<B> implements ITesr<T> {
 
 	private final T dummy;
