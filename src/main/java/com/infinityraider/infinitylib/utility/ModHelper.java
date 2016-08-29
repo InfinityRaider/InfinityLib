@@ -92,9 +92,10 @@ public class ModHelper {
         ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
             if(entry.isEnabled()) {
                 entry.register(mod);
+                entry = null;
             }
         });
-        com.teaminfinity.elementalinvocations.utility.LogHelper.debug("Finished Entity Registration!");
+        LogHelper.debug("Finished Entity Registration!");
     }
 
     @SideOnly(Side.CLIENT)
@@ -105,7 +106,7 @@ public class ModHelper {
                 entry.registerClient(mod);
             }
         });
-        com.teaminfinity.elementalinvocations.utility.LogHelper.debug("Finished Entity Registration!");
+        LogHelper.debug("Finished Entity Registration!");
     }
 
     @SideOnly(Side.CLIENT)
