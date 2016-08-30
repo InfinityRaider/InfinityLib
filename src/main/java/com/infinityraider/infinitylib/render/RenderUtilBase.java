@@ -31,21 +31,21 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public abstract class RenderUtilBase {
     protected RenderUtilBase() {}
 
-    public int getMixedBrightness(IBlockAccess world, BlockPos pos, Block block) {
+    public static int getMixedBrightness(IBlockAccess world, BlockPos pos, Block block) {
         return getMixedBrightness(world, pos, world.getBlockState(pos), block);
     }
 
-    public int getMixedBrightness(IBlockAccess world, BlockPos pos, IBlockState state) {
+    public static int getMixedBrightness(IBlockAccess world, BlockPos pos, IBlockState state) {
         return getMixedBrightness(world, pos, state, state.getBlock());
     }
 
-    public int getMixedBrightness(IBlockAccess world, BlockPos pos, IBlockState state, Block block) {
+    public static int getMixedBrightness(IBlockAccess world, BlockPos pos, IBlockState state, Block block) {
         //TODO: get brightness
         //return world.getCombinedLight();
         return 1;
     }
 
-    public void rotateBlock(ITessellator tess, EnumFacing dir) {
+    public static void rotateBlock(ITessellator tess, EnumFacing dir) {
         tess.translate(0.5, 0, 0.5);
         //tess.rotate(180, 0F, 0F, 1F);
         switch (dir) {
@@ -62,7 +62,7 @@ public abstract class RenderUtilBase {
         tess.translate(-0.5, 0, -0.5);
     }
 
-    public void renderItemStack(ItemStack stack, double x, double y, double z, double scale, boolean rotate) {
+    public static void renderItemStack(ItemStack stack, double x, double y, double z, double scale, boolean rotate) {
         // Save Settings
         GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
@@ -97,7 +97,7 @@ public abstract class RenderUtilBase {
      * @param partialTicks partial tick
      * @param inverse inverse or not
      */
-    protected void correctViewBobbing(EntityPlayer player, float partialTicks, boolean inverse) {
+    public static void correctViewBobbing(EntityPlayer player, float partialTicks, boolean inverse) {
         if (!Minecraft.getMinecraft().gameSettings.viewBobbing) {
             return;
         }
@@ -123,7 +123,7 @@ public abstract class RenderUtilBase {
      * Renders three lines with length 1 starting from (0, 0, 0):
      * red line along x axis, green line along y axis and blue line along z axis.
      */
-    protected void renderCoordinateSystemDebug() {
+    public static void renderCoordinateSystemDebug() {
         if(ConfigurationHandler.getInstance().debug) {
             Tessellator tessellator = Tessellator.getInstance();
             VertexBuffer buffer = tessellator.getBuffer();
@@ -158,7 +158,7 @@ public abstract class RenderUtilBase {
      * @param loc ResourceLocation to grab icon from
      * @return the icon
      */
-    public final TextureAtlasSprite getIcon(ResourceLocation loc) {
+    public static final TextureAtlasSprite getIcon(ResourceLocation loc) {
         if(loc == null) {
             return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
         }

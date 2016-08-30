@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.utility;
 
 import com.infinityraider.infinitylib.handler.ConfigurationHandler;
 import com.infinityraider.infinitylib.reference.Reference;
+import java.text.MessageFormat;
 import net.minecraftforge.fml.common.FMLLog;
 import org.apache.logging.log4j.Level;
 
@@ -15,8 +16,22 @@ public abstract  class LogHelper {
      * @param logLevel the level at which to log the object, for filtering purposes.
      * @param object the object to be logged (interpreted into a string).
      */
-    public static void log(Level logLevel, Object object) {
-        FMLLog.log(Reference.MOD_NAME, logLevel, String.valueOf(object));
+	public static void log(Level logLevel, String format, Object... objects) {
+		try {
+			FMLLog.log(Reference.MOD_NAME, logLevel, MessageFormat.format(format, objects));
+		} catch (IllegalArgumentException ex) {
+			// This is bad...
+			FMLLog.log(Reference.MOD_NAME, logLevel, format);
+		}
+	}
+
+    /**
+     * Logs an object to the {@link FMLLog} at the level {@link Level#ALL}.
+     *
+     * @param object the object to be logged (interpreted into a string).
+     */
+    public static void all(String format, Object... objects) {
+        log(Level.ALL, format, objects);
     }
 
     /**
@@ -24,18 +39,9 @@ public abstract  class LogHelper {
      *
      * @param object the object to be logged (interpreted into a string).
      */
-    public static void all(Object object) {
-        log(Level.ALL, object);
-    }
-
-    /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#ALL}.
-     *
-     * @param object the object to be logged (interpreted into a string).
-     */
-    public static void debug(Object object) {
+    public static void debug(String format, Object... objects) {
         if(ConfigurationHandler.getInstance().debug) {
-            log(Level.INFO, "[DEBUG] "+object);
+            log(Level.INFO, "[DEBUG]: " + format, objects);
         }
     }
 
@@ -44,8 +50,8 @@ public abstract  class LogHelper {
      *
      * @param object the object to be logged (interpreted into a string).
      */
-    public static void error(Object object) {
-        log(Level.ERROR, object);
+    public static void error(String format, Object... objects) {
+        log(Level.ERROR, format, objects);
     }
 
     /**
@@ -53,8 +59,8 @@ public abstract  class LogHelper {
      *
      * @param object the object to be logged (interpreted into a string).
      */
-    public static void fatal(Object object) {
-        log(Level.FATAL, object);
+    public static void fatal(String format, Object... objects) {
+        log(Level.FATAL, format, objects);
     }
 
     /**
@@ -62,8 +68,8 @@ public abstract  class LogHelper {
      *
      * @param object the object to be logged (interpreted into a string).
      */
-    public static void info(Object object) {
-        log(Level.INFO, object);
+    public static void info(String format, Object... objects) {
+        log(Level.INFO, format, objects);
     }
 
     /**
@@ -71,8 +77,8 @@ public abstract  class LogHelper {
      *
      * @param object the object to be logged (interpreted into a string).
      */
-    public static void off(Object object) {
-        log(Level.OFF, object);
+    public static void off(String format, Object... objects) {
+        log(Level.OFF, format, objects);
     }
 
     /**
@@ -80,8 +86,8 @@ public abstract  class LogHelper {
      *
      * @param object the object to be logged (interpreted into a string).
      */
-    public static void trace(Object object) {
-        log(Level.TRACE, object);
+    public static void trace(String format, Object... objects) {
+        log(Level.TRACE, format, objects);
     }
 
     /**
@@ -89,8 +95,8 @@ public abstract  class LogHelper {
      *
      * @param object the object to be logged (interpreted into a string).
      */
-    public static void warn(Object object) {
-        log(Level.WARN, object);
+    public static void warn(String format, Object... objects) {
+        log(Level.WARN, format, objects);
     }
 
     /**

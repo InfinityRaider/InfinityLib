@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
-import com.sun.javafx.geom.Vec3f;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -11,6 +10,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
+import javax.vecmath.Vector3f;
 
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
@@ -198,13 +198,13 @@ public interface ITessellator {
      * @param vec the normal vector
      * @return this
      */
-    ITessellator setNormal(Vec3f vec);
+    ITessellator setNormal(Vector3f vec);
 
     /**
      * Gets the current normal for the tessellator
      * @return the normal vector
      */
-    Vec3f getNormal();
+    Vector3f getNormal();
     
     /**
      * Sets the current opaque color multiplier for the quads

@@ -6,16 +6,16 @@
 		"version": "0.1",
 		"mcversion": "1.10.2",
 
-		"logoFile": "assets/${mod.id}/textures/logo.png",
+		"logoFile": "assets/infinitylib/textures/logo.png",
 		"screenshots": [],
 
 		"parent":"",
 		"dependencies": [],
 
-		"authorList": [ "${mod.author}" ],
+		"authorList": [ "InfinityRaider" ],
 		"credits": "",
 
-		"url": "${mod.update_url}",
+		"url": "https://www.github.com/InfinityRaider",
 
 		"description": "Library mod for InfinityRaider's mods"
 	}

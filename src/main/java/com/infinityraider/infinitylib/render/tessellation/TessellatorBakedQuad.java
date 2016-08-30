@@ -157,7 +157,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     @Override
     public TextureAtlasSprite getIcon(ResourceLocation loc) {
-        if(this.textureFunction == null) {
+        if(this.textureFunction == null || loc == null) {
             return super.getIcon(loc);
         } else {
             return this.textureFunction.apply(loc);

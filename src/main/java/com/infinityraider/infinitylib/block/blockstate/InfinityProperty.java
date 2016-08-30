@@ -4,31 +4,36 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 
 public class InfinityProperty<T extends Comparable<T>> {
-    private final IProperty<T> property;
-    private final T defaultValue;
 
-    public InfinityProperty(IProperty<T> property, T defaultValue) {
-        this.property = property;
-        this.defaultValue = defaultValue;
-    }
+	private final IProperty<T> property;
+	private final T defaultValue;
 
-    public IProperty<T> getProperty() {
-        return property;
-    }
+	public InfinityProperty(IProperty<T> property, T defaultValue) {
+		this.property = property;
+		this.defaultValue = defaultValue;
+	}
 
-    public T getDefault() {
-        return defaultValue;
-    }
+	public IProperty<T> getProperty() {
+		return property;
+	}
 
-    public IBlockState applyToBlockState(IBlockState state) {
-        return applyToBlockState(state, getDefault());
-    }
+	public T getDefault() {
+		return defaultValue;
+	}
 
-    public IBlockState applyToBlockState(IBlockState state, T value) {
-        return state.withProperty(getProperty(), value);
-    }
+	public IBlockState applyToBlockState(IBlockState state) {
+		return applyToBlockState(state, getDefault());
+	}
 
-    public T getValue(IBlockState state) {
-        return state.getValue(getProperty());
-    }
+	public IBlockState applyToBlockState(IBlockState state, T value) {
+		return state.withProperty(getProperty(), value);
+	}
+
+	public T getValue(IBlockState state) {
+		if (state.getPropertyNames().contains(this.getProperty())) {
+			return state.getValue(getProperty());
+		} else {
+			return this.defaultValue;
+		}
+	}
 }
