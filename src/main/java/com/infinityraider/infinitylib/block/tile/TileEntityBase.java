@@ -23,6 +23,10 @@ public abstract class TileEntityBase extends TileEntity {
         return this.getPos().getZ();
     }
 
+    public IBlockState getActualState(IBlockState state) {
+        return state;
+    }
+
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
         return oldState.getBlock() != newState.getBlock();
