@@ -12,6 +12,10 @@ public abstract class ItemBase extends Item implements IInfinityItem {
 	private final boolean isModelVanilla;
 	protected final String[] varients;
 
+	public ItemBase(String name) {
+        this(name, false);
+    }
+
 	public ItemBase(String name, boolean modelVanilla, String... varients) {
 		super();
 		this.internalName = name;
