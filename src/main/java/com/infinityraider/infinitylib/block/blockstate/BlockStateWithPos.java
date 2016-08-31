@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.block.blockstate;
 
 import com.google.common.collect.ImmutableMap;
-import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.EnumPushReaction;
 import net.minecraft.block.material.MapColor;
@@ -25,37 +24,19 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Special block state to pass the tile entity and position of a block to the renderer
- * @param <TE> TileEntity type
- * @param <S> The original block state
- */
-public class BlockStateSpecial<TE extends TileEntityBase, S extends IBlockState> implements IBlockStateSpecial<TE, S> {
-    private final TE tile;
-    private final BlockPos pos;
+public class BlockStateWithPos<S extends IBlockState> implements IBlockStateWithPos<S> {
     private final S state;
+    private final BlockPos pos;
 
-    public BlockStateSpecial(S state, BlockPos pos, TE tile) {
+    public BlockStateWithPos(S state, BlockPos pos) {
         this.state = state;
-        this.tile = tile;
         this.pos = pos;
     }
 
-    /**
-     * @return Return the TileEntity for this block state
-     */
-    @Override
-    public TE getTileEntity() {
-        return tile;
-    }
-
-    /**
-     * @return The BlockPos for this block state
-     */
     @Override
     public BlockPos getPos() {
-        return pos;
-    }
+    return pos;
+}
 
     @Override
     public S getWrappedState() {

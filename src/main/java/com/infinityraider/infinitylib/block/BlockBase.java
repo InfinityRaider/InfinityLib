@@ -1,5 +1,7 @@
 package com.infinityraider.infinitylib.block;
 
+import com.infinityraider.infinitylib.block.blockstate.BlockStateWithPos;
+import com.infinityraider.infinitylib.block.blockstate.IBlockStateWithPos;
 import com.infinityraider.infinitylib.block.blockstate.InfinityProperty;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -8,6 +10,8 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 
 import java.util.List;
 
@@ -60,6 +64,17 @@ public abstract class BlockBase extends Block {
      * desired.
      */
     public abstract Class<? extends ItemBlock> getItemBlockClass();
+
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public final IBlockStateWithPos<? extends IBlockState> getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        return new BlockStateWithPos<>(extendedState(state, world, pos), pos);
+    }
+
+    protected IBlockState extendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        return state;
+    }
 
     @Override
     @SuppressWarnings("deprecation")

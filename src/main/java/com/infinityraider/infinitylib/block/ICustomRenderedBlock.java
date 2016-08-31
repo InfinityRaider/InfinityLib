@@ -1,20 +1,27 @@
 package com.infinityraider.infinitylib.block;
 
+import com.infinityraider.infinitylib.block.blockstate.IBlockStateWithPos;
+import com.infinityraider.infinitylib.render.block.IBlockRenderingHandler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import java.util.List;
-import com.infinityraider.infinitylib.render.block.RenderBlock;
 
 /**
  * Implemented in a Block class to have special rendering handling for the block
  */
 public interface ICustomRenderedBlock {
+    /**
+     * This is here to make sure a block state containing the tile entity and block position of the block are passed in the block's getExtendedState method
+     * @param state the block's in world state (can be an IExtendedState)
+     * @param world the world
+     * @param pos the block's position in the world
+     * @return a special block state containing the tile entity and the position
+     */
+    @SuppressWarnings("unused")
+    IBlockStateWithPos<? extends IBlockState> getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos);
 
     /**
      * Gets called to create the IBlockRenderingHandler instance to render this
@@ -23,7 +30,7 @@ public interface ICustomRenderedBlock {
      * @return a new IBlockRenderingHandler object for this block
      */
     @SideOnly(Side.CLIENT)
-    RenderBlock getRenderer();
+    IBlockRenderingHandler getRenderer();
 
     /**
      * Gets an array of ResourceLocations used for the model of this block, all
@@ -33,28 +40,4 @@ public interface ICustomRenderedBlock {
      */
     @SideOnly(Side.CLIENT)
     ModelResourceLocation getBlockModelResourceLocation();
-
-    /**
-     * Quads are cached and only recalculated when a render update is necessary.
-     * If this block does not have a tile entity, this method will not be
-     * called, instead the previous block state is compared with the new block
-     * state to determine if a render update is needed.
-     *
-     * @param world world object
-     * @param pos position of the block
-     * @param state block state of the block
-     * @param tile tile entity at the passed position
-     * @return if the appearance of the block has changed and quads need to be
-     * redrawn
-     */
-    @SideOnly(Side.CLIENT)
-    default boolean needsRenderUpdate(World world, BlockPos pos, IBlockState state) {
-        // TODO: Figure out how to update on blockstate change!
-        return true;
-        //return !world.getBlockState(pos).equals(state);
-    }
-
-    @SideOnly(Side.CLIENT)
-    List<ResourceLocation> getTextures();
-
 }
