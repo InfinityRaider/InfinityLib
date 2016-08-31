@@ -14,6 +14,9 @@ import net.minecraft.util.EnumHand;
  * There will also be a weapon rendered in the left hand, both in first person and third person,
  * the appropriate coordinate transformations are automatically taken care of, there is still the possibility to scale, translate and rotate the
  * item after this.
+ *
+ * IMPORTANT:
+ * If you want to use this dual wielding interface, you have to activate the dual wielding module in your proxy (ModuleDualWield in this package)
  */
 public interface IDualWieldedWeapon {
     /**

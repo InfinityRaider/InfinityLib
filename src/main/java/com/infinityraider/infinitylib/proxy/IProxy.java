@@ -10,11 +10,6 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public interface IProxy extends IProxyBase {
-    @Override
-    default void preInitStart(FMLPreInitializationEvent event) {
-        ConfigurationHandler.getInstance().init(event);
-    }
-
     default void registerEntities(InfinityMod mod) {
         ModHelper.getInstance().registerEntities(mod);
     }
@@ -26,6 +21,11 @@ public interface IProxy extends IProxyBase {
     @Override
     default void postInitEnd(FMLPostInitializationEvent event) {
         Module.getActiveModules().forEach(Module::postInit);
+    }
+
+    @Override
+    default void initConfiguration(FMLPreInitializationEvent event) {
+        ConfigurationHandler.getInstance().init(event);
     }
 
     void registerRenderers(InfinityMod mod);

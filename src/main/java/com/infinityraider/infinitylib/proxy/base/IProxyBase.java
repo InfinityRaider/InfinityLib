@@ -77,6 +77,11 @@ public interface IProxyBase {
      */
 
     /**
+     * Called to initialize the configuration
+     */
+    void initConfiguration(FMLPreInitializationEvent event);
+
+    /**
      * Called to register the event handlers
      */
     void registerEventHandlers();

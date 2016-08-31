@@ -51,6 +51,7 @@ public abstract class InfinityMod {
 
     public final void preInit(FMLPreInitializationEvent event) {
         LogHelper.debug("Starting Pre-Initialization");
+        proxy().initConfiguration(event);
         proxy().preInitStart(event);
         proxy().activateRequiredModules();
         ModHelper.getInstance().RegisterBlocksAndItems(this);

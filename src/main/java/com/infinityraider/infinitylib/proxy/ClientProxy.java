@@ -15,12 +15,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class ClientProxy implements IProxy, IClientProxyBase {
     @Override
-    public void preInitStart(FMLPreInitializationEvent event) {
-        IProxy.super.preInitStart(event);
-        ConfigurationHandler.getInstance().initClientConfigs(event);
-    }
-
-    @Override
     public void initEnd(FMLInitializationEvent event) {
         IProxy.super.initEnd(event);
         Module.getActiveModules().forEach(Module::initClient);
@@ -29,6 +23,12 @@ public class ClientProxy implements IProxy, IClientProxyBase {
     public void postInitEnd(FMLPostInitializationEvent event) {
         IProxy.super.postInitEnd(event);
         Module.getActiveModules().forEach(Module::postInitClient);
+    }
+
+    @Override
+    public void initConfiguration(FMLPreInitializationEvent event) {
+        IProxy.super.initConfiguration(event);
+        ConfigurationHandler.getInstance().initClientConfigs(event);
     }
 
     @Override
