@@ -18,7 +18,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -31,21 +32,19 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public abstract class RenderUtilBase {
     protected RenderUtilBase() {}
 
-    public static int getMixedBrightness(IBlockAccess world, BlockPos pos, Block block) {
+    public final int getMixedBrightness(World world, BlockPos pos, Block block) {
         return getMixedBrightness(world, pos, world.getBlockState(pos), block);
     }
 
-    public static int getMixedBrightness(IBlockAccess world, BlockPos pos, IBlockState state) {
+    public final int getMixedBrightness(World world, BlockPos pos, IBlockState state) {
         return getMixedBrightness(world, pos, state, state.getBlock());
     }
 
-    public static int getMixedBrightness(IBlockAccess world, BlockPos pos, IBlockState state, Block block) {
-        //TODO: get brightness
-        //return world.getCombinedLight();
-        return 1;
+    public final int getMixedBrightness(World world, BlockPos pos, IBlockState state, Block block) {
+        return world.getCombinedLight(pos, world.getLightFor(EnumSkyBlock.BLOCK, pos));
     }
 
-    public static void rotateBlock(ITessellator tess, EnumFacing dir) {
+    public final void rotateBlock(ITessellator tess, EnumFacing dir) {
         tess.translate(0.5, 0, 0.5);
         //tess.rotate(180, 0F, 0F, 1F);
         switch (dir) {
@@ -62,7 +61,7 @@ public abstract class RenderUtilBase {
         tess.translate(-0.5, 0, -0.5);
     }
 
-    public static void renderItemStack(ItemStack stack, double x, double y, double z, double scale, boolean rotate) {
+    public final void renderItemStack(ItemStack stack, double x, double y, double z, double scale, boolean rotate) {
         // Save Settings
         GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
@@ -97,7 +96,7 @@ public abstract class RenderUtilBase {
      * @param partialTicks partial tick
      * @param inverse inverse or not
      */
-    public static void correctViewBobbing(EntityPlayer player, float partialTicks, boolean inverse) {
+    public final void correctViewBobbing(EntityPlayer player, float partialTicks, boolean inverse) {
         if (!Minecraft.getMinecraft().gameSettings.viewBobbing) {
             return;
         }
@@ -123,7 +122,7 @@ public abstract class RenderUtilBase {
      * Renders three lines with length 1 starting from (0, 0, 0):
      * red line along x axis, green line along y axis and blue line along z axis.
      */
-    public static void renderCoordinateSystemDebug() {
+    public final void renderCoordinateSystemDebug() {
         if(ConfigurationHandler.getInstance().debug) {
             Tessellator tessellator = Tessellator.getInstance();
             VertexBuffer buffer = tessellator.getBuffer();
@@ -158,7 +157,7 @@ public abstract class RenderUtilBase {
      * @param loc ResourceLocation to grab icon from
      * @return the icon
      */
-    public static final TextureAtlasSprite getIcon(ResourceLocation loc) {
+    public final TextureAtlasSprite getIcon(ResourceLocation loc) {
         if(loc == null) {
             return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
         }

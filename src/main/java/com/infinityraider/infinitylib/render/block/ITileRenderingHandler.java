@@ -36,6 +36,12 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
     List<ResourceLocation> getAllTextures();
 
     /**
+     * This method is not used by ITileRenderingHandlers
+     */
+    @Override
+    default void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, IBlockState state, B block) {}
+
+    /**
      * Called to render the block at a specific place in the world,
      * startDrawing() has already been called on the tessellator object.
      * The tessellator is also translated to the block's position
@@ -55,6 +61,13 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
      */
     void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
                           IBlockState state, B block, T tile, boolean dynamicRender, float partialTick, int destroyStage);
+
+    /**
+     * This method is not used by ITileRenderingHandlers
+     */
+    @Override
+    default void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
+                                      ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type) {}
 
     /**
      * Called to render the block in an inventory
