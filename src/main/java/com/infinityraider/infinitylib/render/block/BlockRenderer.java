@@ -99,7 +99,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock> implement
 
                     tessellator.startDrawingQuads(this.format);
 
-                    this.renderer.renderWorldBlock(tessellator, world, pos, pos.getX(), pos.getY(), pos.getZ(), extendedState, block);
+                    this.renderer.renderWorldBlock(tessellator, world, pos, extendedState, block);
 
                     cachedQuads.get(extendedState).put(side, tessellator.getQuads());
 

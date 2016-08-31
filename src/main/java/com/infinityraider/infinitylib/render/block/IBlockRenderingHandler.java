@@ -41,13 +41,10 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @param tessellator tessellator object to draw quads
      * @param world the world for the block
      * @param pos the position for the block
-     * @param x the precise x-position of the block (only relevant for TESR calls)
-     * @param y the precise y-position of the block (only relevant for TESR calls)
-     * @param z the precise z-position of the block (only relevant for TESR calls)
      * @param state the state of the block
      * @param block the block
      */
-    void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z, IBlockState state, B block);
+    void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, IBlockState state, B block);
 
     /**
      * Called to render the block in an inventory
