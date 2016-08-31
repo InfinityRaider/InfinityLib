@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.proxy.base;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -69,6 +70,22 @@ public interface IProxyBase {
      */
     default void onServerStopped(FMLServerStoppedEvent event) {}
 
+    /**
+     * -------------------
+     * REGISTERING METHODS
+     * -------------------
+     */
+
+    /**
+     * Called to register the event handlers
+     */
+    void registerEventHandlers();
+
+    /**
+     * Called to activate all the necessary InfinityLib modules for this mod
+     */
+    void activateRequiredModules();
+
 
     /**
      * ---------------
@@ -122,4 +139,9 @@ public interface IProxyBase {
 
     /** Queues a task to be executed on this side */
     void queueTask(Runnable task);
+
+    /** Registers an event handler */
+    default void registerEventHandler(Object handler) {
+        MinecraftForge.EVENT_BUS.register(handler);
+    }
 }

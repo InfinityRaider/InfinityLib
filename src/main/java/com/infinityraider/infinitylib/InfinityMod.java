@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib;
 
 import com.infinityraider.infinitylib.network.INetworkWrapper;
+import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.utility.LogHelper;
 import com.infinityraider.infinitylib.utility.ModHelper;
@@ -51,6 +52,7 @@ public abstract class InfinityMod {
     public final void preInit(FMLPreInitializationEvent event) {
         LogHelper.debug("Starting Pre-Initialization");
         proxy().preInitStart(event);
+        proxy().activateRequiredModules();
         ModHelper.getInstance().RegisterBlocksAndItems(this);
         InfinityLib.proxy.registerRenderers(this);
         InfinityLib.proxy.registerEntities(this);
@@ -61,6 +63,8 @@ public abstract class InfinityMod {
     public final void init(FMLInitializationEvent event) {
         LogHelper.debug("Starting Initialization");
         proxy().initStart(event);
+        ModHelper.getInstance().registerEventHandlers(this);
+        registerMessages(NetworkWrapper.getInstance());
         ModHelper.getInstance().registerRecipes(this);
         proxy().initEnd(event);
         LogHelper.debug("Initialization Complete");

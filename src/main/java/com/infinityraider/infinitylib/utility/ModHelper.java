@@ -5,7 +5,6 @@ import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.BlockBaseTile;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.item.*;
-import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
 import com.infinityraider.infinitylib.render.item.IAutoRenderedItem;
 import com.infinityraider.infinitylib.render.item.ItemRendererRegistry;
@@ -70,8 +69,6 @@ public class ModHelper {
 			}
 		});
 		LogHelper.debug("Finished Tile Registration!");
-		//network messages
-		mod.registerMessages(NetworkWrapper.getInstance());
 	}
 
 	public void registerRecipes(InfinityMod mod) {
@@ -160,4 +157,7 @@ public class ModHelper {
         LogHelper.debug("Finished Entity Registration!");
     }
 
+    public void registerEventHandlers(InfinityMod mod) {
+        mod.proxy().registerEventHandlers();
+    }
 }
