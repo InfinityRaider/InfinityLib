@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class RayTraceHelper {
     @Nullable
-    public static RayTraceResult getTargetBlock(Entity entity, int distance) {
+    public static RayTraceResult getTargetBlock(Entity entity, double distance) {
         Optional<Tuple<Vec3d, Vec3d>> eyesAndTrace = getEyesAndTraceVectors(entity, distance);
         if(!eyesAndTrace.isPresent()) {
             return null;
@@ -24,7 +24,7 @@ public class RayTraceHelper {
     }
 
     @Nullable
-    public static RayTraceResult getTargetEntityOrBlock(Entity entity, int distance) {
+    public static RayTraceResult getTargetEntityOrBlock(Entity entity, double distance) {
         Optional<Tuple<Vec3d, Vec3d>> eyesAndTrace = getEyesAndTraceVectors(entity, distance);
         if(!eyesAndTrace.isPresent()) {
             return null;
@@ -32,7 +32,7 @@ public class RayTraceHelper {
         return rayTraceBlocksForEntity(entity, entity.getEntityWorld(), eyesAndTrace.get().getFirst(), eyesAndTrace.get().getSecond(), false, false, true);
     }
 
-    private static Optional<Tuple<Vec3d, Vec3d>> getEyesAndTraceVectors(Entity entity, int distance) {
+    private static Optional<Tuple<Vec3d, Vec3d>> getEyesAndTraceVectors(Entity entity, double distance) {
         Vec3d eyes = new Vec3d(entity.posX, entity.posY + (double)entity.getEyeHeight(), entity.posZ);
         Vec3d look = entity.getLookVec();
         if(look == null) {
