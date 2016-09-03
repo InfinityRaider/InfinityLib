@@ -122,7 +122,7 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
                     boolean update;
                     if(!cachedQuads.containsKey(extendedState)) {
                         cachedQuads.put(extendedState, new HashMap<>());
-                        update = false;
+                        update = true;
                     } else {
                         update = !cachedQuads.get(extendedState).containsKey(side);
                     }
@@ -141,7 +141,7 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
                     return cachedQuads.get(extendedState).get(side);
                 }
             }
-            return ImmutableList.of();
+            return Collections.emptyList();
         }
 
         @Override

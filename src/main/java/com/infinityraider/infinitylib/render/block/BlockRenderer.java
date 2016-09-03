@@ -89,7 +89,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock> implement
                 boolean update;
                 if(!cachedQuads.containsKey(extendedState)) {
                     cachedQuads.put(extendedState, new HashMap<>());
-                    update = false;
+                    update = true;
                 } else {
                     update = !cachedQuads.get(extendedState).containsKey(side);
                 }
@@ -107,7 +107,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock> implement
                 }
                 return cachedQuads.get(extendedState).get(side);
             } else {
-                return ImmutableList.of();
+                return Collections.emptyList();
             }
         }
 
