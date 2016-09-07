@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.item;
 import com.infinityraider.infinitylib.reference.Names;
 import com.infinityraider.infinitylib.utility.debug.DebugMode;
 import com.infinityraider.infinitylib.utility.debug.DebugModeFeedback;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -42,9 +43,13 @@ public abstract class ItemDebuggerBase extends ItemBase {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(ItemStack stack, World world, EntityPlayer player, EnumHand hand) {
-        if (!world.isRemote && player.isSneaking()) {
-            DebugMode mode = this.changeDebugMode(stack);
-            player.addChatComponentMessage(new TextComponentString("Set debug mode to " + mode.debugName()));
+        if (player.isSneaking()) {
+            if (!world.isRemote) {
+                DebugMode mode = this.changeDebugMode(stack);
+                player.addChatComponentMessage(new TextComponentString("Set debug mode to " + mode.debugName()));
+            }
+        } else {
+            this.getDebugMode(stack).debugActionClicked(stack, world, player, hand);
         }
         return new ActionResult<>(EnumActionResult.PASS, stack);
     }
@@ -52,9 +57,17 @@ public abstract class ItemDebuggerBase extends ItemBase {
     @Override
     public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         if(!player.isSneaking()) {
-            this.getDebugMode(stack).debugAction(stack, player, world, pos, hand, side, hitX, hitY, hitZ);
+            this.getDebugMode(stack).debugActionBlockClicked(stack, player, world, pos, hand, side, hitX, hitY, hitZ);
         }
         return EnumActionResult.PASS;
+    }
+
+    @Override
+    public boolean itemInteractionForEntity(ItemStack stack, EntityPlayer player, EntityLivingBase target, EnumHand hand) {
+        if(!player.isSneaking()) {
+            this.getDebugMode(stack).debugActionEntityClicked(stack, player, target, hand);
+        }
+        return false;
     }
 
     @SideOnly(Side.CLIENT)

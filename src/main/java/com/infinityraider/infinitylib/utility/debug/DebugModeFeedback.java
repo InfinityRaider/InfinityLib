@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.utility.debug;
 import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -24,12 +25,18 @@ public class DebugModeFeedback extends DebugMode {
     }
 
     @Override
-    public void debugAction(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        for (String dataLine : getDebugData(world, pos)) {
+    public void debugActionBlockClicked(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+        for(String dataLine:getDebugData(world, pos)) {
             LogHelper.debug(dataLine);
             player.addChatComponentMessage(new TextComponentString(dataLine));
         }
     }
+
+    @Override
+    public void debugActionClicked(ItemStack stack, World world, EntityPlayer player, EnumHand hand) {}
+
+    @Override
+    public void debugActionEntityClicked(ItemStack stack, EntityPlayer player, EntityLivingBase target, EnumHand hand) {}
 
     /**
      * Constructs a list of strings representing the debug information for the
