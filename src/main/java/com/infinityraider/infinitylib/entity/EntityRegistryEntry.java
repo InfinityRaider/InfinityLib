@@ -1,8 +1,10 @@
 package com.infinityraider.infinitylib.entity;
 
 import com.infinityraider.infinitylib.InfinityMod;
+import com.infinityraider.infinitylib.modules.entitytargeting.ModuleEntityTargeting;
 import com.infinityraider.infinitylib.utility.IToggleable;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
@@ -88,6 +90,15 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
 
     public EntityRegistryEntry<E> setRenderFactory(IRenderFactory<E> renderFactory) {
         this.renderFactory = renderFactory;
+        return this;
+    }
+
+    public EntityRegistryEntry<E> setEntityTargetedBy(Class<? extends EntityCreature>... aggressors) {
+        ModuleEntityTargeting module = ModuleEntityTargeting.getInstance();
+        module.activate();
+        for(Class<? extends EntityCreature> aggressor : aggressors) {
+            module.registerEntityTargeting(this.entityClass, aggressor);
+        }
         return this;
     }
 
