@@ -139,7 +139,7 @@ public interface IProxyBase {
      *  @return  the entity in that World object with that id
      */
     default Entity getEntityById(World world, int id) {
-        return world.getEntityByID(id);
+        return world == null ? null : world.getEntityByID(id);
     }
 
     /** Queues a task to be executed on this side */
