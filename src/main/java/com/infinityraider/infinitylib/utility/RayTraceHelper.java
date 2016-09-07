@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.utility;
 
+import com.google.common.base.Predicate;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -32,6 +33,24 @@ public class RayTraceHelper {
         return rayTraceBlocksForEntity(entity, entity.getEntityWorld(), eyesAndTrace.get().getFirst(), eyesAndTrace.get().getSecond(), false, false, true);
     }
 
+    @Nullable
+    public static RayTraceResult getTargetEntityOrBlock(Entity entity, double distance, Class<? extends Entity> entityClass) {
+        Optional<Tuple<Vec3d, Vec3d>> eyesAndTrace = getEyesAndTraceVectors(entity, distance);
+        if(!eyesAndTrace.isPresent()) {
+            return null;
+        }
+        return rayTraceBlocksForEntity(entity, entity.getEntityWorld(), eyesAndTrace.get().getFirst(), eyesAndTrace.get().getSecond(), false, false, true, entityClass);
+    }
+
+    @Nullable
+    public static RayTraceResult getTargetEntityOrBlock(Entity entity, double distance, Predicate<? super Entity> filter) {
+        Optional<Tuple<Vec3d, Vec3d>> eyesAndTrace = getEyesAndTraceVectors(entity, distance);
+        if(!eyesAndTrace.isPresent()) {
+            return null;
+        }
+        return rayTraceBlocksForEntity(entity, entity.getEntityWorld(), eyesAndTrace.get().getFirst(), eyesAndTrace.get().getSecond(), false, false, true, filter);
+    }
+
     private static Optional<Tuple<Vec3d, Vec3d>> getEyesAndTraceVectors(Entity entity, double distance) {
         Vec3d eyes = new Vec3d(entity.posX, entity.posY + (double)entity.getEyeHeight(), entity.posZ);
         Vec3d look = entity.getLookVec();
@@ -43,7 +62,27 @@ public class RayTraceHelper {
     }
 
     @Nullable
-    public static RayTraceResult rayTraceBlocksForEntity(Entity entity, World world, Vec3d start, Vec3d ray, boolean stopOnLiquid, boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock) {
+    public static RayTraceResult rayTraceBlocksForEntity(
+            Entity entity, World world, Vec3d start, Vec3d ray, boolean stopOnLiquid,
+            boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock) {
+
+        return rayTraceBlocksForEntity(entity, world, start, ray, stopOnLiquid, ignoreBlockWithoutBoundingBox, returnLastUncollidableBlock, Entity.class);
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static RayTraceResult rayTraceBlocksForEntity(
+            Entity entity, World world, Vec3d start, Vec3d ray, boolean stopOnLiquid,
+            boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock, Class<? extends Entity> entityClass) {
+
+        return rayTraceBlocksForEntity(entity, world, start, ray, stopOnLiquid, ignoreBlockWithoutBoundingBox, returnLastUncollidableBlock, new PredicateInstanceOf(entityClass));
+    }
+
+    @Nullable
+    public static RayTraceResult rayTraceBlocksForEntity(
+            Entity entity, World world, Vec3d start, Vec3d ray, boolean stopOnLiquid,
+            boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock, Predicate<? super Entity> filter) {
+
         if (!Double.isNaN(start.xCoord) && !Double.isNaN(start.yCoord) && !Double.isNaN(start.zCoord)) {
             if (!Double.isNaN(ray.xCoord) && !Double.isNaN(ray.yCoord) && !Double.isNaN(ray.zCoord)) {
                 int x2 = MathHelper.floor_double(ray.xCoord);
@@ -132,7 +171,7 @@ public class RayTraceHelper {
                     z1 = MathHelper.floor_double(start.zCoord) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
                     pos = new BlockPos(x1, y1, z1);
 
-                    List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(entity, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1));
+                    List<Entity> entities = world.getEntitiesInAABBexcluding(entity, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1), filter);
                     Entity closest = null;
                     double dist = 999.0D * 999.0D;
                     for(Entity collided : entities) {
@@ -186,5 +225,18 @@ public class RayTraceHelper {
         }
 
         return new Tuple<>(d, flag);
+    }
+
+    public static class PredicateInstanceOf<E extends Entity> implements Predicate<E> {
+        private final Class<E> entityClass;
+
+        public PredicateInstanceOf(Class<E> entityClass) {
+            this.entityClass = entityClass;
+        }
+
+        @Override
+        public boolean apply(@Nullable Entity e) {
+            return e != null && entityClass.isAssignableFrom(e.getClass());
+        }
     }
 }
