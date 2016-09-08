@@ -16,8 +16,8 @@ import java.util.*;
 @SideOnly(Side.CLIENT)
 public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock> implements IModel {
 
-    protected final B block;
-    protected final IBlockRenderingHandler<B> renderer;
+    private final B block;
+    private final IBlockRenderingHandler<B> renderer;
 
     public BlockRenderer(IBlockRenderingHandler<B> renderer) {
         this.block = renderer.getBlock();
@@ -32,6 +32,14 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock> implement
     @Override
     public Collection<ResourceLocation> getTextures() {
         return renderer.getAllTextures();
+    }
+
+    public B getBlock() {
+        return block;
+    }
+
+    public IBlockRenderingHandler<B> getRenderer() {
+        return renderer;
     }
 
     @Override

@@ -36,7 +36,7 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
         tessellator.startDrawingQuads(DefaultVertexFormats.BLOCK);
         tessellator.setColorRGBA(255, 255, 255, 255);
 
-        ((ITileRenderingHandler<B, T>) this.renderer).renderWorldBlock(tessellator, world, pos, x, y, z, extendedState, block, te, true, partialTicks, destroyStage);
+        ((ITileRenderingHandler<B, T>) this.getRenderer()).renderWorldBlock(tessellator, world, pos, x, y, z, extendedState, this.getBlock(), te, true, partialTicks, destroyStage);
 
         tessellator.draw();
 
