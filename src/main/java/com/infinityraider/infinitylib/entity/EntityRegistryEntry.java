@@ -6,6 +6,8 @@ import com.infinityraider.infinitylib.utility.IToggleable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.network.datasync.DataSerializer;
+import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -98,6 +100,13 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
         module.activate();
         for(Class<? extends EntityCreature> aggressor : aggressors) {
             module.registerEntityTargeting(this.entityClass, aggressor);
+        }
+        return this;
+    }
+
+    public EntityRegistryEntry<E> registerDataSerializers(DataSerializer<?>... serializers) {
+        for(DataSerializer<?> serializer : serializers) {
+            DataSerializers.registerSerializer(serializer);
         }
         return this;
     }
