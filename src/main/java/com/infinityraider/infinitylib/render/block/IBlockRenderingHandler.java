@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.render.block;
 
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
+import com.infinityraider.infinitylib.render.item.IItemRenderingHandler;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -17,7 +18,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
-public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlock> {
+public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlock> extends IItemRenderingHandler {
     /**
      * Gets the block tied to this renderer, used for registering this renderer.
      * A pointer to the Block is saved and referenced.
@@ -45,6 +46,18 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @param block the block
      */
     void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, IBlockState state, B block);
+
+    /**
+     * Retrofitted to fix block rendering.
+     * @param tessellator
+     * @param world
+     * @param stack
+     * @param entity 
+     */
+    @Override
+    public default void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity) {
+        renderInventoryBlock(tessellator, world, this.getBlock().getDefaultState(), this.getBlock(), stack, entity, ItemCameraTransforms.TransformType.NONE);
+    }
 
     /**
      * Called to render the block in an inventory

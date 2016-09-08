@@ -5,6 +5,7 @@ import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlockWithTile;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
+import com.infinityraider.infinitylib.render.tile.TesrWrapper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
@@ -107,7 +108,7 @@ public class BlockRendererRegistry implements ICustomModelLoader {
             //dynamic rendering
             TileEntity tile = renderer.getTileEntity();
             if (renderer.hasDynamicRendering() && tile != null) {
-                ClientRegistry.bindTileEntitySpecialRenderer(tile.getClass(), instance);
+                ClientRegistry.bindTileEntitySpecialRenderer(tile.getClass(), new TesrWrapper<>(instance));
             }
             //inventory rendering
             registerInventoryRendering(renderer, blockModel, instance);

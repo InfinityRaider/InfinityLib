@@ -14,6 +14,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
 import java.util.List;
+import net.minecraftforge.common.property.ExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
 
 public abstract class BlockBase extends Block {
     private final String internalName;
@@ -41,7 +43,12 @@ public abstract class BlockBase extends Block {
         for(int i = 0; i < properties.length; i++) {
             properties[i] = propertyArray[i].getProperty();
         }
-        return new BlockStateContainer(this, properties);
+        IUnlistedProperty[] uprops = getUnlistedPropertyArray();
+        if (uprops.length < 1) {
+            return new BlockStateContainer(this, properties);
+        } else {
+            return new ExtendedBlockState(this, properties, uprops);
+        }
     }
 
     private void setDefaultState() {
@@ -55,6 +62,13 @@ public abstract class BlockBase extends Block {
      * @return a property array containing all properties for this block's state
      */
     protected abstract InfinityProperty[] getPropertyArray();
+    
+    /**
+     * @return a property array containing all properties for this block's state
+     */
+    protected IUnlistedProperty[] getUnlistedPropertyArray() {
+        return new IUnlistedProperty[0];
+    }
 
     /**
      * Retrieves the block's ItemBlock class, as a generic class bounded by the

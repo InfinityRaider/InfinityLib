@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.List;
+import net.minecraft.tileentity.TileEntity;
 
 public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBlockWithTile<T>, T extends TileEntityBase> extends IBlockRenderingHandler<B> {
     /**
@@ -36,10 +37,16 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
     List<ResourceLocation> getAllTextures();
 
     /**
-     * This method is not used by ITileRenderingHandlers
+     * This method is used for static rendering.
+     * This method is retrofitted to forward to the static tile rendering.
      */
     @Override
-    default void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, IBlockState state, B block) {}
+    default void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, IBlockState state, B block) {
+        final TileEntity tile = world.getTileEntity(pos);
+        if (tile != null && getTileEntity().getClass().isAssignableFrom(tile.getClass())) {
+            this.renderWorldBlock(tessellator, world, pos, 0, 0, 0, state, block, (T)tile, false, 0, 0);
+        }
+    }
 
     /**
      * Called to render the block at a specific place in the world,
@@ -63,11 +70,15 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
                           IBlockState state, B block, T tile, boolean dynamicRender, float partialTick, int destroyStage);
 
     /**
-     * This method is not used by ITileRenderingHandlers
+     * This method is to used by ITileRenderingHandlers.
+     * This method has been retrofitted.
+     * This method is the preferred method of inventory rendering.
      */
     @Override
     default void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
-                                      ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type) {}
+                                      ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type) {
+        renderInventoryBlock(tessellator, world, state, block, getTileEntity(), stack, entity, type);
+    }
 
     /**
      * Called to render the block in an inventory
@@ -82,6 +93,7 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
      * @param entity      entity holding the stack
      * @param type        camera transform type
      */
+    @Deprecated
     void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
                               T tile, ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type);
 
