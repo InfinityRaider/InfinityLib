@@ -54,6 +54,11 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
         this.doSpawn = false;
     }
 
+    public EntityRegistryEntry<E> enable(boolean status) {
+        this.enabled = status;
+        return this;
+    }
+
     public EntityRegistryEntry<E> setTrackingDistance(int trackingDistance) {
         this.trackingDistance = trackingDistance;
         return this;
