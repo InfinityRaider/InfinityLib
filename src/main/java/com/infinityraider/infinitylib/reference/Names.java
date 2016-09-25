@@ -14,5 +14,7 @@ public final class Names {
         public static final String COUNT = "IL_Count";
         public static final String DIRECTION = "IL_DIR";
         public static final String MULTI = "IL_MULTI";
+        public static final String FLAG = "IL_FLAG";
+        public static final String LIST = "IL_LIST";
     }
 }
