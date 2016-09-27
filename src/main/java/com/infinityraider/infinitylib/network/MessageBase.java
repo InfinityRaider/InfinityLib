@@ -100,4 +100,20 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     protected  void writeNBTToByteBuf(ByteBuf buf, NBTTagCompound tag) {
         ByteBufUtils.writeTag(buf, tag);
     }
+
+    protected int[] readIntArrayFromByteBuf(ByteBuf buf) {
+        int amount = buf.readInt();
+        int[] array = new int[amount];
+        for(int i = 0; i < amount; i++) {
+            array[i] = buf.readInt();
+        }
+        return array;
+    }
+
+    protected void writeIntArrayToByteBuf(ByteBuf buf, int[] array) {
+        buf.writeInt(array.length);
+        for(int i = 0; i < array.length; i++) {
+            buf.writeInt(array[i]);
+        }
+    }
 }
