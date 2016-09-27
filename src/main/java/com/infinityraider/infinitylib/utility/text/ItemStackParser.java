@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class ItemStackParser {
     /**
@@ -14,21 +14,18 @@ public class ItemStackParser {
      * String format is domain:item_id:metadata.
      * Metadata is optional, if no metadata is specified, the ItemStack will have OreDictionary.WILDCARD_VALUE as metadata
      *
-     * Can return null if no such item exists
-     *
      * @param string the string
      * @return the parsed ItemStack
      */
-    @Nullable
-    public static ItemStack parseItemStack(String string) {
+    public static Optional<ItemStack> parseItemStack(String string) {
         String[] split = string.split(":");
         if(split.length <= 2) {
             Item item = Item.REGISTRY.getObject(new ResourceLocation(string));
-            return item == null ? null : new ItemStack(item, 1, OreDictionary.WILDCARD_VALUE);
+            return item == null ? Optional.empty() : Optional.of(new ItemStack(item, 1, OreDictionary.WILDCARD_VALUE));
         } else {
             Item item = Item.REGISTRY.getObject(new ResourceLocation(split[0] + ":" + split[1]));
             if(item == null) {
-                return null;
+                return Optional.empty();
             }
             int meta = -1;
             try {
@@ -37,7 +34,7 @@ public class ItemStackParser {
                 LogHelper.info("[ERROR] Failed parsing of item metadata for " + string);
                 LogHelper.printStackTrace(e);
             }
-            return meta < 0 ? null : new ItemStack(item, 1, meta);
+            return meta < 0 ? Optional.empty() : Optional.of(new ItemStack(item, 1, meta));
         }
     }
 }
