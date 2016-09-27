@@ -3,6 +3,7 @@ Changelog
 0.2
 - ADDED: IIventory <-> IItemHandler wrappers
 - ADDED: ItemStack parser (domain:id:(optional)meta -> ItemStack)
+- ADDED: Methods to (de)serialize int[] objects to MessageBase
 
 0.1
 - Initial build
