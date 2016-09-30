@@ -51,11 +51,6 @@ public class MultiBlockPartData implements IMultiBlockPartData {
     }
 
     @Override
-    public int size() {
-        return sizeX()*sizeY()*sizeZ();
-    }
-
-    @Override
     public void writeToNBT(NBTTagCompound tag) {
         tag.setInteger(Names.NBT.X1, posX());
         tag.setInteger(Names.NBT.Y1, posY());

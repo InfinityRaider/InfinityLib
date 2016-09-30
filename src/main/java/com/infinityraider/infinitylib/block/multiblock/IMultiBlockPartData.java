@@ -36,7 +36,9 @@ public interface IMultiBlockPartData {
     /**
      * @return the number of blocks in the multi-block structure
      */
-    int size();
+    default int size() {
+        return this.sizeX() * this.sizeY() * this.sizeZ();
+    }
 
     /**
      * @param tag NBT tag to write this part's data to
