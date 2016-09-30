@@ -1,18 +1,21 @@
 package com.infinityraider.infinitylib.item;
 
 import com.infinityraider.infinitylib.utility.IToggleable;
+import net.minecraft.util.ResourceLocation;
 
+import java.util.Collections;
 import java.util.List;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public interface IInfinityItem extends IToggleable {
 
 	String getInternalName();
 
-	List<String> getOreTags();
+    /**
+     * This method should be standard implemented in every Item, used for default implementation in sub-interfaces
+     */
+    ResourceLocation getRegistryName();
 
-	//TODO: remove this, its not supposed to be here
-	@SideOnly(Side.CLIENT)
-	void registerItemRenderer();
+	default List<String> getOreTags() {
+		return Collections.emptyList();
+	}
 }

@@ -6,10 +6,9 @@ import com.infinityraider.infinitylib.block.BlockBaseTile;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.item.*;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
-import com.infinityraider.infinitylib.render.item.IAutoRenderedItem;
+import com.infinityraider.infinitylib.item.IAutoRenderedItem;
 import com.infinityraider.infinitylib.render.item.ItemRendererRegistry;
 import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
-import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
@@ -112,27 +111,10 @@ public class ModHelper {
 					ItemRendererRegistry.getInstance().registerCustomItemRendererAuto((Item & IAutoRenderedItem) item);
 				} else if (item instanceof ICustomRenderedItem) {
 					ItemRendererRegistry.getInstance().registerCustomItemRenderer((Item) item, ((ICustomRenderedItem) item).getRenderer());
-				} else {
-					item.registerItemRenderer();
 				}
 			}
 		});
 		LogHelper.debug("Finished Renderer Registration!");
-	}
-
-	@SideOnly(Side.CLIENT)
-	public static void registerItemModels(Item item, String... varients) {
-		if (varients.length == 0) {
-			varients = new String[]{""};
-		}
-		ModelResourceLocation[] locations = new ModelResourceLocation[varients.length];
-		for (int i = 0; i < varients.length; i++) {
-			locations[i] = new ModelResourceLocation(item.getRegistryName() + (varients[i].isEmpty() ? "" : ('_' + varients[i])), "inventory");
-		}
-		ModelBakery.registerItemVariants(item, locations);
-		for (int i = 0; i < varients.length; i++) {
-			ModelLoader.setCustomModelResourceLocation(item, i, locations[i]);
-		}
 	}
 
     public void registerEntities(InfinityMod mod) {

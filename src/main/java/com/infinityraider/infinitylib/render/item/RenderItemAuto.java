@@ -5,6 +5,8 @@ package com.infinityraider.infinitylib.render.item;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.infinityraider.infinitylib.item.IAutoRenderedItem;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraft.client.renderer.block.model.BakedQuad;

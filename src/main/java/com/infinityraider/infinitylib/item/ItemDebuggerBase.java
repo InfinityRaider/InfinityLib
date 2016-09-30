@@ -18,7 +18,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -33,7 +32,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
     }
 
     public ItemDebuggerBase(boolean isVanilla) {
-        super("debugger", isVanilla);
+        super("debugger");
         this.DEBUG_MODES = new ArrayList<>();
         this.DEBUG_MODES.add(new DebugModeFeedback());
         this.DEBUG_MODES.addAll(getDebugModes());
@@ -76,11 +75,6 @@ public abstract class ItemDebuggerBase extends ItemBase {
         tooltip.add("Right Click to use the debugger in its current mode");
         tooltip.add("Shift + Right Click to cycle debug modes");
         tooltip.add("Current debug mode: "  + (mode == null ? "null" : mode.debugName()));
-    }
-
-    @Override
-    public List<String> getOreTags() {
-        return Collections.emptyList();
     }
 
     private DebugMode getDebugMode(ItemStack stack) {

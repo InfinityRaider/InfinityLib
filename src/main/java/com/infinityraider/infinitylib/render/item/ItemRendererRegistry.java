@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.render.item;
 
+import com.infinityraider.infinitylib.item.IAutoRenderedItem;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.item.Item;

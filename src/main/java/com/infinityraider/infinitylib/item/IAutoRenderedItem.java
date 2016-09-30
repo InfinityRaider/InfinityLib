@@ -1,11 +1,11 @@
 /*
  */
-package com.infinityraider.infinitylib.render.item;
+package com.infinityraider.infinitylib.item;
 
-import com.infinityraider.infinitylib.render.item.ItemModelTexture;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.infinityraider.infinitylib.render.item.ItemModelTexture;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
