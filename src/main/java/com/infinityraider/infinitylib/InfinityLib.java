@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.MessageSetEntityDead;
+import com.infinityraider.infinitylib.network.MessageSyncTile;
 import com.infinityraider.infinitylib.proxy.IProxy;
 import com.infinityraider.infinitylib.reference.Reference;
 import net.minecraftforge.fml.common.Mod;
@@ -46,6 +47,7 @@ public class InfinityLib extends InfinityMod {
     @Override
     public void registerMessages(INetworkWrapper wrapper) {
         wrapper.registerMessage(MessageSetEntityDead.class);
+        wrapper.registerMessage(MessageSyncTile.class);
         for(Module module : Module.getActiveModules()) {
             module.registerMessages(wrapper);
         }

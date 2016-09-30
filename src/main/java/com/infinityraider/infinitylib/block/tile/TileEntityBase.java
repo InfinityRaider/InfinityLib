@@ -1,5 +1,7 @@
 package com.infinityraider.infinitylib.block.tile;
 
+import com.infinityraider.infinitylib.network.MessageSyncTile;
+import com.infinityraider.infinitylib.network.NetworkWrapper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -74,4 +76,13 @@ public abstract class TileEntityBase extends TileEntity {
         this.markDirty();
     }
 
+    public void syncToClient() {
+        this.syncToClient(false);
+    }
+
+    public void syncToClient(boolean renderUpdate) {
+        if(!this.worldObj.isRemote) {
+            NetworkWrapper.getInstance().sendToAllAround(new MessageSyncTile(this, renderUpdate), this.worldObj, this.xCoord(), this.yCoord(), this.zCoord(), 128);
+        }
+    }
 }
