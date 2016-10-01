@@ -3,7 +3,6 @@ package com.infinityraider.infinitylib.block;
 import com.infinityraider.infinitylib.block.multiblock.IMultiBlockComponent;
 import com.infinityraider.infinitylib.block.tile.IRotatableTile;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
-import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -13,13 +12,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase implements ITileEntityProvider {
+public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase implements IInfinityBlockWithTile<T> {
     public BlockBaseTile(String name, Material blockMaterial) {
         super(name, blockMaterial);
     }
-
-    @Override
-    public abstract T createNewTileEntity(World worldIn, int meta);
 
     @Override
     public boolean hasTileEntity(IBlockState state) {

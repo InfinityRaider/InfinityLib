@@ -1,14 +1,13 @@
 package com.infinityraider.infinitylib.utility;
 
 import com.infinityraider.infinitylib.InfinityMod;
-import com.infinityraider.infinitylib.block.BlockBase;
-import com.infinityraider.infinitylib.block.BlockBaseTile;
-import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
+import com.infinityraider.infinitylib.block.*;
 import com.infinityraider.infinitylib.item.*;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
 import com.infinityraider.infinitylib.item.IAutoRenderedItem;
 import com.infinityraider.infinitylib.render.item.ItemRendererRegistry;
 import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
+import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
@@ -33,12 +32,12 @@ public class ModHelper {
 	public void RegisterBlocksAndItems(InfinityMod mod) {
 		//blocks
 		LogHelper.debug("Starting Block Registration...");
-		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), BlockBase.class, (BlockBase block) -> {
-			if (block.isEnabled()) {
+		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
+			if ((block instanceof Block) && block.isEnabled()) {
 				LogHelper.debug("Registering Block: " + block.getInternalName());
-				RegisterHelper.registerBlock(block, mod.getModId(), block.getInternalName(), block.getItemBlockClass());
+				RegisterHelper.registerBlock((Block) block, mod.getModId(), block.getInternalName(), block.getItemBlockClass());
 				for (String tag : block.getOreTags()) {
-					OreDictionary.registerOre(tag, block);
+					OreDictionary.registerOre(tag, (Block) block);
 				}
 			}
 		});
@@ -59,7 +58,7 @@ public class ModHelper {
 
 		//tile entities
 		LogHelper.debug("Starting Tile Registration...");
-		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), BlockBaseTile.class, (BlockBaseTile block) -> {
+		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlockWithTile.class, (IInfinityBlockWithTile block) -> {
 			if (block.isEnabled()) {
 				LogHelper.debug("Registering Tile for Block: " + block.getInternalName());
 				TileEntity te = block.createNewTileEntity(null, 0);
@@ -73,7 +72,7 @@ public class ModHelper {
 	public void registerRecipes(InfinityMod mod) {
 		LogHelper.debug("Starting Recipe Registration...");
 		//blocks
-		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), BlockBase.class, (BlockBase block) -> {
+		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if (block.isEnabled() && (block instanceof IItemWithRecipe)) {
 				((IItemWithRecipe) block).getRecipes().forEach(GameRegistry::addRecipe);
 			}
@@ -91,7 +90,7 @@ public class ModHelper {
 	public void initRenderers(InfinityMod mod) {
 		LogHelper.debug("Starting Renderer Registration...");
 		//blocks
-		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), BlockBase.class, (BlockBase block) -> {
+		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if (block.isEnabled() && (block instanceof ICustomRenderedBlock)) {
 				BlockRendererRegistry.getInstance().registerCustomBlockRenderer((ICustomRenderedBlock) block);
 			}

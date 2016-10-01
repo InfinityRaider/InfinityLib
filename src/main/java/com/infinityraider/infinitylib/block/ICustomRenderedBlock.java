@@ -12,7 +12,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 /**
  * Implemented in a Block class to have special rendering handling for the block
  */
-public interface ICustomRenderedBlock {
+public interface ICustomRenderedBlock extends IInfinityBlock {
     /**
      * This is here to make sure a block state containing the tile entity and block position of the block are passed in the block's getExtendedState method
      * @param state the block's in world state (can be an IExtendedState)
@@ -39,5 +39,7 @@ public interface ICustomRenderedBlock {
      * @return a unique ModelResourceLocation for this block
      */
     @SideOnly(Side.CLIENT)
-    ModelResourceLocation getBlockModelResourceLocation();
+    default ModelResourceLocation getBlockModelResourceLocation() {
+        return new ModelResourceLocation(this.getRegistryName() + "");
+    }
 }

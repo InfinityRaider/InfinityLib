@@ -13,11 +13,10 @@ import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
-import java.util.List;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 
-public abstract class BlockBase extends Block {
+public abstract class BlockBase extends Block implements IInfinityBlock {
     private final String internalName;
 
     public BlockBase(String name, Material blockMaterial) {
@@ -30,11 +29,10 @@ public abstract class BlockBase extends Block {
         return true;
     }
 
+    @Override
     public String getInternalName() {
         return this.internalName;
     }
-
-    public abstract List<String> getOreTags();
 
     @Override
     protected final BlockStateContainer createBlockState() {
@@ -69,15 +67,6 @@ public abstract class BlockBase extends Block {
     protected IUnlistedProperty[] getUnlistedPropertyArray() {
         return new IUnlistedProperty[0];
     }
-
-    /**
-     * Retrieves the block's ItemBlock class, as a generic class bounded by the
-     * ItemBlock class.
-     *
-     * @return the block's class, may be null if no specific ItemBlock class is
-     * desired.
-     */
-    public abstract Class<? extends ItemBlock> getItemBlockClass();
 
 
     @Override
