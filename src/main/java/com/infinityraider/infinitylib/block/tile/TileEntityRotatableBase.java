@@ -6,14 +6,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
 public abstract class TileEntityRotatableBase extends TileEntityBase implements IRotatableTile {
-    public static EnumFacing[] VALID_DIRECTIONS = {EnumFacing.NORTH, EnumFacing.EAST, EnumFacing.SOUTH, EnumFacing.WEST};
 
     @Nonnull
     private EnumFacing direction = EnumFacing.NORTH;
 
     @Override
     protected final void writeTileNBT(NBTTagCompound tag) {
-        tag.setByte(Names.NBT.DIRECTION, (byte) this.direction.ordinal());
+        tag.setByte(Names.NBT.DIRECTION, (byte) this.direction.getHorizontalIndex());
         this.writeRotatableTileNBT(tag);
     }
 
@@ -36,25 +35,18 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
 
     @Override
     public final void setOrientation(EnumFacing facing) {
-        this.direction = facing == null ? this.direction : facing ;
+        this.direction = (facing != null && facing.getAxis().isHorizontal()) ? facing : this.direction;
     }
 
     @Override
     public final void incrementRotation(int amount) {
-        if(!worldObj.isRemote) {
-            return;
-        }
-        int index = 0;
-        for(int i = 0; i < VALID_DIRECTIONS.length; i++) {
-            if(VALID_DIRECTIONS[i] == this.getOrientation()) {
-                index = i;
-                break;
-            }
-        }
-        this.setOrientation(VALID_DIRECTIONS[Math.max((index + amount) % VALID_DIRECTIONS.length, 0)]);
+        this.setDirection(this.getOrientation().getHorizontalIndex() + amount);
     }
 
-    private void setDirection(int orientation) {
-        this.setOrientation(EnumFacing.values()[Math.abs(orientation) % EnumFacing.values().length]);
+    // Notice, the ordinal follows the backwards orientation.
+    private void setDirection(int cardinal) {
+        // EnumFacing can actually handle all this stuff!
+        this.setOrientation(EnumFacing.getHorizontal(cardinal));
     }
+
 }
