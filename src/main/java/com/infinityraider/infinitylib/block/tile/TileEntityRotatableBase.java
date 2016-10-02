@@ -1,19 +1,18 @@
 package com.infinityraider.infinitylib.block.tile;
 
 import com.infinityraider.infinitylib.reference.Names;
+import javax.annotation.Nonnull;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
 public abstract class TileEntityRotatableBase extends TileEntityBase implements IRotatableTile {
     public static EnumFacing[] VALID_DIRECTIONS = {EnumFacing.NORTH, EnumFacing.EAST, EnumFacing.SOUTH, EnumFacing.WEST};
 
-    private EnumFacing direction;
+    @Nonnull
+    private EnumFacing direction = EnumFacing.NORTH;
 
     @Override
     protected final void writeTileNBT(NBTTagCompound tag) {
-        if(this.direction == null) {
-            this.direction = EnumFacing.NORTH;
-        }
         tag.setByte(Names.NBT.DIRECTION, (byte) this.direction.ordinal());
         this.writeRotatableTileNBT(tag);
     }
@@ -37,7 +36,7 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
 
     @Override
     public final void setOrientation(EnumFacing facing) {
-        this.direction = facing;
+        this.direction = facing == null ? this.direction : facing ;
     }
 
     @Override
@@ -56,6 +55,6 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
     }
 
     private void setDirection(int orientation) {
-        this.setOrientation(EnumFacing.values()[orientation]);
+        this.setOrientation(EnumFacing.values()[Math.abs(orientation) % EnumFacing.values().length]);
     }
 }

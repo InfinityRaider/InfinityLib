@@ -34,7 +34,7 @@ public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase 
             TileEntityBase tile = (TileEntityBase) world.getTileEntity(pos);
             if (tile instanceof IRotatableTile) {
                 EnumFacing dir = entity.getHorizontalFacing();
-                if(dir.getAxis() == EnumFacing.Axis.X) {
+                if(dir.getAxis().isHorizontal()) {
                     dir = dir.getOpposite();
                 }
                 ((IRotatableTile) tile).setOrientation(dir);

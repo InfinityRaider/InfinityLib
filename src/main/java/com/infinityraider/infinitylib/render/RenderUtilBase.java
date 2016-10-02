@@ -36,7 +36,9 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
 public abstract class RenderUtilBase {
-    protected RenderUtilBase() {}
+
+    protected RenderUtilBase() {
+    }
 
     public static void drawBlockModel(ITessellator tessellator, IBlockState state) {
         Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -72,13 +74,13 @@ public abstract class RenderUtilBase {
         //tess.rotate(180, 0F, 0F, 1F);
         switch (dir) {
             case WEST:
-                tess.rotate(90, 0, 1, 0);
+                tess.rotate(270, 0, 1, 0);
                 break;
-            case SOUTH:
+            case NORTH:
                 tess.rotate(180, 0, 1, 0);
                 break;
             case EAST:
-                tess.rotate(270, 0, 1, 0);
+                tess.rotate(90, 0, 1, 0);
                 break;
         }
         tess.translate(-0.5, 0, -0.5);
@@ -115,6 +117,7 @@ public abstract class RenderUtilBase {
 
     /**
      * Method to cancel out view bobbing when rendering from RenderHandEvent
+     *
      * @param player player
      * @param partialTicks partial tick
      * @param inverse inverse or not
@@ -127,7 +130,7 @@ public abstract class RenderUtilBase {
         float f1 = -(player.distanceWalkedModified + f * partialTicks);
         float f2 = player.prevCameraYaw + (player.cameraYaw - player.prevCameraYaw) * partialTicks;
         float f3 = player.prevCameraPitch + (player.cameraPitch - player.prevCameraPitch) * partialTicks;
-        if(inverse) {
+        if (inverse) {
             GlStateManager.translate(MathHelper.sin(f1 * (float) Math.PI) * f2 * 0.5F, -Math.abs(MathHelper.cos(f1 * (float) Math.PI) * f2), 0.0F);
             GlStateManager.rotate(MathHelper.sin(f1 * (float) Math.PI) * f2 * 3.0F, 0.0F, 0.0F, 1.0F);
             GlStateManager.rotate(Math.abs(MathHelper.cos(f1 * (float) Math.PI - 0.2F) * f2) * 5.0F, 1.0F, 0.0F, 0.0F);
@@ -141,31 +144,31 @@ public abstract class RenderUtilBase {
     }
 
     /**
-     * Method to render the coordinate system for the current matrix.
-     * Renders three lines with length 1 starting from (0, 0, 0):
-     * red line along x axis, green line along y axis and blue line along z axis.
+     * Method to render the coordinate system for the current matrix. Renders
+     * three lines with length 1 starting from (0, 0, 0): red line along x axis,
+     * green line along y axis and blue line along z axis.
      */
-    public static void renderCoordinateSystemDebug() {
-        if(ConfigurationHandler.getInstance().debug) {
+    public static final void renderCoordinateSystemDebug() {
+        if (ConfigurationHandler.getInstance().debug) {
             Tessellator tessellator = Tessellator.getInstance();
             VertexBuffer buffer = tessellator.getBuffer();
             GlStateManager.disableTexture2D();
             GlStateManager.disableLighting();
 
             buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
-            for(int i = 0; i <= 16; i++) {
+            for (int i = 0; i <= 16; i++) {
                 buffer.pos(((float) i) / 16.0F, 0, 0).color(255, 0, 0, 255).endVertex();
             }
             tessellator.draw();
 
             buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
-            for(int i = 0; i <= 16; i++) {
+            for (int i = 0; i <= 16; i++) {
                 buffer.pos(0, ((float) i) / 16.0F, 0).color(0, 255, 0, 255).endVertex();
             }
             tessellator.draw();
 
             buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
-            for(int i = 0; i <= 16; i++) {
+            for (int i = 0; i <= 16; i++) {
                 buffer.pos(0, 0, ((float) i) / 16.0F).color(0, 0, 255, 255).endVertex();
             }
             tessellator.draw();
@@ -177,11 +180,12 @@ public abstract class RenderUtilBase {
 
     /**
      * Method to fetch a TextureAtlasSprite icon from a Resource Location
+     *
      * @param loc ResourceLocation to grab icon from
      * @return the icon
      */
-    public static TextureAtlasSprite getIcon(ResourceLocation loc) {
-        if(loc == null) {
+    public static final TextureAtlasSprite getIcon(ResourceLocation loc) {
+        if (loc == null) {
             return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
         }
         return ModelLoader.defaultTextureGetter().apply(loc);
