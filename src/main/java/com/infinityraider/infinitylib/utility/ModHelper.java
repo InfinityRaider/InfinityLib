@@ -2,6 +2,8 @@ package com.infinityraider.infinitylib.utility;
 
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.*;
+import com.infinityraider.infinitylib.block.tile.ITileEntityStateCache;
+import com.infinityraider.infinitylib.handler.TileEntityStateHandler;
 import com.infinityraider.infinitylib.item.*;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
 import com.infinityraider.infinitylib.item.IAutoRenderedItem;
@@ -64,6 +66,9 @@ public class ModHelper {
 				TileEntity te = block.createNewTileEntity(null, 0);
 				assert (te != null);
 				GameRegistry.registerTileEntity(te.getClass(), mod.getModId().toLowerCase() + ":tile." + block.getInternalName());
+				if(te instanceof ITileEntityStateCache) {
+                    TileEntityStateHandler.getInstance().register();
+                }
 			}
 		});
 		LogHelper.debug("Finished Tile Registration!");
