@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Interface used to ease recipe registering
  */
-public interface IItemWithRecipe extends IInfinityItem {
+public interface IItemWithRecipe {
     /**
      * @return a list of all recipes to be registered
      */
