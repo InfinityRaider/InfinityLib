@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.render;
 
 import com.infinityraider.infinitylib.handler.ConfigurationHandler;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
+import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -9,8 +10,11 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -24,6 +28,8 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.List;
+
 /**
  * Utility base class for rendering event handlers
  */
@@ -32,19 +38,36 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public abstract class RenderUtilBase {
     protected RenderUtilBase() {}
 
-    public static final int getMixedBrightness(World world, BlockPos pos, Block block) {
+    public static void drawBlockModel(ITessellator tessellator, IBlockState state) {
+        Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        IBakedModel model = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(state);
+        for(EnumFacing facing : EnumFacing.values()) {
+            drawQuads(TessellatorVertexBuffer.getInstance(), model.getQuads(state, facing, 0));
+        }
+        drawQuads(TessellatorVertexBuffer.getInstance(), model.getQuads(state, null, 0));
+    }
+
+    public static void drawQuads(ITessellator tessellator, List<BakedQuad> quads) {
+        if(quads.size() > 0) {
+            tessellator.startDrawingQuads(quads.get(0).getFormat());
+            tessellator.addQuads(quads);
+            tessellator.draw();
+        }
+    }
+
+    public static int getMixedBrightness(World world, BlockPos pos, Block block) {
         return getMixedBrightness(world, pos, world.getBlockState(pos), block);
     }
 
-    public static final int getMixedBrightness(World world, BlockPos pos, IBlockState state) {
+    public static int getMixedBrightness(World world, BlockPos pos, IBlockState state) {
         return getMixedBrightness(world, pos, state, state.getBlock());
     }
 
-    public static final int getMixedBrightness(World world, BlockPos pos, IBlockState state, Block block) {
+    public static int getMixedBrightness(World world, BlockPos pos, IBlockState state, Block block) {
         return world.getCombinedLight(pos, world.getLightFor(EnumSkyBlock.BLOCK, pos));
     }
 
-    public static final void rotateBlock(ITessellator tess, EnumFacing dir) {
+    public static void rotateBlock(ITessellator tess, EnumFacing dir) {
         tess.translate(0.5, 0, 0.5);
         //tess.rotate(180, 0F, 0F, 1F);
         switch (dir) {
@@ -61,7 +84,7 @@ public abstract class RenderUtilBase {
         tess.translate(-0.5, 0, -0.5);
     }
 
-    public static final void renderItemStack(ItemStack stack, double x, double y, double z, double scale, boolean rotate) {
+    public static void renderItemStack(ItemStack stack, double x, double y, double z, double scale, boolean rotate) {
         // Save Settings
         GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
@@ -96,7 +119,7 @@ public abstract class RenderUtilBase {
      * @param partialTicks partial tick
      * @param inverse inverse or not
      */
-    public static final void correctViewBobbing(EntityPlayer player, float partialTicks, boolean inverse) {
+    public static void correctViewBobbing(EntityPlayer player, float partialTicks, boolean inverse) {
         if (!Minecraft.getMinecraft().gameSettings.viewBobbing) {
             return;
         }
@@ -122,7 +145,7 @@ public abstract class RenderUtilBase {
      * Renders three lines with length 1 starting from (0, 0, 0):
      * red line along x axis, green line along y axis and blue line along z axis.
      */
-    public static final void renderCoordinateSystemDebug() {
+    public static void renderCoordinateSystemDebug() {
         if(ConfigurationHandler.getInstance().debug) {
             Tessellator tessellator = Tessellator.getInstance();
             VertexBuffer buffer = tessellator.getBuffer();
@@ -157,7 +180,7 @@ public abstract class RenderUtilBase {
      * @param loc ResourceLocation to grab icon from
      * @return the icon
      */
-    public static final TextureAtlasSprite getIcon(ResourceLocation loc) {
+    public static TextureAtlasSprite getIcon(ResourceLocation loc) {
         if(loc == null) {
             return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
         }
