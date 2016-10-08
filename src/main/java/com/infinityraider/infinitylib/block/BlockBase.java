@@ -8,7 +8,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -52,8 +51,9 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
     private void setDefaultState() {
         IBlockState state = this.blockState.getBaseState();
         for(InfinityProperty property : this.getPropertyArray()) {
-            state.withProperty(property.getProperty(), property.getDefault());
+            state = property.applyToBlockState(state);
         }
+        this.setDefaultState(state);
     }
 
     /**
