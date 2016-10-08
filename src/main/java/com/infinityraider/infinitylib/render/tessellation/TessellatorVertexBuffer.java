@@ -4,14 +4,14 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
@@ -20,10 +20,12 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
 
     private final Tessellator tessellator;
     private final VertexBuffer buffer;
+    private final Set<VertexFormatElement.EnumUsage> vertexFormatUsage;
 
     private TessellatorVertexBuffer(VertexBuffer buffer, Tessellator tessellator) {
         this.buffer = buffer;
         this.tessellator = tessellator;
+        this.vertexFormatUsage = new HashSet<>();
     }
 
     public static TessellatorVertexBuffer getInstance() {
@@ -63,7 +65,8 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      */
     @Override
     protected void onStartDrawingQuadsCall() {
-        buffer.begin(GL11.GL_QUADS, getVertexFormat());
+        this.vertexFormatUsage.addAll(this.getVertexFormat().getElements().stream().map(VertexFormatElement::getUsage).collect(Collectors.toList()));
+        buffer.begin(GL11.GL_QUADS, this.getVertexFormat());
     }
     /**
      * Method to get all quads constructed
@@ -79,6 +82,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      */
     @Override
     protected void onDrawCall() {
+        this.vertexFormatUsage.clear();
         if (tessellator != null) {
             tessellator.draw();
         } else {
@@ -108,11 +112,19 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     @Override
     public void addVertexWithUV(float x, float y, float z, float u, float v) {
         double[] coords = this.getTransformationMatrix().transform(x, y, z);
-        buffer.pos(coords[0], coords[1], coords[2]);
-        buffer.color(getRedValueInt(), getGreenValueInt(), getBlueValueInt(), getAlphaValueInt());
-        buffer.tex(u, v);
+        if(this.vertexFormatUsage.contains(VertexFormatElement.EnumUsage.POSITION)) {
+            buffer.pos(coords[0], coords[1], coords[2]);
+        }
+        if(this.vertexFormatUsage.contains(VertexFormatElement.EnumUsage.COLOR)) {
+            buffer.color(getRedValueInt(), getGreenValueInt(), getBlueValueInt(), getAlphaValueInt());
+        }
+        if(this.vertexFormatUsage.contains(VertexFormatElement.EnumUsage.UV)) {
+            buffer.tex(u, v);
+        }
         buffer.lightmap(getBrightness()>> 16 & 65535, getBrightness() & 65535);
-        //buffer.normal(getNormal().x, getNormal().y, getNormal().z);
+        if(this.vertexFormatUsage.contains(VertexFormatElement.EnumUsage.NORMAL)) {
+            buffer.normal(getNormal().x, getNormal().y, getNormal().z);
+        }
         buffer.endVertex();
     }
 
@@ -133,7 +145,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         float r = preMultiplier * ((float) (this.getRedValueInt()))/255.0F;
         float g = preMultiplier * ((float) (this.getGreenValueInt()))/255.0F;
         float b = preMultiplier * ((float) (this.getBlueValueInt()))/255.0F;
-        this.setColorRGB_F(r, g, b);
+        this.setColorRGBA_F(r, g, b, this.getAlphaValueFloat());
     }
 
     private EnumFacing transformSide(EnumFacing dir) {

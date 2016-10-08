@@ -9,10 +9,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-/**
- *
- * @author RlonRyan
- */
 @FunctionalInterface
 public interface IItemOverriden {
 

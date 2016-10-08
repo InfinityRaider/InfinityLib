@@ -268,12 +268,17 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 			default:
 				return;
 		}
+		int rPrev = this.r;
+        int gPrev = this.g;
+        int bPrev = this.b;
+        int aPrev = this.a;
 		this.applyColorMultiplier(face);
 		this.setNormal(new Vector3f(face.getFrontOffsetX(), face.getFrontOffsetY(), face.getFrontOffsetZ()));
 		addScaledVertexWithUV(x1, y1, z1, icon, u1, v1);
 		addScaledVertexWithUV(x2, y2, z2, icon, u2, v2);
 		addScaledVertexWithUV(x3, y3, z3, icon, u3, v3);
 		addScaledVertexWithUV(x4, y4, z4, icon, u4, v4);
+        this.setColorRGBA(rPrev, gPrev, bPrev, aPrev);
 	}
 
 	/**
