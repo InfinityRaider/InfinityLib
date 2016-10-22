@@ -122,7 +122,7 @@ public class CapabilityHandler {
                     .forEach(impl -> {
                         ISerializable oldProps = oldPlayer.getCapability(impl.getCapability(), null);
                         ISerializable newProps = oldPlayer.getCapability(impl.getCapability(), null);
-                        if(newProps != null) {
+                        if(newProps != null && oldProps != null) {
                             newProps.readFromNBT(oldProps.writeToNBT());
                         }
                     });
