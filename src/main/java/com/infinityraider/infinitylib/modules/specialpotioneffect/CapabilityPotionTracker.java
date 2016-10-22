@@ -55,4 +55,8 @@ public class CapabilityPotionTracker implements ICapabilityImplementation<Entity
     public PotionTracker call() throws Exception {
         return new PotionTracker();
     }
+
+    public static PotionTracker getPotionTracker(EntityLivingBase entity) {
+        return entity.hasCapability(CAPABILITY_POTION_TRACKER, null) ? entity.getCapability(CAPABILITY_POTION_TRACKER, null) : null;
+    }
 }

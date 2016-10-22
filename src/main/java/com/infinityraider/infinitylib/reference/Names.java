@@ -16,5 +16,6 @@ public final class Names {
         public static final String MULTI = "IL_MULTI";
         public static final String FLAG = "IL_FLAG";
         public static final String LIST = "IL_LIST";
+        public static final String POTIONS = "IL_POTIONS";
     }
 }
