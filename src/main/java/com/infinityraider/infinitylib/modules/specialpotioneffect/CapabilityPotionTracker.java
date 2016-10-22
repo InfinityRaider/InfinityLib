@@ -1,0 +1,58 @@
+package com.infinityraider.infinitylib.modules.specialpotioneffect;
+
+import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
+import com.infinityraider.infinitylib.reference.Reference;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+
+public class CapabilityPotionTracker implements ICapabilityImplementation<EntityLivingBase, PotionTracker> {
+    private static final CapabilityPotionTracker INSTANCE = new CapabilityPotionTracker();
+
+    public static CapabilityPotionTracker getInstance() {
+        return INSTANCE;
+    }
+
+    public static ResourceLocation KEY = new ResourceLocation(Reference.MOD_ID.toLowerCase(), "potion_tracker");
+
+    @CapabilityInject(value = PotionTracker.class)
+    public static Capability<PotionTracker> CAPABILITY_POTION_TRACKER = null;
+
+    private CapabilityPotionTracker() {}
+
+    @Override
+    public Capability<PotionTracker> getCapability() {
+        return CAPABILITY_POTION_TRACKER;
+    }
+
+    @Override
+    public boolean shouldApplyCapability(EntityLivingBase carrier) {
+        return true;
+    }
+
+    @Override
+    public PotionTracker onValueAddedToCarrier(PotionTracker value, EntityLivingBase carrier) {
+        return value.setEntity(carrier);
+    }
+
+    @Override
+    public ResourceLocation getCapabilityKey() {
+        return KEY;
+    }
+
+    @Override
+    public Class<EntityLivingBase> getCarrierClass() {
+        return EntityLivingBase.class;
+    }
+
+    @Override
+    public Class<PotionTracker> getCapabilityClass() {
+        return PotionTracker.class;
+    }
+
+    @Override
+    public PotionTracker call() throws Exception {
+        return new PotionTracker();
+    }
+}

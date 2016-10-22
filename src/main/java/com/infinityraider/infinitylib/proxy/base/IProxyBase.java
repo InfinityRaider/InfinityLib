@@ -1,5 +1,7 @@
 package com.infinityraider.infinitylib.proxy.base;
 
+import com.infinityraider.infinitylib.capability.CapabilityHandler;
+import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -91,6 +93,10 @@ public interface IProxyBase {
      */
     void activateRequiredModules();
 
+    /**
+     * Called to register the capabilities for this mod
+     */
+    void registerCapabilities();
 
     /**
      * ---------------
@@ -148,5 +154,10 @@ public interface IProxyBase {
     /** Registers an event handler */
     default void registerEventHandler(Object handler) {
         MinecraftForge.EVENT_BUS.register(handler);
+    }
+
+    /** Registers a capability */
+    default void registerCapability(ICapabilityImplementation capability) {
+        CapabilityHandler.getInstance().registerCapability(capability);
     }
 }

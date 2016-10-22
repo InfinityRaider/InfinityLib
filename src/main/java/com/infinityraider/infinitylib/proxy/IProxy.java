@@ -38,5 +38,12 @@ public interface IProxy extends IProxyBase {
     }
 
     @Override
+    default void registerCapabilities() {
+        for(Module module : Module.getActiveModules()) {
+            module.getCapabilities().forEach(this::registerCapability);
+        }
+    }
+
+    @Override
     default void activateRequiredModules() {}
 }

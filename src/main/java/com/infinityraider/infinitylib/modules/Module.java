@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.modules;
 
 import com.google.common.collect.ImmutableList;
+import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -30,6 +31,10 @@ public abstract class Module {
 
     @SideOnly(Side.CLIENT)
     public List<Object> getClientEventHandlers() {
+        return Collections.emptyList();
+    }
+
+    public List<ICapabilityImplementation> getCapabilities() {
         return Collections.emptyList();
     }
 

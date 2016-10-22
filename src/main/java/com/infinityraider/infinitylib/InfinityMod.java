@@ -57,6 +57,7 @@ public abstract class InfinityMod {
         ModHelper.getInstance().RegisterBlocksAndItems(this);
         InfinityLib.proxy.registerRenderers(this);
         InfinityLib.proxy.registerEntities(this);
+        proxy().registerCapabilities();
         proxy().preInitEnd(event);
         LogHelper.debug("Pre-Initialization Complete");
     }
