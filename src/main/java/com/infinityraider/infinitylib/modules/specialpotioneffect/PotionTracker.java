@@ -56,6 +56,10 @@ public class PotionTracker implements ISerializable {
         }
     }
 
+    public List<Potion> getActivePotions() {
+        return this.activeEffects.stream().map(Potion::getPotionById).collect(Collectors.toList());
+    }
+
     protected void syncToClient() {
         NetworkWrapper.getInstance().sendToAll(new MessageSyncPotions(this));
     }

@@ -57,7 +57,6 @@ public abstract class InfinityMod {
         ModHelper.getInstance().RegisterBlocksAndItems(this);
         InfinityLib.proxy.registerRenderers(this);
         InfinityLib.proxy.registerEntities(this);
-        proxy().registerCapabilities();
         proxy().preInitEnd(event);
         LogHelper.debug("Pre-Initialization Complete");
     }
@@ -65,7 +64,8 @@ public abstract class InfinityMod {
     public final void init(FMLInitializationEvent event) {
         LogHelper.debug("Starting Initialization");
         proxy().initStart(event);
-        ModHelper.getInstance().registerEventHandlers(this);
+        proxy().registerCapabilities();
+        proxy().registerEventHandlers();
         registerMessages(NetworkWrapper.getInstance());
         ModHelper.getInstance().registerRecipes(this);
         proxy().initEnd(event);

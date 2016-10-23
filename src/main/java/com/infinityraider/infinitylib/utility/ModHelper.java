@@ -142,8 +142,4 @@ public class ModHelper {
         });
         LogHelper.debug("Finished Entity Registration!");
     }
-
-    public void registerEventHandlers(InfinityMod mod) {
-        mod.proxy().registerEventHandlers();
-    }
 }
