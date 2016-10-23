@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.modules.specialpotioneffect;
 
 import com.google.common.primitives.Ints;
-import com.infinityraider.infinitylib.network.NetworkWrapper;
+import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.reference.Names;
 import com.infinityraider.infinitylib.utility.ISerializable;
 import net.minecraft.entity.EntityLivingBase;
@@ -61,7 +61,7 @@ public class PotionTracker implements ISerializable {
     }
 
     protected void syncToClient() {
-        NetworkWrapper.getInstance().sendToAll(new MessageSyncPotions(this));
+        InfinityLib.instance.getNetworkWrapper().sendToAll(new MessageSyncPotions(this));
     }
 
     @Override

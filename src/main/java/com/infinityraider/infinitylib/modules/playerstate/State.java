@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.modules.playerstate;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import com.infinityraider.infinitylib.network.NetworkWrapper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -76,7 +75,7 @@ public class State {
 
     private void syncToClient() {
         if(InfinityLib.proxy.getEffectiveSide() == Side.SERVER) {
-            NetworkWrapper.getInstance().sendToAll(new MessageSyncState(getPlayer(), this));
+            InfinityLib.instance.getNetworkWrapper().sendToAll(new MessageSyncState(getPlayer(), this));
         }
     }
 }

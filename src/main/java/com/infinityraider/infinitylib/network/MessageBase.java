@@ -36,7 +36,7 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
 
     protected EntityPlayer readPlayerFromByteBuf(ByteBuf buf) {
         Entity entity = readEntityFromByteBuf(buf);
-        return (entity instanceof EntityPlayer)?(EntityPlayer) entity:null;
+        return (entity instanceof EntityPlayer) ? (EntityPlayer) entity : null;
     }
 
     protected void writePlayerToByteBuf(ByteBuf buf, EntityPlayer player) {
@@ -55,7 +55,6 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     protected void writeEntityToByteBuf(ByteBuf buf, Entity e) {
         if (e == null) {
             buf.writeInt(-1);
-            buf.writeInt(0);
         } else {
             buf.writeInt(e.getEntityId());
             buf.writeInt(e.worldObj.provider.getDimension());
@@ -76,11 +75,11 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     protected Item readItemFromByteBuf(ByteBuf buf) {
         int itemNameLength = buf.readInt();
         String itemName = new String(buf.readBytes(itemNameLength).array());
-        return  Item.REGISTRY.getObject(new ResourceLocation(itemName));
+        return Item.REGISTRY.getObject(new ResourceLocation(itemName));
     }
 
     protected void writeItemToByteBuf(Item item, ByteBuf buf) {
-        String itemName = item==null?"null":Item.REGISTRY.getNameForObject(item).toString();
+        String itemName = item == null ? "null" : Item.REGISTRY.getNameForObject(item).toString();
         buf.writeInt(itemName.length());
         buf.writeBytes(itemName.getBytes());
     }

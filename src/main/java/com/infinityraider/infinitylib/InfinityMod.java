@@ -12,6 +12,16 @@ import net.minecraftforge.fml.common.event.*;
  * When implementing this interface, the mod must also be annotated with @InfinityMod
  */
 public abstract class InfinityMod {
+    private final INetworkWrapper networkWrapper;
+
+    public InfinityMod() {
+        this.networkWrapper = new NetworkWrapper(this);
+    }
+
+    public final INetworkWrapper getNetworkWrapper() {
+        return this.networkWrapper;
+    }
+
     /**
      * @return The sided proxy object for this mod
      */
@@ -66,7 +76,7 @@ public abstract class InfinityMod {
         proxy().initStart(event);
         proxy().registerCapabilities();
         proxy().registerEventHandlers();
-        registerMessages(NetworkWrapper.getInstance());
+        registerMessages(this.getNetworkWrapper());
         ModHelper.getInstance().registerRecipes(this);
         proxy().initEnd(event);
         LogHelper.debug("Initialization Complete");

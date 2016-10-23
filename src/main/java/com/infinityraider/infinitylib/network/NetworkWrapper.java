@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.network;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import com.infinityraider.infinitylib.reference.Reference;
+import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
@@ -14,17 +14,12 @@ import net.minecraftforge.fml.relauncher.Side;
 
 @SuppressWarnings("unused")
 public class NetworkWrapper implements INetworkWrapper {
-    private static NetworkWrapper INSTANCE = new NetworkWrapper();
-
-    public static NetworkWrapper getInstance() {
-        return INSTANCE;
-    }
-
     private final SimpleNetworkWrapper wrapper;
     private int nextId = 0;
 
-    private NetworkWrapper() {
-        this.wrapper = NetworkRegistry.INSTANCE.newSimpleChannel(Reference.MOD_ID.toLowerCase());}
+    public NetworkWrapper(InfinityMod mod) {
+        this.wrapper = NetworkRegistry.INSTANCE.newSimpleChannel(mod.getModId());
+    }
 
     @Override
     public void sendToAll(MessageBase message) {

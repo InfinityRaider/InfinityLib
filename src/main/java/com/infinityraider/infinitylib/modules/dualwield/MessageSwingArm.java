@@ -40,7 +40,8 @@ public class MessageSwingArm extends MessageBase<IMessage> {
     @Override
     public void fromBytes(ByteBuf buf) {
         this.player = this.readPlayerFromByteBuf(buf);
-        this.hand = EnumHand.values()[buf.readInt()];
+        int index = buf.readInt();
+        this.hand = EnumHand.values()[index % EnumHand.values().length];
     }
 
     @Override

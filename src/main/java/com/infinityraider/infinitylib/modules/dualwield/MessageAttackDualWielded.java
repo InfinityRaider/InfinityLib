@@ -28,18 +28,18 @@ public class MessageAttackDualWielded extends MessageBase<IMessage> {
 
     @Override
     public void fromBytes(ByteBuf buf) {
+        entity = this.readEntityFromByteBuf(buf);
         left = buf.readBoolean();
         shift = buf.readBoolean();
         ctrl = buf.readBoolean();
-        entity = this.readEntityFromByteBuf(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
+        writeEntityToByteBuf(buf, entity);
         buf.writeBoolean(left);
         buf.writeBoolean(shift);
         buf.writeBoolean(ctrl);
-        writeEntityToByteBuf(buf, entity);
     }
 
     @Override
