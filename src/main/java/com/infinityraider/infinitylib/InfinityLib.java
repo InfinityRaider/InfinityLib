@@ -48,9 +48,7 @@ public class InfinityLib extends InfinityMod {
     public void registerMessages(INetworkWrapper wrapper) {
         wrapper.registerMessage(MessageSetEntityDead.class);
         wrapper.registerMessage(MessageSyncTile.class);
-        for(Module module : Module.getActiveModules()) {
-            module.registerMessages(wrapper);
-        }
+        Module.getActiveModules().stream().sorted().forEach(m -> m.registerMessages(wrapper));
     }
 
     @Mod.EventHandler

@@ -17,9 +17,12 @@ public class MessageAttackDualWielded extends MessageBase<IMessage> {
     private Entity entity;
 
     @SuppressWarnings("unused")
-    public MessageAttackDualWielded() {}
+    public MessageAttackDualWielded() {
+        super();
+    }
 
     public MessageAttackDualWielded(Entity entity, boolean left, boolean shift, boolean ctrl) {
+        this();
         this.left = left;
         this.shift = shift;
         this.ctrl = ctrl;

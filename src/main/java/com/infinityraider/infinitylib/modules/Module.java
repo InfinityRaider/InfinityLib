@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-public abstract class Module {
+public abstract class Module implements Comparable<Module> {
     private static HashSet<Module> activeModules = new HashSet<>();
 
     public static List<Module> getActiveModules() {
@@ -47,4 +47,9 @@ public abstract class Module {
 
     @SideOnly(Side.CLIENT)
     public void postInitClient() {}
+
+    @Override
+    public int compareTo(Module other) {
+        return this.getClass().getName().compareTo(other.getClass().getName());
+    }
 }

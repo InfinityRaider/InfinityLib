@@ -13,9 +13,12 @@ public class MessageSwingArm extends MessageBase<IMessage> {
     private EnumHand hand;
 
     @SuppressWarnings("unused")
-    public MessageSwingArm() {}
+    public MessageSwingArm() {
+        super();
+    }
 
     public MessageSwingArm(EntityPlayer player, EnumHand hand) {
+        this();
         this.player = player;
         this.hand = hand;
     }

@@ -18,7 +18,11 @@ public class NetworkWrapper implements INetworkWrapper {
     private int nextId = 0;
 
     public NetworkWrapper(InfinityMod mod) {
-        this.wrapper = NetworkRegistry.INSTANCE.newSimpleChannel(mod.getModId());
+        String id = mod.getModId();
+        if(id.length() > 20) {
+            id = id.substring(0, 20);
+        }
+        this.wrapper = NetworkRegistry.INSTANCE.newSimpleChannel(id);
     }
 
     @Override
@@ -66,6 +70,7 @@ public class NetworkWrapper implements INetworkWrapper {
         try {
             Side side = message.getDeclaredConstructor().newInstance().getMessageHandlerSide();
             wrapper.registerMessage(new MessageHandler<REQ, REPLY>(), message, nextId, side);
+            LogHelper.debug("Registered message \"" + message.getName() + "\" with id " + nextId);
             nextId = nextId + 1;
         } catch (Exception e) {
             LogHelper.printStackTrace(e);
