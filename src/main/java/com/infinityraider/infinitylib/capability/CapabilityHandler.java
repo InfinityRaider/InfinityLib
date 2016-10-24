@@ -67,7 +67,7 @@ public class CapabilityHandler {
         EntityPlayer oldPlayer = event.getOriginal();
         EntityPlayer newPlayer = event.getEntityPlayer();
         if(oldPlayer != null && newPlayer != null && !oldPlayer.getEntityWorld().isRemote) {
-            List<ICapabilityImplementation<ICapabilityProvider, ? extends ISerializable>> list = this.map.get(EntityPlayer.class);
+            List<ICapabilityImplementation<ICapabilityProvider, ? extends ISerializable>> list = this.map.get(oldPlayer.getClass());
             if(list == null) {
                 return;
             }
