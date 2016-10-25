@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.utility.debug;
 
-import com.infinityraider.infinitylib.utility.LogHelper;
+import com.infinityraider.infinitylib.InfinityLib;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -27,7 +27,7 @@ public class DebugModeFeedback extends DebugMode {
     @Override
     public void debugActionBlockClicked(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         for(String dataLine:getDebugData(world, pos)) {
-            LogHelper.debug(dataLine);
+            InfinityLib.instance.getLogger().debug(dataLine);
             player.addChatComponentMessage(new TextComponentString(dataLine));
         }
     }

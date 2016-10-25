@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.modules.playerstate;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import com.infinityraider.infinitylib.utility.LogHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -49,14 +48,12 @@ public class MessageSyncState extends MessageBase<IMessage> {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        LogHelper.debug("Decoding message: " + this.getClass().getName());
         this.player = this.readPlayerFromByteBuf(buf);
         this.state = buf.readByte();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        LogHelper.debug("Encoding message: player (" + this.player == null ? "null" : this.player.getEntityId() + "), state (" + this.state + ")");
         this.writePlayerToByteBuf(buf, this.player);
         buf.writeByte(this.state);
     }

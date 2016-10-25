@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.item.IAutoRenderedItem;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
-import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
@@ -43,7 +43,7 @@ public class RenderItemAuto<T extends Item & IAutoRenderedItem> implements IItem
         final String id = item.getModelId(stack);
         List<BakedQuad> model = models.get(id);
         if (model == null) {
-            LogHelper.debug("Baking Item Model: " + id + "!");
+            InfinityLib.instance.getLogger().debug("Baking Item Model: " + id + "!");
             model = ItemQuadGenerator.generateItemQuads(
                     DefaultVertexFormats.ITEM,
                     tessellator::getIcon,

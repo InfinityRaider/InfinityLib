@@ -1,5 +1,7 @@
 package com.infinityraider.infinitylib.utility;
 
+import com.infinityraider.infinitylib.InfinityLib;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -26,7 +28,7 @@ public class ReflectionHelper {
                     consumer.accept(type.cast(obj));
                 }
             } catch (IllegalAccessException e) {
-                LogHelper.debug(
+                InfinityLib.instance.getLogger().debug(
                         "ReflectionHelper.forEachIn() Skipping Field: \"" +
                         field.getName() +
                         "\" in Class: \"" +
@@ -48,7 +50,7 @@ public class ReflectionHelper {
                 }
             } catch (IllegalAccessException e) {
                 // Oh well...
-                LogHelper.debug(
+                InfinityLib.instance.getLogger().debug(
                         "ReflectionHelper.forEachIn() Skipping Field: \"" +
                                 field.getName() +
                                 "\" in Class: \"" +

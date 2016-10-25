@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.block.multiblock;
 
+import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.utility.CoordinateIterator;
-import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -105,7 +105,7 @@ public class MultiBlockManager implements IMultiBlockManager<MultiBlockPartData>
 
     private int calculateDimensionOffsetBackwards(World world, BlockPos pos, IMultiBlockComponent component, CoordinateIterator it) {
         if (!it.isActive()) {
-            LogHelper.debug("ERROR WHEN ITERATING COORDINATES: ITERATOR NOT ACTIVE");
+            InfinityLib.instance.getLogger().debug("ERROR WHEN ITERATING COORDINATES: ITERATOR NOT ACTIVE");
             return 0;
         }
         IMultiBlockPartData data = component.getMultiBlockData();
@@ -123,7 +123,7 @@ public class MultiBlockManager implements IMultiBlockManager<MultiBlockPartData>
 
     private int calculateDimensionOffsetForwards(World world, BlockPos pos, IMultiBlockComponent component, CoordinateIterator it) {
         if (!it.isActive()) {
-            LogHelper.debug("ERROR WHEN ITERATING COORDINATES: ITERATOR NOT ACTIVE");
+            InfinityLib.instance.getLogger().debug("ERROR WHEN ITERATING COORDINATES: ITERATOR NOT ACTIVE");
             return 0;
         }
         IMultiBlockPartData data = component.getMultiBlockData();

@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.utility.text;
 
-import com.infinityraider.infinitylib.utility.LogHelper;
+import com.infinityraider.infinitylib.InfinityLib;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -31,8 +31,8 @@ public class ItemStackParser {
             try {
                 meta = Integer.parseInt(split[2]);
             } catch(Exception e) {
-                LogHelper.info("[ERROR] Failed parsing of item metadata for " + string);
-                LogHelper.printStackTrace(e);
+                InfinityLib.instance.getLogger().info("[ERROR] Failed parsing of item metadata for " + string);
+                InfinityLib.instance.getLogger().printStackTrace(e);
             }
             return meta < 0 ? Optional.empty() : Optional.of(new ItemStack(item, 1, meta));
         }

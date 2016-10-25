@@ -2,7 +2,6 @@ package com.infinityraider.infinitylib.network;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
-import com.infinityraider.infinitylib.utility.LogHelper;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -70,10 +69,10 @@ public class NetworkWrapper implements INetworkWrapper {
         try {
             Side side = message.getDeclaredConstructor().newInstance().getMessageHandlerSide();
             wrapper.registerMessage(new MessageHandler<REQ, REPLY>(), message, nextId, side);
-            LogHelper.debug("Registered message \"" + message.getName() + "\" with id " + nextId);
+            InfinityLib.instance.getLogger().debug("Registered message \"" + message.getName() + "\" with id " + nextId);
             nextId = nextId + 1;
         } catch (Exception e) {
-            LogHelper.printStackTrace(e);
+            InfinityLib.instance.getLogger().printStackTrace(e);
         }
     }
 

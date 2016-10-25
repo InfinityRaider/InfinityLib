@@ -33,36 +33,36 @@ public class ModHelper {
 
 	public void RegisterBlocksAndItems(InfinityMod mod) {
 		//blocks
-		LogHelper.debug("Starting Block Registration...");
+		mod.getLogger().debug("Starting Block Registration...");
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if ((block instanceof Block) && block.isEnabled()) {
-				LogHelper.debug("Registering Block: " + block.getInternalName());
+				mod.getLogger().debug("Registering Block: " + block.getInternalName());
 				RegisterHelper.registerBlock((Block) block, mod.getModId(), block.getInternalName(), block.getItemBlockClass());
 				for (String tag : block.getOreTags()) {
 					OreDictionary.registerOre(tag, (Block) block);
 				}
 			}
 		});
-		LogHelper.debug("Finished Block Registration!");
+		mod.getLogger().debug("Finished Block Registration!");
 
 		//items
-		LogHelper.debug("Starting Item Registration...");
+		mod.getLogger().debug("Starting Item Registration...");
 		ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
 			if ((item instanceof Item) && item.isEnabled()) {
-				LogHelper.debug("Registering Item: " + item.getInternalName());
+				mod.getLogger().debug("Registering Item: " + item.getInternalName());
 				RegisterHelper.registerItem((Item) item, mod.getModId(), item.getInternalName());
 				for (String tag : item.getOreTags()) {
 					OreDictionary.registerOre(tag, (Item) item);
 				}
 			}
 		});
-		LogHelper.debug("Finished Item Registration!");
+		mod.getLogger().debug("Finished Item Registration!");
 
 		//tile entities
-		LogHelper.debug("Starting Tile Registration...");
+		mod.getLogger().debug("Starting Tile Registration...");
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlockWithTile.class, (IInfinityBlockWithTile block) -> {
 			if (block.isEnabled()) {
-				LogHelper.debug("Registering Tile for Block: " + block.getInternalName());
+				mod.getLogger().debug("Registering Tile for Block: " + block.getInternalName());
 				TileEntity te = block.createNewTileEntity(null, 0);
 				assert (te != null);
 				GameRegistry.registerTileEntity(te.getClass(), mod.getModId().toLowerCase() + ":tile." + block.getInternalName());
@@ -71,11 +71,11 @@ public class ModHelper {
                 }
 			}
 		});
-		LogHelper.debug("Finished Tile Registration!");
+		mod.getLogger().debug("Finished Tile Registration!");
 	}
 
 	public void registerRecipes(InfinityMod mod) {
-		LogHelper.debug("Starting Recipe Registration...");
+		mod.getLogger().debug("Starting Recipe Registration...");
 		//blocks
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if (block.isEnabled() && (block instanceof IItemWithRecipe)) {
@@ -88,12 +88,12 @@ public class ModHelper {
 				((IItemWithRecipe) item).getRecipes().forEach(GameRegistry::addRecipe);
 			}
 		});
-		LogHelper.debug("Finished Recipe Registration!");
+		mod.getLogger().debug("Finished Recipe Registration!");
 	}
 
 	@SideOnly(Side.CLIENT)
 	public void initRenderers(InfinityMod mod) {
-		LogHelper.debug("Starting Renderer Registration...");
+		mod.getLogger().debug("Starting Renderer Registration...");
 		//blocks
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if (block.isEnabled() && (block instanceof ICustomRenderedBlock)) {
@@ -101,7 +101,7 @@ public class ModHelper {
 			}
 		});
 		for (ICustomRenderedBlock block : BlockRendererRegistry.getInstance().getRegisteredBlocks()) {
-			LogHelper.debug("registered custom renderer for " + block.getBlockModelResourceLocation());
+			mod.getLogger().debug("registered custom renderer for " + block.getBlockModelResourceLocation());
 		}
 		//items
 		ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
@@ -118,28 +118,28 @@ public class ModHelper {
 				}
 			}
 		});
-		LogHelper.debug("Finished Renderer Registration!");
+		mod.getLogger().debug("Finished Renderer Registration!");
 	}
 
     public void registerEntities(InfinityMod mod) {
-        LogHelper.debug("Starting Entity Registration...");
+		mod.getLogger().debug("Starting Entity Registration...");
         ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
             if(entry.isEnabled()) {
                 entry.register(mod);
                 entry = null;
             }
         });
-        LogHelper.debug("Finished Entity Registration!");
+		mod.getLogger().debug("Finished Entity Registration!");
     }
 
     @SideOnly(Side.CLIENT)
     public void registerEntitiesClient(InfinityMod mod) {
-        LogHelper.debug("Starting Entity Registration...");
+		mod.getLogger().debug("Starting Entity Registration...");
         ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
             if(entry.isEnabled()) {
                 entry.registerClient(mod);
             }
         });
-        LogHelper.debug("Finished Entity Registration!");
+		mod.getLogger().debug("Finished Entity Registration!");
     }
 }

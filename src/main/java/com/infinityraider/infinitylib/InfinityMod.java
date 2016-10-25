@@ -3,7 +3,7 @@ package com.infinityraider.infinitylib;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
-import com.infinityraider.infinitylib.utility.LogHelper;
+import com.infinityraider.infinitylib.utility.InfinityLogger;
 import com.infinityraider.infinitylib.utility.ModHelper;
 import net.minecraftforge.fml.common.event.*;
 
@@ -12,10 +12,16 @@ import net.minecraftforge.fml.common.event.*;
  * When implementing this interface, the mod must also be annotated with @InfinityMod
  */
 public abstract class InfinityMod {
+    private final InfinityLogger logger;
     private final INetworkWrapper networkWrapper;
 
     public InfinityMod() {
+        this.logger = new InfinityLogger(this);
         this.networkWrapper = new NetworkWrapper(this);
+    }
+
+    public final InfinityLogger getLogger() {
+        return this.logger;
     }
 
     public final INetworkWrapper getNetworkWrapper() {
@@ -59,8 +65,11 @@ public abstract class InfinityMod {
      */
     public abstract void registerMessages(INetworkWrapper wrapper);
 
+
+    //TODO: find a way to have these automatically called, right now they have to be implemented in each subclass to call super
+
     public final void preInit(FMLPreInitializationEvent event) {
-        LogHelper.debug("Starting Pre-Initialization");
+        this.getLogger().debug("Starting Pre-Initialization");
         proxy().initConfiguration(event);
         proxy().preInitStart(event);
         proxy().activateRequiredModules();
@@ -68,25 +77,25 @@ public abstract class InfinityMod {
         InfinityLib.proxy.registerRenderers(this);
         InfinityLib.proxy.registerEntities(this);
         proxy().preInitEnd(event);
-        LogHelper.debug("Pre-Initialization Complete");
+        this.getLogger().debug("Pre-Initialization Complete");
     }
 
     public final void init(FMLInitializationEvent event) {
-        LogHelper.debug("Starting Initialization");
+        this.getLogger().debug("Starting Initialization");
         proxy().initStart(event);
         proxy().registerCapabilities();
         proxy().registerEventHandlers();
         registerMessages(this.getNetworkWrapper());
         ModHelper.getInstance().registerRecipes(this);
         proxy().initEnd(event);
-        LogHelper.debug("Initialization Complete");
+        this.getLogger().debug("Initialization Complete");
     }
 
     public final void postInit(FMLPostInitializationEvent event) {
-        LogHelper.debug("Starting Post-Initialization");
+        this.getLogger().debug("Starting Post-Initialization");
         proxy().postInitStart(event);
         proxy().postInitEnd(event);
-        LogHelper.debug("Post-Initialization Complete");
+        this.getLogger().debug("Post-Initialization Complete");
     }
 
     public final void onServerAboutToStart(FMLServerAboutToStartEvent event) {
