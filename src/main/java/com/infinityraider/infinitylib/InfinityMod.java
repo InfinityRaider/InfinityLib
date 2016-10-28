@@ -4,7 +4,9 @@ import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.utility.InfinityLogger;
+import com.infinityraider.infinitylib.utility.ModEventHandlerHack;
 import com.infinityraider.infinitylib.utility.ModHelper;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.*;
 
 /**
@@ -18,6 +20,7 @@ public abstract class InfinityMod {
     public InfinityMod() {
         this.logger = new InfinityLogger(this);
         this.networkWrapper = new NetworkWrapper(this);
+        ModEventHandlerHack.doHack(this);   //you ain't seen nothing
     }
 
     public final InfinityLogger getLogger() {
@@ -65,9 +68,8 @@ public abstract class InfinityMod {
      */
     public abstract void registerMessages(INetworkWrapper wrapper);
 
-
-    //TODO: find a way to have these automatically called, right now they have to be implemented in each subclass to call super
-
+    @Mod.EventHandler
+    @SuppressWarnings("unused")
     public final void preInit(FMLPreInitializationEvent event) {
         this.getLogger().debug("Starting Pre-Initialization");
         proxy().initConfiguration(event);
@@ -80,6 +82,8 @@ public abstract class InfinityMod {
         this.getLogger().debug("Pre-Initialization Complete");
     }
 
+    @Mod.EventHandler
+    @SuppressWarnings("unused")
     public final void init(FMLInitializationEvent event) {
         this.getLogger().debug("Starting Initialization");
         proxy().initStart(event);
@@ -91,6 +95,8 @@ public abstract class InfinityMod {
         this.getLogger().debug("Initialization Complete");
     }
 
+    @Mod.EventHandler
+    @SuppressWarnings("unused")
     public final void postInit(FMLPostInitializationEvent event) {
         this.getLogger().debug("Starting Post-Initialization");
         proxy().postInitStart(event);
@@ -98,22 +104,32 @@ public abstract class InfinityMod {
         this.getLogger().debug("Post-Initialization Complete");
     }
 
+    @Mod.EventHandler
+    @SuppressWarnings("unused")
     public final void onServerAboutToStart(FMLServerAboutToStartEvent event) {
         proxy().onServerAboutToStart(event);
     }
 
+    @Mod.EventHandler
+    @SuppressWarnings("unused")
     public final void onServerStarting(FMLServerStartingEvent event) {
         proxy().onServerStarting(event);
     }
 
+    @Mod.EventHandler
+    @SuppressWarnings("unused")
     public final void onServerStarted(FMLServerStartedEvent event) {
         proxy().onServerStarted(event);
     }
 
+    @Mod.EventHandler
+    @SuppressWarnings("unused")
     public final void onServerStopping(FMLServerStoppingEvent event) {
         proxy().onServerStopping(event);
     }
 
+    @Mod.EventHandler
+    @SuppressWarnings("unused")
     public final void onServerStopped(FMLServerStoppedEvent event) {
         proxy().onServerStopped(event);
     }
