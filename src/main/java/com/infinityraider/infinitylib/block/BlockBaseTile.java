@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase implements IInfinityBlockWithTile<T> {
+
     public BlockBaseTile(String name, Material blockMaterial) {
         super(name, blockMaterial);
     }
@@ -30,16 +31,13 @@ public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase 
     @SuppressWarnings("unchecked")
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase entity, ItemStack stack) {
         TileEntity te = world.getTileEntity(pos);
-        if (te != null && te instanceof TileEntityBase) {
+        if(te != null && te instanceof TileEntityBase) {
             TileEntityBase tile = (TileEntityBase) world.getTileEntity(pos);
-            if (tile instanceof IRotatableTile) {
+            if(tile instanceof IRotatableTile) {
                 EnumFacing dir = entity.getHorizontalFacing();
-                if(dir.getAxis() == EnumFacing.Axis.X) {
-                    dir = dir.getOpposite();
-                }
-                ((IRotatableTile) tile).setOrientation(dir);
+                ((IRotatableTile) tile).setOrientation(dir.getOpposite());
             }
-            if ((tile instanceof IMultiBlockComponent) && !world.isRemote) {
+            if((tile instanceof IMultiBlockComponent) && !world.isRemote) {
                 IMultiBlockComponent component = (IMultiBlockComponent) tile;
                 component.getMultiBlockManager().onBlockPlaced(world, pos, component);
             }
@@ -50,7 +48,7 @@ public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase 
     @SuppressWarnings("unchecked")
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         TileEntity tile = world.getTileEntity(pos);
-        if ((tile instanceof IMultiBlockComponent) && !world.isRemote) {
+        if((tile instanceof IMultiBlockComponent) && !world.isRemote) {
             IMultiBlockComponent component = (IMultiBlockComponent) tile;
             component.getMultiBlockManager().onBlockBroken(world, pos, component);
         }
@@ -67,16 +65,13 @@ public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase 
 
     @Override
     public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
-        if(axis.getAxis() != EnumFacing.Axis.Y) {
-            return false;
-        }
         TileEntity tile = world.getTileEntity(pos);
-        if(!(tile instanceof IRotatableTile)) {
+        if(axis.getAxis().isHorizontal() && tile instanceof IRotatableTile) {
+            final int offset = axis.getFrontOffsetY();
+            ((IRotatableTile) tile).incrementRotation(offset);
+            return true;
+        } else {
             return false;
         }
-        int offset = axis.getFrontOffsetY();
-        IRotatableTile rotatable = (IRotatableTile) tile;
-        rotatable.incrementRotation(offset);
-        return true;
     }
 }

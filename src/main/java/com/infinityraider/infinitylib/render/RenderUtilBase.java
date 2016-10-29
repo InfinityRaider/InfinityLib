@@ -36,7 +36,9 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
 public abstract class RenderUtilBase {
-    protected RenderUtilBase() {}
+
+    protected RenderUtilBase() {
+    }
 
     public static void drawBlockModel(ITessellator tessellator, IBlockState state) {
         Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -72,13 +74,13 @@ public abstract class RenderUtilBase {
         //tess.rotate(180, 0F, 0F, 1F);
         switch (dir) {
             case WEST:
-                tess.rotate(90, 0, 1, 0);
+                tess.rotate(270, 0, 1, 0);
                 break;
-            case SOUTH:
+            case NORTH:
                 tess.rotate(180, 0, 1, 0);
                 break;
             case EAST:
-                tess.rotate(270, 0, 1, 0);
+                tess.rotate(90, 0, 1, 0);
                 break;
         }
         tess.translate(-0.5, 0, -0.5);
@@ -100,7 +102,7 @@ public abstract class RenderUtilBase {
         GlStateManager.scale(scale, scale, scale);
 
         // Rotate Item as function of system time.
-        if (rotate) {
+        if(rotate) {
             double angle = (720.0 * (System.currentTimeMillis() & 0x3FFFL) / 0x3FFFL); //credits to Pahimar
             GlStateManager.rotate((float) angle, 0, 1, 0);
         }
@@ -115,12 +117,13 @@ public abstract class RenderUtilBase {
 
     /**
      * Method to cancel out view bobbing when rendering from RenderHandEvent
+     *
      * @param player player
      * @param partialTicks partial tick
      * @param inverse inverse or not
      */
-    public static void correctViewBobbing(EntityPlayer player, float partialTicks, boolean inverse) {
-        if (!Minecraft.getMinecraft().gameSettings.viewBobbing) {
+    public static final void correctViewBobbing(EntityPlayer player, float partialTicks, boolean inverse) {
+        if(!Minecraft.getMinecraft().gameSettings.viewBobbing) {
             return;
         }
         float f = player.distanceWalkedModified - player.prevDistanceWalkedModified;
@@ -141,11 +144,11 @@ public abstract class RenderUtilBase {
     }
 
     /**
-     * Method to render the coordinate system for the current matrix.
-     * Renders three lines with length 1 starting from (0, 0, 0):
-     * red line along x axis, green line along y axis and blue line along z axis.
+     * Method to render the coordinate system for the current matrix. Renders
+     * three lines with length 1 starting from (0, 0, 0): red line along x axis,
+     * green line along y axis and blue line along z axis.
      */
-    public static void renderCoordinateSystemDebug() {
+    public static final void renderCoordinateSystemDebug() {
         if(ConfigurationHandler.getInstance().debug) {
             Tessellator tessellator = Tessellator.getInstance();
             VertexBuffer buffer = tessellator.getBuffer();
@@ -177,10 +180,11 @@ public abstract class RenderUtilBase {
 
     /**
      * Method to fetch a TextureAtlasSprite icon from a Resource Location
+     *
      * @param loc ResourceLocation to grab icon from
      * @return the icon
      */
-    public static TextureAtlasSprite getIcon(ResourceLocation loc) {
+    public static final TextureAtlasSprite getIcon(ResourceLocation loc) {
         if(loc == null) {
             return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
         }
