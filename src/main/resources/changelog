@@ -1,5 +1,8 @@
 Changelog
 ---------
+0.2.1
+- CHANGE: switched to quickmod
+
 0.2
 - ADDED: IIventory <-> IItemHandler wrappers
 - ADDED: ItemStack parser (domain:id:(optional)meta -> ItemStack)
