@@ -33,7 +33,6 @@ public class ModHelper {
 
 	public void RegisterBlocksAndItems(InfinityMod mod) {
 		//blocks
-		mod.getLogger().debug("Starting Block Registration...");
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if ((block instanceof Block) && block.isEnabled()) {
 				mod.getLogger().debug("Registering Block: " + block.getInternalName());
@@ -43,10 +42,8 @@ public class ModHelper {
 				}
 			}
 		});
-		mod.getLogger().debug("Finished Block Registration!");
 
 		//items
-		mod.getLogger().debug("Starting Item Registration...");
 		ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
 			if ((item instanceof Item) && item.isEnabled()) {
 				mod.getLogger().debug("Registering Item: " + item.getInternalName());
@@ -56,10 +53,8 @@ public class ModHelper {
 				}
 			}
 		});
-		mod.getLogger().debug("Finished Item Registration!");
 
 		//tile entities
-		mod.getLogger().debug("Starting Tile Registration...");
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlockWithTile.class, (IInfinityBlockWithTile block) -> {
 			if (block.isEnabled()) {
 				mod.getLogger().debug("Registering Tile for Block: " + block.getInternalName());
@@ -71,11 +66,9 @@ public class ModHelper {
                 }
 			}
 		});
-		mod.getLogger().debug("Finished Tile Registration!");
 	}
 
 	public void registerRecipes(InfinityMod mod) {
-		mod.getLogger().debug("Starting Recipe Registration...");
 		//blocks
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if (block.isEnabled() && (block instanceof IItemWithRecipe)) {
@@ -88,12 +81,10 @@ public class ModHelper {
 				((IItemWithRecipe) item).getRecipes().forEach(GameRegistry::addRecipe);
 			}
 		});
-		mod.getLogger().debug("Finished Recipe Registration!");
 	}
 
 	@SideOnly(Side.CLIENT)
 	public void initRenderers(InfinityMod mod) {
-		mod.getLogger().debug("Starting Renderer Registration...");
 		//blocks
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if (block.isEnabled() && (block instanceof ICustomRenderedBlock)) {
@@ -118,28 +109,23 @@ public class ModHelper {
 				}
 			}
 		});
-		mod.getLogger().debug("Finished Renderer Registration!");
 	}
 
     public void registerEntities(InfinityMod mod) {
-		mod.getLogger().debug("Starting Entity Registration...");
         ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
             if(entry.isEnabled()) {
                 entry.register(mod);
                 entry = null;
             }
         });
-		mod.getLogger().debug("Finished Entity Registration!");
     }
 
     @SideOnly(Side.CLIENT)
     public void registerEntitiesClient(InfinityMod mod) {
-		mod.getLogger().debug("Starting Entity Registration...");
         ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
             if(entry.isEnabled()) {
                 entry.registerClient(mod);
             }
         });
-		mod.getLogger().debug("Finished Entity Registration!");
     }
 }
