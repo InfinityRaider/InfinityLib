@@ -74,4 +74,18 @@ public abstract class BlockBaseTile<T extends TileEntityBase> extends BlockBase 
             return false;
         }
     }
+
+    @Override
+    public abstract T createNewTileEntity(World world, int meta);
+
+    @SuppressWarnings("unchecked")
+    public T getTileEntity(World world, BlockPos pos) {
+        TileEntity tile = world.getTileEntity(pos);
+        if(tile == null) {
+            IBlockState state = world.getBlockState(pos);
+            tile = this.createNewTileEntity(world, this.getMetaFromState(state));
+            world.setTileEntity(pos, tile);
+        }
+        return (T) tile;
+    }
 }
