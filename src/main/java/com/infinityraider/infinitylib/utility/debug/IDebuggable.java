@@ -19,6 +19,4 @@ public interface IDebuggable {
     default void addClientDebugInfo(List<String> lines) {
         // NOP
     }
-;
-
 }

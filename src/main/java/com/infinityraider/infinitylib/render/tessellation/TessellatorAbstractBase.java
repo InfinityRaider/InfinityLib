@@ -483,6 +483,17 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 		}
 	}
 
+    /**
+     * Binds a texture to use when rendering
+     * @param loc ResourceLocation pointing towards the texture
+     * @return this
+     */
+	@Override
+	public TessellatorAbstractBase bindTexture(ResourceLocation loc) {
+        Minecraft.getMinecraft().renderEngine.bindTexture(loc);
+        return this;
+    }
+
 	/**
 	 * Sets the normal for the tessellator
 	 *

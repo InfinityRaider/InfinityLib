@@ -185,6 +185,13 @@ public interface ITessellator {
     TextureAtlasSprite getIcon(ResourceLocation loc);
 
     /**
+     * Binds a texture to use when rendering
+     * @param loc ResourceLocation pointing towards the texture
+     * @return this
+     */
+    ITessellator bindTexture(ResourceLocation loc);
+
+    /**
      * Sets the normal for the tessellator
      * @param x the normal x direction
      * @param y the normal y direction
