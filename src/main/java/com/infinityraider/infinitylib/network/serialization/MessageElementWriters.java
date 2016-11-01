@@ -23,6 +23,11 @@ public final class MessageElementWriters {
     }
 
     @SuppressWarnings("unchecked")
+    public static <T> Optional<IMessageElementWriter<T>> getWriter(T object) {
+        return WRITERS.containsKey(object.getClass()) ? Optional.of((IMessageElementWriter<T>) WRITERS.get(object.getClass())) : Optional.empty();
+    }
+
+    @SuppressWarnings("unchecked")
     public static <T> Optional<IMessageElementWriter<T>> getWriter(Class<T> clazz) {
         return WRITERS.containsKey(clazz) ? Optional.of((IMessageElementWriter<T>) WRITERS.get(clazz)) : Optional.empty();
     }

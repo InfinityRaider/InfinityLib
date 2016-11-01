@@ -23,7 +23,12 @@ public final class MessageElementReaders {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Optional<IMessageElementReader<T>> getWriter(Class<T> clazz) {
+    public static <T> Optional<IMessageElementReader<T>> getReader(T object) {
+        return READERS.containsKey(object.getClass()) ? Optional.of((IMessageElementReader<T>) READERS.get(object.getClass())) : Optional.empty();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Optional<IMessageElementReader<T>> getReader(Class<T> clazz) {
         return READERS.containsKey(clazz) ? Optional.of((IMessageElementReader<T>) READERS.get(clazz)) : Optional.empty();
     }
 
