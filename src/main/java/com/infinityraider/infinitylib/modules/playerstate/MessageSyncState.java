@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.modules.playerstate;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -32,7 +31,7 @@ public class MessageSyncState extends MessageBase<IMessage> {
 
     @Override
     protected void processMessage(MessageContext ctx) {
-        if(ctx.side == Side.CLIENT && this.player != null) {
+        if(this.player != null) {
             PlayerStateHandler.getInstance().getState(this.player)
                     .setInvisible(((this.state) & 1) == 1)
                     .setInvulnerable(((this.state >> 1) & 1) == 1)
@@ -44,17 +43,5 @@ public class MessageSyncState extends MessageBase<IMessage> {
     @Override
     protected IMessage getReply(MessageContext ctx) {
         return null;
-    }
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        this.player = this.readPlayerFromByteBuf(buf);
-        this.state = buf.readByte();
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
-        this.writePlayerToByteBuf(buf, this.player);
-        buf.writeByte(this.state);
     }
 }

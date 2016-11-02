@@ -2,7 +2,6 @@ package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.MessageBase;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -24,33 +23,17 @@ public class MessageMouseButtonPressed extends MessageBase<MessageSwingArm> {
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) {
-        this.left = buf.readBoolean();
-        this.shift = buf.readBoolean();
-        this.ctrl = buf.readBoolean();
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(left);
-        buf.writeBoolean(shift);
-        buf.writeBoolean(ctrl);
-    }
-
-    @Override
     public Side getMessageHandlerSide() {
         return Side.SERVER;
     }
 
     @Override
     protected void processMessage(MessageContext ctx) {
-        if(ctx.side == Side.SERVER) {
-            EntityPlayer player = ctx.getServerHandler().playerEntity;
-            ItemStack stack = player.getHeldItem(left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
-            if (stack != null && stack.getItem() instanceof IDualWieldedWeapon) {
-                IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-                weapon.onItemUsed(stack, player, shift, ctrl, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
-            }
+        EntityPlayer player = ctx.getServerHandler().playerEntity;
+        ItemStack stack = player.getHeldItem(left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
+        if (stack != null && stack.getItem() instanceof IDualWieldedWeapon) {
+            IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
+            weapon.onItemUsed(stack, player, shift, ctrl, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
         }
     }
 

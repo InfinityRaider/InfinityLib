@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.modules.specialpotioneffect;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -10,7 +9,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class MessageSyncPotions extends MessageBase<IMessage> {
-    private EntityLivingBase entity;
+    private Entity entity;
     private NBTTagCompound nbt;
 
     public MessageSyncPotions() {
@@ -30,8 +29,8 @@ public class MessageSyncPotions extends MessageBase<IMessage> {
 
     @Override
     protected void processMessage(MessageContext ctx) {
-        if(ctx.side == Side.CLIENT && this.entity != null && this.nbt != null) {
-            PotionTracker tracker = CapabilityPotionTracker.getPotionTracker(this.entity);
+        if(this.entity instanceof EntityLivingBase && this.nbt != null) {
+            PotionTracker tracker = CapabilityPotionTracker.getPotionTracker((EntityLivingBase) this.entity);
             if(tracker != null) {
                 tracker.readFromNBT(this.nbt);
             }
@@ -41,20 +40,5 @@ public class MessageSyncPotions extends MessageBase<IMessage> {
     @Override
     protected IMessage getReply(MessageContext ctx) {
         return null;
-    }
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        Entity entity = this.readEntityFromByteBuf(buf);
-        if(entity instanceof EntityLivingBase) {
-            this.entity = (EntityLivingBase) entity;
-            this.nbt = this.readNBTFromByteBuf(buf);
-        }
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
-        this.writeEntityToByteBuf(buf, this.entity);
-        this.writeNBTToByteBuf(buf, this.nbt);
     }
 }

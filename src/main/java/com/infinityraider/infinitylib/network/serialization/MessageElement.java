@@ -13,6 +13,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +36,15 @@ public class MessageElement<T> {
 
     public T readFromByteBuf(ByteBuf buf) {
         return this.reader.readData(buf);
+    }
+
+    public static Optional<MessageElement> getMessageElement(Field field) {
+        Class clazz = field.getType();
+        if(ELEMENTS.containsKey(clazz)) {
+            return Optional.of(ELEMENTS.get(clazz));
+        } else {
+            return Optional.empty();
+        }
     }
 
     @SuppressWarnings("unchecked")
