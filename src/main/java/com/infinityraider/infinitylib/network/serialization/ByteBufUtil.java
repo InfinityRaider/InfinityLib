@@ -191,21 +191,4 @@ public class ByteBufUtil {
     public static NBTTagCompound readNBT(ByteBuf buf) {
         return ByteBufUtils.readTag(buf);
     }
-
-    public static ByteBuf writeIntArray(ByteBuf buf, int[] array) {
-        buf.writeInt(array.length);
-        for(int i = 0; i < array.length; i++) {
-            buf.writeInt(array[i]);
-        }
-        return buf;
-    }
-
-    public static int[] readIntArray(ByteBuf buf) {
-        int amount = buf.readInt();
-        int[] array = new int[amount];
-        for(int i = 0; i < amount; i++) {
-            array[i] = buf.readInt();
-        }
-        return array;
-    }
 }

@@ -182,14 +182,19 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     public final void fromBytes(ByteBuf buf) {
         if (FIELD_MAP.containsKey(this.getClass())) {
             for (Pair<Field, MessageElement> pair : FIELD_MAP.get(this.getClass())) {
-                try {
-                    boolean shouldRead = buf.readBoolean();
-                    if (shouldRead) {
-                        pair.getLeft().set(this, pair.getRight().readFromByteBuf(buf));
+                boolean shouldRead = buf.readBoolean();
+                if (shouldRead) {
+                    Object object = pair.getRight().readFromByteBuf(buf);
+                    if (object != null) {
+                        try {
+                            pair.getLeft().set(this, object);
+                        } catch (IllegalAccessException e) {
+                            InfinityLib.instance.getLogger().error("Failed setting field data");
+                            InfinityLib.instance.getLogger().error(e.toString());
+                        }
+                    } else {
+                        InfinityLib.instance.getLogger().error("Object was null, did not set field " + pair.getLeft().getName());
                     }
-                } catch (IllegalAccessException e) {
-                    InfinityLib.instance.getLogger().error("Failed setting field data");
-                    InfinityLib.instance.getLogger().error(e.toString());
                 }
             }
         }
@@ -200,15 +205,16 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     public final void toBytes(ByteBuf buf) {
         if (FIELD_MAP.containsKey(this.getClass())) {
             for (Pair<Field, MessageElement> pair : FIELD_MAP.get(this.getClass())) {
+                Object object = null;
                 try {
-                    Object object = pair.getLeft();
-                    buf.writeBoolean(object != null);
-                    if (object != null) {
-                        pair.getRight().writeToByteBuf(buf, pair.getLeft().get(this));
-                    }
-                } catch (IllegalAccessException e) {
+                    object = pair.getLeft().get(this);
+                } catch(IllegalAccessException e) {
                     InfinityLib.instance.getLogger().error("Failed getting field data");
                     InfinityLib.instance.getLogger().error(e.toString());
+                }
+                buf.writeBoolean(object != null);
+                if (object != null) {
+                    pair.getRight().writeToByteBuf(buf, object);
                 }
             }
         }
