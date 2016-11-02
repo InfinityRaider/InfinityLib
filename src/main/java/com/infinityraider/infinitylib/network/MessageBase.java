@@ -173,8 +173,8 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to the server,
      * only valid if this message is handled on the server
      */
-    public final MessageBase<REPLY> sendToServer(MessageBase message) {
-        this.getNetworkWrapper().sendToServer(message);
+    public final MessageBase<REPLY> sendToServer() {
+        this.getNetworkWrapper().sendToServer(this);
         return this;
     }
 

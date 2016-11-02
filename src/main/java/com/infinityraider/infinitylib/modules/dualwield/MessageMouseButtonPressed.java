@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
-import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.MessageBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -40,7 +39,7 @@ public class MessageMouseButtonPressed extends MessageBase<MessageSwingArm> {
     @Override
     protected MessageSwingArm getReply(MessageContext ctx) {
         if(ctx.side == Side.SERVER) {
-            InfinityLib.instance.getNetworkWrapper().sendToAll(new MessageSwingArm(ctx.getServerHandler().playerEntity, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND));
+            new MessageSwingArm(ctx.getServerHandler().playerEntity, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND).sendToAll();
         }
         return null;
     }
