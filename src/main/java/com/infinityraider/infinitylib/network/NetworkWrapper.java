@@ -2,6 +2,9 @@ package com.infinityraider.infinitylib.network;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
+import com.infinityraider.infinitylib.network.serialization.IMessageElementReader;
+import com.infinityraider.infinitylib.network.serialization.IMessageElementWriter;
+import com.infinityraider.infinitylib.network.serialization.MessageElement;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -74,6 +77,11 @@ public class NetworkWrapper implements INetworkWrapper {
         } catch (Exception e) {
             InfinityLib.instance.getLogger().printStackTrace(e);
         }
+    }
+
+    @Override
+    public <T> void registerDataSerializer(Class<T> clazz, IMessageElementWriter<T> writer, IMessageElementReader<T> reader) {
+        MessageElement.registerElement(clazz, writer, reader);
     }
 
     private static final class MessageHandler<REQ extends MessageBase<REPLY>, REPLY extends IMessage> implements IMessageHandler<REQ, REPLY> {

@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.network;
 
-import com.infinityraider.infinitylib.network.MessageBase;
+import com.infinityraider.infinitylib.network.serialization.IMessageElementReader;
+import com.infinityraider.infinitylib.network.serialization.IMessageElementWriter;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -26,4 +27,6 @@ public interface INetworkWrapper {
     void sendToServer(MessageBase message);
 
     <REQ extends MessageBase<REPLY>, REPLY extends IMessage> void registerMessage(Class<? extends REQ> message);
+
+    <T> void registerDataSerializer(Class<T>  clazz, IMessageElementWriter<T> writer, IMessageElementReader<T> reader);
 }

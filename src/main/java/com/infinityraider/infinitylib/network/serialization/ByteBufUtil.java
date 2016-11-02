@@ -8,11 +8,85 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 public class ByteBufUtil {
+    public static ByteBuf writeBoolean(ByteBuf buf, boolean data) {
+        buf.writeBoolean(data);
+        return buf;
+    }
+
+    public static boolean readBoolean(ByteBuf buf) {
+        return buf.readBoolean();
+    }
+
+    public static ByteBuf writeByte(ByteBuf buf, byte data) {
+        buf.writeByte(data);
+        return buf;
+    }
+
+    public static byte readByte(ByteBuf buf) {
+        return buf.readByte();
+    }
+
+    public static ByteBuf writeShort(ByteBuf buf, short data) {
+        buf.writeShort(data);
+        return buf;
+    }
+
+    public static short readShort(ByteBuf buf) {
+        return buf.readShort();
+    }
+
+    public static ByteBuf writeInt(ByteBuf buf, int data) {
+        buf.writeInt(data);
+        return buf;
+    }
+
+    public static int readInt(ByteBuf buf) {
+        return buf.readInt();
+    }
+
+    public static ByteBuf writeLong(ByteBuf buf, long data) {
+        buf.writeLong(data);
+        return buf;
+    }
+
+    public static long readLong(ByteBuf buf) {
+        return buf.readLong();
+    }
+
+    public static ByteBuf writeFloat(ByteBuf buf, float data) {
+        buf.writeFloat(data);
+        return buf;
+    }
+
+    public static float readFloat(ByteBuf buf) {
+        return buf.readFloat();
+    }
+
+    public static ByteBuf writeDouble(ByteBuf buf, double data) {
+        buf.writeDouble(data);
+        return buf;
+    }
+
+    public static double readDouble(ByteBuf buf) {
+        return buf.readDouble();
+    }
+
+    public static ByteBuf writeChar(ByteBuf buf, char data) {
+        buf.writeChar(data);
+        return buf;
+    }
+
+    public static char readChar(ByteBuf buf) {
+        return buf.readChar();
+    }
+
     public static ByteBuf writeString(ByteBuf buf, String string) {
         ByteBufUtils.writeUTF8String(buf, string);
         return buf;
@@ -49,6 +123,18 @@ public class ByteBufUtil {
         }
         int dimension = buf.readInt();
         return InfinityLib.proxy.getEntityById(dimension, id);
+    }
+
+    public static ByteBuf writeTileEntity(ByteBuf buf, TileEntity tile) {
+        writeInt(buf, tile.getWorld().provider.getDimension());
+        return writeBlockPos(buf, tile.getPos());
+    }
+
+    public static TileEntity readTileEntity(ByteBuf buf) {
+        int dimension = readInt(buf);
+        BlockPos pos = readBlockPos(buf);
+        World world = InfinityLib.proxy.getWorldByDimensionId(dimension);
+        return world == null ? null : world.getTileEntity(pos);
     }
 
     public static ByteBuf writeBlockPos(ByteBuf buf, BlockPos pos) {
