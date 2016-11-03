@@ -105,6 +105,25 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      */
     protected abstract REPLY getReply(MessageContext ctx);
 
+    @Override
+    public final void fromBytes(ByteBuf buf) {
+        if (ELEMENT_MAP.containsKey(this.getClass())) {
+            for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
+                element.readFromByteBuf(buf, this);
+            }
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public final void toBytes(ByteBuf buf) {
+        if (ELEMENT_MAP.containsKey(this.getClass())) {
+            for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
+                element.writeToByteBuf(buf, this);
+            }
+        }
+    }
+
     /**
      * Sends this message to all connected clients,
      * only valid if this message is handled on the client
@@ -175,27 +194,6 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     public final MessageBase<REPLY> sendToServer() {
         this.getNetworkWrapper().sendToServer(this);
         return this;
-    }
-
-    @Override
-    public final void fromBytes(ByteBuf buf) {
-        if (ELEMENT_MAP.containsKey(this.getClass())) {
-            for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
-                element.readFromByteBuf(buf, this);
-            }
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public final void toBytes(ByteBuf buf) {
-        if (ELEMENT_MAP.containsKey(this.getClass())) {
-            if (ELEMENT_MAP.containsKey(this.getClass())) {
-                for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
-                    element.writeToByteBuf(buf, this);
-                }
-            }
-        }
     }
 
     static void onMessageRegistered(Class<? extends MessageBase> clazz, INetworkWrapper wrapper) {

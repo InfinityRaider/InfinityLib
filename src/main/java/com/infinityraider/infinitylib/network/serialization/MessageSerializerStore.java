@@ -47,7 +47,7 @@ public final class MessageSerializerStore {
     }
 
     private static Optional<MessageElement> createAndRegisterNewElement(Field field) {
-        Class clazz = field.getClass();
+        Class clazz = field.getType();
         Optional<IMessageSerializer> serializer = getMessageSerializer(clazz);
         if (serializer.isPresent()) {
             MessageElement element = new MessageElement(field, serializer.get().getWriter(clazz), serializer.get().getReader(clazz));

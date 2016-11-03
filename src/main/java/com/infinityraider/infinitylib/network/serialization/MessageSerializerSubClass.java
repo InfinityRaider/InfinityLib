@@ -14,28 +14,38 @@ public class MessageSerializerSubClass<C extends P, P> implements IMessageSerial
 
     private final Class<P> parentClass;
 
+    private IMessageWriter<P> writer;
+    private IMessageReader<P> reader;
+
     private MessageSerializerSubClass(Class<P> parentClass) {
         this.parentClass = parentClass;
     }
 
     @Override
     public boolean accepts(Class<C> childClass) {
-        return MessageSerializerStore.getMessageSerializer(parentClass).isPresent() && parentClass.isAssignableFrom(childClass);
+        //this order is really important to prevent infinite loop
+        return this.parentClass != childClass
+                && this.parentClass.isAssignableFrom(childClass)
+                && MessageSerializerStore.getMessageSerializer(this.parentClass).isPresent();
     }
 
     @Override
     public IMessageWriter<C> getWriter(Class<C> childClass) {
-        IMessageSerializer<P> serializer = MessageSerializerStore.getMessageSerializer(parentClass).get();
-        IMessageWriter<P> writer = serializer.getWriter(parentClass);
-        return (buf, data) -> writer.writeData(buf, (P) data);
+        if(this.writer == null) {
+            IMessageSerializer<P> serializer = MessageSerializerStore.getMessageSerializer(this.parentClass).get();
+            this.writer = serializer.getWriter(this.parentClass);
+        }
+        return (buf, data) -> this.writer.writeData(buf, (P) data);
     }
 
     @Override
     public IMessageReader<C> getReader(Class<C> childClass) {
-        IMessageSerializer<P> serializer = MessageSerializerStore.getMessageSerializer(parentClass).get();
-        IMessageReader<P> reader = serializer.getReader(parentClass);
+        if(this.reader == null) {
+            IMessageSerializer<P> serializer = MessageSerializerStore.getMessageSerializer(this.parentClass).get();
+            this.reader = serializer.getReader(this.parentClass);
+        }
         return (buf) -> {
-            P obj = reader.readData(buf);
+            P obj = this.reader.readData(buf);
             return childClass.isInstance(obj) ? childClass.cast(obj) : null;
         };
     }

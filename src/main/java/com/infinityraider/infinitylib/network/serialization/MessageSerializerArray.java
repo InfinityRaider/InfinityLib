@@ -9,6 +9,9 @@ import java.util.List;
 public class MessageSerializerArray<T> implements IMessageSerializer<T[]> {
     public static final IMessageSerializer INSTANCE = new MessageSerializerArray();
 
+    private IMessageWriter<T> writer;
+    private IMessageReader<T> reader;
+
     private MessageSerializerArray() {}
 
     @Override
@@ -18,25 +21,29 @@ public class MessageSerializerArray<T> implements IMessageSerializer<T[]> {
 
     @Override
     public IMessageWriter<T[]> getWriter(Class<T[]> clazz) {
-        IMessageSerializer<T> element =  MessageSerializerStore.getMessageSerializer((Class<T>) clazz.getComponentType()).get();
-        IMessageWriter<T> writer = element.getWriter((Class<T>) clazz.getComponentType());
+        if(this.writer == null) {
+            IMessageSerializer<T> element = MessageSerializerStore.getMessageSerializer((Class<T>) clazz.getComponentType()).get();
+            this.writer = element.getWriter((Class<T>) clazz.getComponentType());
+        }
         return (buf, data) -> {
             buf.writeInt(data.length);
             for (T someData : data) {
-                writer.writeData(buf, someData);
+                this.writer.writeData(buf, someData);
             }
         };
     }
 
     @Override
     public IMessageReader<T[]> getReader(Class<T[]> clazz) {
-        IMessageSerializer<T> element =  MessageSerializerStore.getMessageSerializer((Class<T>) clazz.getComponentType()).get();
-        IMessageReader<T> reader = element.getReader((Class<T>) clazz.getComponentType());
+        if(this.reader == null) {
+            IMessageSerializer<T> element = MessageSerializerStore.getMessageSerializer((Class<T>) clazz.getComponentType()).get();
+            this.reader = element.getReader((Class<T>) clazz.getComponentType());
+        }
         return (buf) -> {
             int size = buf.readInt();
             List<T> list = Lists.newArrayList();
             for(int i = 0; i < size; i++) {
-                list.add(reader.readData(buf));
+                list.add(this.reader.readData(buf));
             }
             return list.toArray((T[]) Array.newInstance(clazz, size));
         };
