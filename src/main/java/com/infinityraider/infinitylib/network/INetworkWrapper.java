@@ -1,7 +1,8 @@
 package com.infinityraider.infinitylib.network;
 
-import com.infinityraider.infinitylib.network.serialization.IMessageElementReader;
-import com.infinityraider.infinitylib.network.serialization.IMessageElementWriter;
+import com.infinityraider.infinitylib.network.serialization.IMessageReader;
+import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
+import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -78,19 +79,26 @@ public interface INetworkWrapper {
      *  - double (and Double)
      *  - char (and Character)
      *  - String
-     *  - Entity
-     *  - EntityPlayer
-     *  - TileEntity
+     *  - Entity (and all subclasses)
+     *  - TileEntity (and all subclasses)
      *  - BlockPos
-     *  - Block
-     *  - Item
+     *  - Block (and all subclasses)
+     *  - Item (and all subclasses)
      *  - ItemStack
      *  - NBTTagCompound
+     *  - Array (of all of the above)
      *
      * @param clazz type to be registered
      * @param writer data writer for this type, should be the dual of reader (T -> ByteBuf)
      * @param reader data reader for this type, should be the dual of writer (ByteBuf -> T)
      * @param <T> the type for the serializer
      */
-    <T> void registerDataSerializer(Class<T>  clazz, IMessageElementWriter<T> writer, IMessageElementReader<T> reader);
+    <T> void registerDataSerializer(Class<T>  clazz, IMessageWriter<T> writer, IMessageReader<T> reader);
+
+    /**
+     * Does the same as the above method
+     * @param serializer the serializer
+     * @param <T> the type for the serializer
+     */
+    <T> void registerDataSerializer(IMessageSerializer<T> serializer);
 }

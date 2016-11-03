@@ -96,16 +96,6 @@ public class ByteBufUtil {
         return ByteBufUtils.readUTF8String(buf);
     }
 
-    public static ByteBuf writePlayer(ByteBuf buf, EntityPlayer player) {
-        writeEntity(buf, player);
-        return buf;
-    }
-
-    public static EntityPlayer readPlayer(ByteBuf buf) {
-        Entity entity = readEntity(buf);
-        return (entity instanceof EntityPlayer) ? (EntityPlayer) entity : null;
-    }
-
     public static ByteBuf writeEntity(ByteBuf buf, Entity e) {
         if (e == null) {
             buf.writeInt(-1);

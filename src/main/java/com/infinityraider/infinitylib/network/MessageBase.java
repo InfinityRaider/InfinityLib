@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.serialization.MessageElement;
+import com.infinityraider.infinitylib.network.serialization.MessageSerializerStore;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
@@ -12,7 +13,6 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -45,12 +45,11 @@ import java.util.Optional;
  *      - double (and Double)
  *      - char (and Character)
  *      - String
- *      - Entity
- *      - EntityPlayer
- *      - TileEntity
+ *      - Entity (and all subclasses)
+ *      - TileEntity (and all subclasses)
  *      - BlockPos
- *      - Block
- *      - Item
+ *      - Block (and all subclasses)
+ *      - Item (and all subclasses)
  *      - ItemStack
  *      - NBTTagCompound
  *      - arrays of all of the above (e.g. int[], Entity[], ...)
@@ -63,7 +62,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
-    private static final Map<Class<? extends MessageBase>, List<Pair<Field, MessageElement>>> FIELD_MAP = Maps.newHashMap();
+    private static final Map<Class<? extends MessageBase>, List<MessageElement>> ELEMENT_MAP = Maps.newHashMap();
     private static final Map<Class<? extends MessageBase>, INetworkWrapper> WRAPPER_MAP = Maps.newHashMap();
 
     private INetworkWrapper wrapper;
@@ -180,22 +179,9 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
 
     @Override
     public final void fromBytes(ByteBuf buf) {
-        if (FIELD_MAP.containsKey(this.getClass())) {
-            for (Pair<Field, MessageElement> pair : FIELD_MAP.get(this.getClass())) {
-                boolean shouldRead = buf.readBoolean();
-                if (shouldRead) {
-                    Object object = pair.getRight().readFromByteBuf(buf);
-                    if (object != null) {
-                        try {
-                            pair.getLeft().set(this, object);
-                        } catch (IllegalAccessException e) {
-                            InfinityLib.instance.getLogger().error("Failed setting field data");
-                            InfinityLib.instance.getLogger().error(e.toString());
-                        }
-                    } else {
-                        InfinityLib.instance.getLogger().error("Object was null, did not set field " + pair.getLeft().getName());
-                    }
-                }
+        if (ELEMENT_MAP.containsKey(this.getClass())) {
+            for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
+                element.readFromByteBuf(buf, this);
             }
         }
     }
@@ -203,18 +189,10 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     @Override
     @SuppressWarnings("unchecked")
     public final void toBytes(ByteBuf buf) {
-        if (FIELD_MAP.containsKey(this.getClass())) {
-            for (Pair<Field, MessageElement> pair : FIELD_MAP.get(this.getClass())) {
-                Object object = null;
-                try {
-                    object = pair.getLeft().get(this);
-                } catch(IllegalAccessException e) {
-                    InfinityLib.instance.getLogger().error("Failed getting field data");
-                    InfinityLib.instance.getLogger().error(e.toString());
-                }
-                buf.writeBoolean(object != null);
-                if (object != null) {
-                    pair.getRight().writeToByteBuf(buf, object);
+        if (ELEMENT_MAP.containsKey(this.getClass())) {
+            if (ELEMENT_MAP.containsKey(this.getClass())) {
+                for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
+                    element.writeToByteBuf(buf, this);
                 }
             }
         }
@@ -226,20 +204,20 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     }
 
     private static void compileFieldsList(Class<? extends MessageBase> clazz) {
-        if (!FIELD_MAP.containsKey(clazz)) {
+        if (!ELEMENT_MAP.containsKey(clazz)) {
             Field[] fields = clazz.getDeclaredFields();
-            List<Pair<Field, MessageElement>> elements = Lists.newArrayList();
+            List<MessageElement> elements = Lists.newArrayList();
             List<Field> skippedFields = Lists.newArrayList();
             for (Field field : fields) {
                 field.setAccessible(true);
-                Optional<MessageElement> element = MessageElement.getMessageElement(field);
+                Optional<MessageElement> element = MessageSerializerStore.getMessageSerializer(field);
                 if (element.isPresent()) {
-                    elements.add(Pair.of(field, element.get()));
+                    elements.add(element.get());
                 } else {
                     skippedFields.add(field);
                 }
             }
-            FIELD_MAP.put(clazz, ImmutableList.copyOf(elements));
+            ELEMENT_MAP.put(clazz, ImmutableList.copyOf(elements));
             if (skippedFields.size() > 0) {
                 InfinityLib.instance.getLogger().error("SKIPPED FIELDS FOR MESSAGE CLASS: " + clazz.getName());
                 InfinityLib.instance.getLogger().error("Report this to the mod author, skipped fields are:");

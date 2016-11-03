@@ -2,7 +2,7 @@ package com.infinityraider.infinitylib.network.serialization;
 
 import io.netty.buffer.ByteBuf;
 
-public interface IMessageElementWriter<T> {
+public interface IMessageWriter<T> {
     /**
      * writes data to a byte buffer
      * @param buf the byte buffer

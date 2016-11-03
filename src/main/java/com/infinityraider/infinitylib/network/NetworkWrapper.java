@@ -2,9 +2,10 @@ package com.infinityraider.infinitylib.network;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
-import com.infinityraider.infinitylib.network.serialization.IMessageElementReader;
-import com.infinityraider.infinitylib.network.serialization.IMessageElementWriter;
-import com.infinityraider.infinitylib.network.serialization.MessageElement;
+import com.infinityraider.infinitylib.network.serialization.IMessageReader;
+import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
+import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
+import com.infinityraider.infinitylib.network.serialization.MessageSerializerStore;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -97,8 +98,13 @@ public class NetworkWrapper implements INetworkWrapper {
     }
 
     @Override
-    public <T> void registerDataSerializer(Class<T> clazz, IMessageElementWriter<T> writer, IMessageElementReader<T> reader) {
-        MessageElement.registerElement(clazz, writer, reader);
+    public <T> void registerDataSerializer(Class<T> clazz, IMessageWriter<T> writer, IMessageReader<T> reader) {
+        MessageSerializerStore.registerMessageSerializer(clazz, writer, reader);
+    }
+
+    @Override
+    public <T> void registerDataSerializer(IMessageSerializer<T> serializer) {
+        MessageSerializerStore.registerMessageSerializer(serializer);
     }
 
     private static final class MessageHandler<REQ extends MessageBase<REPLY>, REPLY extends IMessage> implements IMessageHandler<REQ, REPLY> {
