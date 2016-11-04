@@ -52,7 +52,8 @@ import java.util.Optional;
  *      - Item (and all subclasses)
  *      - ItemStack
  *      - NBTTagCompound
- *      - arrays of all of the above (e.g. int[], Entity[], ...)
+ *      - any Enum
+ *      - any Array of any valid class (e.g. int[], Entity[], ...)
  *
  *      Only fields with registered types will be successfully synced, if fields are detected which do not have a serializer registered, an error will be logged.
  *      If your message class contains fields with a type not listed above, you have to register a new serializer for this class using INetworkWrapper.registerDataSerializer(),

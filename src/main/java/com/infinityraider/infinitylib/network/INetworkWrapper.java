@@ -86,7 +86,8 @@ public interface INetworkWrapper {
      *  - Item (and all subclasses)
      *  - ItemStack
      *  - NBTTagCompound
-     *  - Array (of all of the above)
+     *  - any Enum
+     *  - any Array of a valid class
      *
      * @param clazz type to be registered
      * @param writer data writer for this type, should be the dual of reader (T -> ByteBuf)

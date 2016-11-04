@@ -10,7 +10,7 @@ public class MessageSerializerGeneric<T> implements IMessageSerializer<T> {
     private final IMessageWriter<T> writer;
     private final IMessageReader<T> reader;
 
-    private MessageSerializerGeneric(Class<T> clazz, IMessageWriter<T> writer, IMessageReader<T> reader) {
+    public MessageSerializerGeneric(Class<T> clazz, IMessageWriter<T> writer, IMessageReader<T> reader) {
         this.clazz = clazz;
         this.writer = writer;
         this.reader = reader;

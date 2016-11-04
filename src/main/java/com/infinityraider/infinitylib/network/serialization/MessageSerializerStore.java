@@ -83,6 +83,7 @@ public final class MessageSerializerStore {
         registerMessageSerializer(Item.class, ByteBufUtil::writeItem, ByteBufUtil::readItem);
         registerMessageSerializer(ItemStack.class, ByteBufUtil::writeItemStack, ByteBufUtil::readItemStack);
         registerMessageSerializer(NBTTagCompound.class, ByteBufUtil::writeNBT, ByteBufUtil::readNBT);
+        registerMessageSerializer(MessageSerializerEnum.INSTANCE);
         registerMessageSerializer(MessageSerializerSubClass.TILE_ENTITY);
         registerMessageSerializer(MessageSerializerSubClass.ENTITY);
         registerMessageSerializer(MessageSerializerSubClass.BLOCK);
