@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.network.serialization;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -10,24 +9,12 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 
-import java.lang.reflect.Field;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 @SuppressWarnings("unchecked")
 public final class MessageSerializerStore {
-    private static final Map<Class, MessageElement> ELEMENTS = Maps.newHashMap();
     private static final Set<IMessageSerializer> SERIALIZERS = Sets.newHashSet();
-
-    public static Optional<MessageElement> getMessageSerializer(Field field) {
-        Class clazz = field.getType();
-        if(ELEMENTS.containsKey(clazz)) {
-            return Optional.of(ELEMENTS.get(clazz));
-        } else {
-            return createAndRegisterNewElement(field);
-        }
-    }
 
     public static <T> Optional<IMessageSerializer<T>> getMessageSerializer(Class<T> clazz) {
         for (IMessageSerializer serializer : SERIALIZERS) {
@@ -44,18 +31,6 @@ public final class MessageSerializerStore {
 
     public static <T> void registerMessageSerializer(IMessageSerializer<T> serializer) {
         SERIALIZERS.add(serializer);
-    }
-
-    private static Optional<MessageElement> createAndRegisterNewElement(Field field) {
-        Class clazz = field.getType();
-        Optional<IMessageSerializer> serializer = getMessageSerializer(clazz);
-        if (serializer.isPresent()) {
-            MessageElement element = new MessageElement(field, serializer.get().getWriter(clazz), serializer.get().getReader(clazz));
-            ELEMENTS.put(clazz, element);
-            return Optional.of(element);
-        } else {
-            return Optional.empty();
-        }
     }
 
     static {

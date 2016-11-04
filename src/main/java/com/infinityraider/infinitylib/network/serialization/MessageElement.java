@@ -5,6 +5,7 @@ import com.infinityraider.infinitylib.network.MessageBase;
 import io.netty.buffer.ByteBuf;
 
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 public class MessageElement<T> {
@@ -12,7 +13,7 @@ public class MessageElement<T> {
     private final IMessageWriter<T> writer;
     private final IMessageReader<T> reader;
 
-    MessageElement(Field field, IMessageWriter<T> writer, IMessageReader<T> reader) {
+    private MessageElement(Field field, IMessageWriter<T> writer, IMessageReader<T> reader) {
         this.field = field;
         this.field.setAccessible(true);
         this.writer = writer;
@@ -24,8 +25,8 @@ public class MessageElement<T> {
         try {
             data = (T) this.field.get(msg);
         } catch (Exception e) {
-            InfinityLib.instance.getLogger().error("Failed getting field data");
-            InfinityLib.instance.getLogger().error(e.toString());
+            InfinityLib.instance.getLogger().error("Failed getting field data, (enable debug mode in the config for more info)");
+            InfinityLib.instance.getLogger().printStackTrace(e);
         }
         if(data != null) {
             ByteBufUtil.writeBoolean(buf, true);
@@ -43,12 +44,23 @@ public class MessageElement<T> {
                 try {
                     this.field.set(msg, data);
                 } catch(Exception e) {
-                    InfinityLib.instance.getLogger().error("Failed setting field data");
-                    InfinityLib.instance.getLogger().error(e.toString());
+                    InfinityLib.instance.getLogger().error("Failed setting field data, (enable debug mode in the config for more info)");
+                    InfinityLib.instance.getLogger().printStackTrace(e);
                 }
             } else {
                 InfinityLib.instance.getLogger().error("Object was null, did not set field " + this.field.getName());
             }
+        }
+    }
+
+    public static Optional<MessageElement> createNewElement(Field field) {
+        Class clazz = field.getType();
+        Optional<IMessageSerializer> serializer = MessageSerializerStore.getMessageSerializer(clazz);
+        if (serializer.isPresent()) {
+            MessageElement element = new MessageElement(field, serializer.get().getWriter(clazz), serializer.get().getReader(clazz));
+            return Optional.of(element);
+        } else {
+            return Optional.empty();
         }
     }
 }

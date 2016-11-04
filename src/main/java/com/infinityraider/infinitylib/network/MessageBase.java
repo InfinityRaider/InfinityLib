@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.serialization.MessageElement;
-import com.infinityraider.infinitylib.network.serialization.MessageSerializerStore;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
@@ -63,8 +62,8 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
-    private static final Map<Class<? extends MessageBase>, List<MessageElement>> ELEMENT_MAP = Maps.newHashMap();
-    private static final Map<Class<? extends MessageBase>, INetworkWrapper> WRAPPER_MAP = Maps.newHashMap();
+    private static final Map<Class<? extends MessageBase>, List<MessageElement>> ELEMENT_MAP = Maps.newIdentityHashMap();
+    private static final Map<Class<? extends MessageBase>, INetworkWrapper> WRAPPER_MAP = Maps.newIdentityHashMap();
 
     private INetworkWrapper wrapper;
 
@@ -108,6 +107,7 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
 
     @Override
     public final void fromBytes(ByteBuf buf) {
+        Map<Class<? extends MessageBase>, List<MessageElement>> map = ELEMENT_MAP;
         if (ELEMENT_MAP.containsKey(this.getClass())) {
             for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
                 element.readFromByteBuf(buf, this);
@@ -118,6 +118,7 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     @Override
     @SuppressWarnings("unchecked")
     public final void toBytes(ByteBuf buf) {
+        Map<Class<? extends MessageBase>, List<MessageElement>> map = ELEMENT_MAP;
         if (ELEMENT_MAP.containsKey(this.getClass())) {
             for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
                 element.writeToByteBuf(buf, this);
@@ -209,7 +210,7 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
             List<Field> skippedFields = Lists.newArrayList();
             for (Field field : fields) {
                 field.setAccessible(true);
-                Optional<MessageElement> element = MessageSerializerStore.getMessageSerializer(field);
+                Optional<MessageElement> element = MessageElement.createNewElement(field);
                 if (element.isPresent()) {
                     elements.add(element.get());
                 } else {
