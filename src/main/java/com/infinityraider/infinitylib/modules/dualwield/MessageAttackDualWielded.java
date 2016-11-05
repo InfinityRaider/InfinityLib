@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -16,7 +15,6 @@ public class MessageAttackDualWielded extends MessageBase<IMessage> {
     private boolean ctrl;
     private Entity entity;
 
-    @SuppressWarnings("unused")
     public MessageAttackDualWielded() {
         super();
     }
@@ -27,22 +25,6 @@ public class MessageAttackDualWielded extends MessageBase<IMessage> {
         this.shift = shift;
         this.ctrl = ctrl;
         this.entity = entity;
-    }
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        entity = this.readEntityFromByteBuf(buf);
-        left = buf.readBoolean();
-        shift = buf.readBoolean();
-        ctrl = buf.readBoolean();
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
-        writeEntityToByteBuf(buf, entity);
-        buf.writeBoolean(left);
-        buf.writeBoolean(shift);
-        buf.writeBoolean(ctrl);
     }
 
     @Override

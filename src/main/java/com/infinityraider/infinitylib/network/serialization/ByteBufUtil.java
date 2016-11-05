@@ -96,16 +96,6 @@ public class ByteBufUtil {
         return ByteBufUtils.readUTF8String(buf);
     }
 
-    public static ByteBuf writePlayer(ByteBuf buf, EntityPlayer player) {
-        writeEntity(buf, player);
-        return buf;
-    }
-
-    public static EntityPlayer readPlayer(ByteBuf buf) {
-        Entity entity = readEntity(buf);
-        return (entity instanceof EntityPlayer) ? (EntityPlayer) entity : null;
-    }
-
     public static ByteBuf writeEntity(ByteBuf buf, Entity e) {
         if (e == null) {
             buf.writeInt(-1);
@@ -190,22 +180,5 @@ public class ByteBufUtil {
 
     public static NBTTagCompound readNBT(ByteBuf buf) {
         return ByteBufUtils.readTag(buf);
-    }
-
-    public static ByteBuf writeIntArray(ByteBuf buf, int[] array) {
-        buf.writeInt(array.length);
-        for(int i = 0; i < array.length; i++) {
-            buf.writeInt(array[i]);
-        }
-        return buf;
-    }
-
-    public static int[] readIntArray(ByteBuf buf) {
-        int amount = buf.readInt();
-        int[] array = new int[amount];
-        for(int i = 0; i < amount; i++) {
-            array[i] = buf.readInt();
-        }
-        return array;
     }
 }

@@ -98,6 +98,16 @@ public interface IProxyBase {
      */
     void registerCapabilities();
 
+    /** Registers an event handler */
+    default void registerEventHandler(Object handler) {
+        MinecraftForge.EVENT_BUS.register(handler);
+    }
+
+    /** Registers a capability */
+    default void registerCapability(ICapabilityImplementation capability) {
+        CapabilityHandler.getInstance().registerCapability(capability);
+    }
+
     /**
      * ---------------
      * UTILITY METHODS
@@ -150,14 +160,4 @@ public interface IProxyBase {
 
     /** Queues a task to be executed on this side */
     void queueTask(Runnable task);
-
-    /** Registers an event handler */
-    default void registerEventHandler(Object handler) {
-        MinecraftForge.EVENT_BUS.register(handler);
-    }
-
-    /** Registers a capability */
-    default void registerCapability(ICapabilityImplementation capability) {
-        CapabilityHandler.getInstance().registerCapability(capability);
-    }
 }

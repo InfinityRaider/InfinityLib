@@ -75,7 +75,7 @@ public class State {
 
     private void syncToClient() {
         if(InfinityLib.proxy.getEffectiveSide() == Side.SERVER) {
-            InfinityLib.instance.getNetworkWrapper().sendToAll(new MessageSyncState(getPlayer(), this));
+            new MessageSyncState(getPlayer(), this).sendToAll();
         }
     }
 }

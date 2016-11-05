@@ -2,9 +2,10 @@ package com.infinityraider.infinitylib.network;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
-import com.infinityraider.infinitylib.network.serialization.IMessageElementReader;
-import com.infinityraider.infinitylib.network.serialization.IMessageElementWriter;
-import com.infinityraider.infinitylib.network.serialization.MessageElement;
+import com.infinityraider.infinitylib.network.serialization.IMessageReader;
+import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
+import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
+import com.infinityraider.infinitylib.network.serialization.MessageSerializerStore;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -29,42 +30,58 @@ public class NetworkWrapper implements INetworkWrapper {
 
     @Override
     public void sendToAll(MessageBase message) {
-        this.wrapper.sendToAll(message);
+        if(message.getMessageHandlerSide() == Side.CLIENT) {
+            this.wrapper.sendToAll(message);
+        }
     }
 
     @Override
     public void sendTo(MessageBase message, EntityPlayerMP player) {
-        this.wrapper.sendTo(message, player);
+        if(message.getMessageHandlerSide() == Side.CLIENT) {
+            this.wrapper.sendTo(message, player);
+        }
     }
 
     @Override
     public void sendToAllAround(MessageBase message, World world, double x, double y, double z, double range) {
-        this.sendToAllAround(message, world.provider.getDimension(), x, y, z, range);
+        if(message.getMessageHandlerSide() == Side.CLIENT) {
+            this.sendToAllAround(message, world.provider.getDimension(), x, y, z, range);
+        }
     }
 
     @Override
     public void sendToAllAround(MessageBase message, int dimension, double x, double y, double z, double range) {
-        this.sendToAllAround(message, new NetworkRegistry.TargetPoint(dimension, x, y, z, range));
+        if(message.getMessageHandlerSide() == Side.CLIENT) {
+            this.sendToAllAround(message, new NetworkRegistry.TargetPoint(dimension, x, y, z, range));
+        }
     }
 
     @Override
     public void sendToAllAround(MessageBase message, NetworkRegistry.TargetPoint point) {
-        this.wrapper.sendToAllAround(message, point);
+        if(message.getMessageHandlerSide() == Side.CLIENT) {
+            this.wrapper.sendToAllAround(message, point);
+        }
     }
 
     @Override
-    public void sendToDimension(MessageBase messageBase, World world) {
-        this.sendToDimension(messageBase, world.provider.getDimension());
+    public void sendToDimension(MessageBase message, World world) {
+        if(message.getMessageHandlerSide() == Side.CLIENT) {
+            this.sendToDimension(message, world.provider.getDimension());
+        }
     }
 
     @Override
     public void sendToDimension(MessageBase message, int dimensionId) {
-        this.wrapper.sendToDimension(message, dimensionId);
+        if(message.getMessageHandlerSide() == Side.CLIENT) {
+            this.wrapper.sendToDimension(message, dimensionId);
+        }
     }
 
     @Override
     public void sendToServer(MessageBase message) {
-        this.wrapper.sendToServer(message);
+        if(message.getMessageHandlerSide() == Side.SERVER) {
+            this.wrapper.sendToServer(message);
+        }
     }
 
     @Override
@@ -74,14 +91,20 @@ public class NetworkWrapper implements INetworkWrapper {
             wrapper.registerMessage(new MessageHandler<REQ, REPLY>(), message, nextId, side);
             InfinityLib.instance.getLogger().debug("Registered message \"" + message.getName() + "\" with id " + nextId);
             nextId = nextId + 1;
+            MessageBase.onMessageRegistered(message, this);
         } catch (Exception e) {
             InfinityLib.instance.getLogger().printStackTrace(e);
         }
     }
 
     @Override
-    public <T> void registerDataSerializer(Class<T> clazz, IMessageElementWriter<T> writer, IMessageElementReader<T> reader) {
-        MessageElement.registerElement(clazz, writer, reader);
+    public <T> void registerDataSerializer(Class<T> clazz, IMessageWriter<T> writer, IMessageReader<T> reader) {
+        MessageSerializerStore.registerMessageSerializer(clazz, writer, reader);
+    }
+
+    @Override
+    public <T> void registerDataSerializer(IMessageSerializer<T> serializer) {
+        MessageSerializerStore.registerMessageSerializer(serializer);
     }
 
     private static final class MessageHandler<REQ extends MessageBase<REPLY>, REPLY extends IMessage> implements IMessageHandler<REQ, REPLY> {
@@ -106,7 +129,9 @@ public class NetworkWrapper implements INetworkWrapper {
 
         @Override
         public void run() {
-            this.message.processMessage(this.ctx);
+            if(this.message.getMessageHandlerSide() == this.ctx.side) {
+                this.message.processMessage(this.ctx);
+            }
         }
     }
 }
