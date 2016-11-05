@@ -11,7 +11,6 @@ public class MessageSwingArm extends MessageBase<IMessage> {
     private EntityPlayer player;
     private int hand;
 
-    @SuppressWarnings("unused")
     public MessageSwingArm() {
         super();
     }

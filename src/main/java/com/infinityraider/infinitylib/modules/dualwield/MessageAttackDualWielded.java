@@ -15,7 +15,6 @@ public class MessageAttackDualWielded extends MessageBase<IMessage> {
     private boolean ctrl;
     private Entity entity;
 
-    @SuppressWarnings("unused")
     public MessageAttackDualWielded() {
         super();
     }

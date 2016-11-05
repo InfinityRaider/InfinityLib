@@ -12,10 +12,10 @@ public class MessageMouseButtonPressed extends MessageBase<MessageSwingArm> {
     private boolean shift;
     private boolean ctrl;
 
-    @SuppressWarnings("unused")
     public MessageMouseButtonPressed() {}
 
     public MessageMouseButtonPressed(boolean left, boolean shift, boolean ctrl) {
+        this();
         this.left = left;
         this.shift = shift;
         this.ctrl = ctrl;

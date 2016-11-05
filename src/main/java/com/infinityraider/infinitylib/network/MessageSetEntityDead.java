@@ -13,6 +13,7 @@ public class MessageSetEntityDead extends MessageBase<IMessage> {
     }
 
     public MessageSetEntityDead(Entity entity) {
+        this();
         this.entity = entity;
     }
 
