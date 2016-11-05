@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -222,7 +223,9 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
             List<MessageElement> elements = Lists.newArrayList();
             List<Field> skippedFields = Lists.newArrayList();
             for (Field field : fields) {
-                field.setAccessible(true);
+                if(Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
                 Optional<MessageElement> element = MessageElement.createNewElement(field);
                 if (element.isPresent()) {
                     elements.add(element.get());

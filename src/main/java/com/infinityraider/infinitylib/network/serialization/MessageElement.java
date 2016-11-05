@@ -15,7 +15,6 @@ public class MessageElement<T> {
 
     private MessageElement(Field field, IMessageWriter<T> writer, IMessageReader<T> reader) {
         this.field = field;
-        this.field.setAccessible(true);
         this.writer = writer;
         this.reader = reader;
     }
@@ -56,6 +55,7 @@ public class MessageElement<T> {
     }
 
     public static Optional<MessageElement> createNewElement(Field field) {
+        field.setAccessible(true);
         Class clazz = field.getType();
         Optional<IMessageSerializer> serializer = MessageSerializerStore.getMessageSerializer(clazz);
         if (serializer.isPresent()) {
