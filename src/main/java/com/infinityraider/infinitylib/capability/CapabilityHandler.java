@@ -45,12 +45,11 @@ public class CapabilityHandler {
         Object object = event.getObject();
         T carrier = (T) object;
         Class<T> clazz = (Class<T>) carrier.getClass();
-        if (this.map.containsKey(clazz)) {
-            this.map.get(clazz).stream()
-                    .filter(impl -> impl.getCarrierClass().isAssignableFrom(clazz))
-                    .filter(impl -> impl.shouldApplyCapability(carrier))
-                    .forEach(impl -> this.addCapability(event, impl, carrier));
-        }
+        this.map.entrySet().stream().filter(entry -> entry.getKey().isAssignableFrom(clazz)).forEach(
+                entry -> entry.getValue().stream()
+                        .filter(impl -> impl.getCarrierClass().isAssignableFrom(clazz))
+                        .filter(impl -> impl.shouldApplyCapability(carrier))
+                        .forEach(impl -> this.addCapability(event, impl, carrier)));
     }
 
     @SubscribeEvent
