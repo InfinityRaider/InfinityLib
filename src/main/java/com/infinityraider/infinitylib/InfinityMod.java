@@ -32,7 +32,7 @@ public abstract class InfinityMod {
         return this.logger;
     }
 
-    protected final INetworkWrapper getNetworkWrapper() {
+    public final INetworkWrapper getNetworkWrapper() {
         return this.networkWrapper;
     }
 
