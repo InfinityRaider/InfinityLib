@@ -48,7 +48,9 @@ public class MessageElement<T> {
                     InfinityLib.instance.getLogger().printStackTrace(e);
                 }
             } else {
-                InfinityLib.instance.getLogger().error("Object was null, did not set field " + this.field.getName());
+                InfinityLib.instance.getLogger().debug("Object was null, did not set field " 
+                                + this.field.getDeclaringClass().getName()
+                                + "." + this.field.getName());
             }
         }
     }
