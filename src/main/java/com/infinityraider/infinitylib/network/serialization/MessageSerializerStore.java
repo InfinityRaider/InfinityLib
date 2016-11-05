@@ -8,6 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.Optional;
 import java.util.Set;
@@ -58,11 +60,14 @@ public final class MessageSerializerStore {
         registerMessageSerializer(Item.class, ByteBufUtil::writeItem, ByteBufUtil::readItem);
         registerMessageSerializer(ItemStack.class, ByteBufUtil::writeItemStack, ByteBufUtil::readItemStack);
         registerMessageSerializer(NBTTagCompound.class, ByteBufUtil::writeNBT, ByteBufUtil::readNBT);
+        registerMessageSerializer(Vec3d.class, ByteBufUtil::writeVec3d, ByteBufUtil::readVec3d);
+        registerMessageSerializer(ITextComponent.class, ByteBufUtil::writeTextComponent, ByteBufUtil::readTextComponent);
         registerMessageSerializer(MessageSerializerEnum.INSTANCE);
         registerMessageSerializer(MessageSerializerSubClass.TILE_ENTITY);
         registerMessageSerializer(MessageSerializerSubClass.ENTITY);
         registerMessageSerializer(MessageSerializerSubClass.BLOCK);
         registerMessageSerializer(MessageSerializerSubClass.ITEM);
+        registerMessageSerializer(MessageSerializerSubClass.TEXT);
         registerMessageSerializer(MessageSerializerArray.INSTANCE);
     }
 }

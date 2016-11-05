@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.MessageElement;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -14,6 +15,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,6 +53,8 @@ import java.util.Optional;
  *      - Item (and all subclasses)
  *      - ItemStack
  *      - NBTTagCompound
+ *      - Vec3d
+ *      - ITextComponent (and all subclasses)
  *      - any Enum
  *      - any Array of any valid class (e.g. int[], Entity[], ...)
  *
@@ -104,6 +108,15 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * @return a new message, or null if nothing has to be sent back
      */
     protected abstract REPLY getReply(MessageContext ctx);
+
+    /**
+     * Called to register required missing serializers for this class,
+     * For a list of default registered serializers, see the list in the javadoc for this class
+     * @return a list of IMessageSerializers required to serialize this message
+     */
+    protected List<IMessageSerializer> getNecessarySerializers() {
+        return Collections.emptyList();
+    }
 
     @Override
     public final void fromBytes(ByteBuf buf) {

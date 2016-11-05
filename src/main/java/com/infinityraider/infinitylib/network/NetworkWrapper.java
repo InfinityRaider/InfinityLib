@@ -87,7 +87,9 @@ public class NetworkWrapper implements INetworkWrapper {
     @Override
     public <REQ extends MessageBase<REPLY>, REPLY extends IMessage> void registerMessage(Class<? extends REQ> message) {
         try {
-            Side side = message.getDeclaredConstructor().newInstance().getMessageHandlerSide();
+            REQ msg = message.getDeclaredConstructor().newInstance();
+            msg.getNecessarySerializers().stream().forEach(this::registerDataSerializer);
+            Side side = msg.getMessageHandlerSide();
             wrapper.registerMessage(new MessageHandler<REQ, REPLY>(), message, nextId, side);
             InfinityLib.instance.getLogger().debug("Registered message \"" + message.getName() + "\" with id " + nextId);
             nextId = nextId + 1;

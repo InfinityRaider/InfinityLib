@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.text.ITextComponent;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class MessageSerializerSubClass<C extends P, P> implements IMessageSerializer<C> {
@@ -11,6 +12,7 @@ public class MessageSerializerSubClass<C extends P, P> implements IMessageSerial
     public static final IMessageSerializer<Entity> ENTITY = new MessageSerializerSubClass<>(Entity.class);
     public static final IMessageSerializer<Block> BLOCK = new MessageSerializerSubClass<>(Block.class);
     public static final IMessageSerializer<Item> ITEM = new MessageSerializerSubClass<>(Item.class);
+    public static final IMessageSerializer<ITextComponent> TEXT = new MessageSerializerSubClass<>(ITextComponent.class);
 
     private final Class<P> parentClass;
 

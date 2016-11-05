@@ -4,13 +4,14 @@ import com.infinityraider.infinitylib.InfinityLib;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
@@ -180,5 +181,24 @@ public class ByteBufUtil {
 
     public static NBTTagCompound readNBT(ByteBuf buf) {
         return ByteBufUtils.readTag(buf);
+    }
+
+    public static ByteBuf writeVec3d(ByteBuf buf, Vec3d data) {
+        buf.writeDouble(data.xCoord);
+        buf.writeDouble(data.yCoord);
+        buf.writeDouble(data.zCoord);
+        return buf;
+    }
+
+    public static Vec3d readVec3d(ByteBuf buf) {
+        return new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+    }
+
+    public static ByteBuf writeTextComponent(ByteBuf buf, ITextComponent component) {
+        return writeString(buf, ITextComponent.Serializer.componentToJson(component));
+    }
+
+    public static ITextComponent readTextComponent(ByteBuf buf) {
+        return ITextComponent.Serializer.jsonToComponent(readString(buf));
     }
 }

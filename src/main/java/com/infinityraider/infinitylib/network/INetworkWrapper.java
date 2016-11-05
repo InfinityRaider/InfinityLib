@@ -86,6 +86,8 @@ public interface INetworkWrapper {
      *  - Item (and all subclasses)
      *  - ItemStack
      *  - NBTTagCompound
+     *  - Vec3d
+     *  - ITextComponent (and all subclasses)
      *  - any Enum
      *  - any Array of a valid class
      *
