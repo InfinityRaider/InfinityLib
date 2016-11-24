@@ -72,6 +72,6 @@ public class MultiBlockPartData implements IMultiBlockPartData {
 
     @Override
     public String toString() {
-        return "(x: "+posX()+"/"+sizeX()+", y: "+posY()+"/"+sizeY()+", z: "+posZ()+"/"+sizeZ()+")";
+        return String.format("(x: %1$d / %2$d, y: %3$d / %4$d, z: %5$d / %6$d)", posX() + 1, sizeX(), posY() + 1, sizeY(), posZ() + 1, sizeZ());
     }
 }
