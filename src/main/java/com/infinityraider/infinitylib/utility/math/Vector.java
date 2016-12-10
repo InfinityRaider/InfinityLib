@@ -69,13 +69,12 @@ public class Vector {
         return new Vector(this.x-v.x, this.y-v.y, this.z-v.z);
     }
 
-    /** returns a scaled copy of this vector */
+    /** scales this vector */
     public Vector scale(double d) {
-        Vector v = this.copy();
         if(d!=1) {
-            v.x = v.x * d;
-            v.y = v.y * d;
-            v.z = v.z * d;
+            this.x = this.x * d;
+            this.y = this.y * d;
+            this.z = this.z * d;
         }
         return this;
     }
