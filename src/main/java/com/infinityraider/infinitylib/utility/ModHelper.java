@@ -76,7 +76,7 @@ public class ModHelper {
 			}
 		});
 		//items
-		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), ItemBase.class, (ItemBase item) -> {
+		ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
 			if (item.isEnabled() && (item instanceof IItemWithRecipe)) {
 				((IItemWithRecipe) item).getRecipes().forEach(GameRegistry::addRecipe);
 			}

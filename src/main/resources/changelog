@@ -1,5 +1,10 @@
 Changelog
 ---------
+0.3
+- FIXED: some items being skipped when registering recipes
+- ADDED: various new functionalities
+- CHANGE: overhauled the networking system
+
 0.2.1
 - CHANGE: switched to quickmod
 
