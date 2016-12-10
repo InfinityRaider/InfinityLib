@@ -61,9 +61,10 @@ public class DebugModeFeedback extends DebugMode {
 
         if (tile instanceof IDebuggable) {
             IDebuggable debuggable = (IDebuggable) tile;
-            debuggable.addServerDebugInfo(debugData);
             if (side == Side.CLIENT) {
                 debuggable.addClientDebugInfo(debugData);
+            } else {
+                debuggable.addServerDebugInfo(debugData);
             }
         } else {
             IBlockState state = world.getBlockState(pos);
