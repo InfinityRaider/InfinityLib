@@ -3,6 +3,8 @@ package com.infinityraider.infinitylib.utility.math;
 
 import net.minecraft.util.math.Vec3d;
 
+import javax.vecmath.Matrix4f;
+
 public final class TransformationMatrix {
 
 	private static final int SIZE = 4;
@@ -195,5 +197,16 @@ public final class TransformationMatrix {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Converts to a Matrix4f
+	 */
+	public Matrix4f toMatrix4f() {
+		return new Matrix4f(
+				(float) matrix[0], (float) matrix[1], (float) matrix[2], (float) matrix[3],
+				(float) matrix[4], (float) matrix[5], (float) matrix[6], (float) matrix[7],
+				(float) matrix[8], (float) matrix[9], (float) matrix[10], (float) matrix[11],
+				(float) matrix[12], (float) matrix[13], (float) matrix[14], (float) matrix[15]);
 	}
 }

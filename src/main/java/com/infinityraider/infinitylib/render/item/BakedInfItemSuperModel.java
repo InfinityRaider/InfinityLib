@@ -36,7 +36,7 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
         this.format = format;
         this.renderer = renderer;
         this.textures = textures;
-        this.transformer = DefaultTransforms::getItemMatrix;
+        this.transformer = this.renderer.getPerspectiveTransformer();
     }
 
     public BakedInfItemSuperModel(VertexFormat format, T renderer, Function<ResourceLocation, TextureAtlasSprite> textures, DefaultTransforms.Transformer transformer) {
