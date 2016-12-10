@@ -8,6 +8,7 @@ import com.infinityraider.infinitylib.utility.ModEventHandlerHack;
 import com.infinityraider.infinitylib.utility.ModHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.*;
@@ -157,6 +158,13 @@ public abstract class InfinityMod {
      */
     public final Side getEffectiveSide() {
         return this.proxy().getEffectiveSide();
+    }
+
+    /**
+     * @return The minecraft server instance
+     */
+    public final MinecraftServer getMinecraftServer() {
+        return this.proxy().getMinecraftServer();
     }
 
     /**
