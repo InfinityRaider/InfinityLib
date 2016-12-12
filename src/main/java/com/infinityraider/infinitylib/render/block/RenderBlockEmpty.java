@@ -9,15 +9,14 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collections;
 import java.util.List;
 
 public class RenderBlockEmpty<B extends BlockBase & ICustomRenderedBlock> implements IBlockRenderingHandler<B> {
-
     public static <B extends BlockBase & ICustomRenderedBlock> RenderBlockEmpty<B> createEmptyRender(B block) {
         return new RenderBlockEmpty<>(block, false);
     }
@@ -45,7 +44,7 @@ public class RenderBlockEmpty<B extends BlockBase & ICustomRenderedBlock> implem
     }
 
     @Override
-    public void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, IBlockState state, B block) {}
+    public void renderWorldBlockStatic(ITessellator tessellator, IBlockState state, B block, EnumFacing side) {}
 
     @Override
     public void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,

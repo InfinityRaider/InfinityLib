@@ -21,6 +21,11 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
     }
 
     @Override
+    public ITileRenderingHandler<B, T> getRenderer() {
+        return (ITileRenderingHandler<B, T>) super.getRenderer();
+    }
+
+    @Override
     public void renderTileEntityAt(T te, double x, double y, double z, float partialTicks, int destroyStage) {
         ITessellator tessellator = TessellatorVertexBuffer.getInstance();
         World world = te.getWorld();
@@ -36,7 +41,7 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
         tessellator.startDrawingQuads(DefaultVertexFormats.BLOCK);
         tessellator.setColorRGBA(255, 255, 255, 255);
 
-        ((ITileRenderingHandler<B, T>) this.getRenderer()).renderWorldBlock(tessellator, world, pos, x, y, z, extendedState, this.getBlock(), te, true, partialTicks, destroyStage);
+        this.getRenderer().renderWorldBlockDynamic(tessellator, world, pos, x, y, z, this.getBlock(), te, partialTicks, destroyStage);
 
         tessellator.draw();
 

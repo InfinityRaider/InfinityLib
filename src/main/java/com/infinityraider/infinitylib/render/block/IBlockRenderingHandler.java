@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -38,14 +38,12 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * Called to render the block at a specific place in the world,
      * startDrawing() has already been called on the tessellator object.
      * The tessellator is also translated to the block's position
-     *
      * @param tessellator tessellator object to draw quads
-     * @param world the world for the block
-     * @param pos the position for the block
      * @param state the state of the block
      * @param block the block
+     * @param side the side being renderered
      */
-    void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, IBlockState state, B block);
+    void renderWorldBlockStatic(ITessellator tessellator, IBlockState state, B block, EnumFacing side);
 
     /**
      * Retrofitted to fix block rendering.
@@ -55,7 +53,7 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @param entity 
      */
     @Override
-    public default void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity) {
+    default void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity) {
         renderInventoryBlock(tessellator, world, this.getBlock().getDefaultState(), this.getBlock(), stack, entity, ItemCameraTransforms.TransformType.NONE);
     }
 

@@ -10,11 +10,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
+import java.util.function.Function;
 import javax.vecmath.Vector3f;
 
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
-public interface ITessellator {
+public interface ITessellator extends Function<ResourceLocation, TextureAtlasSprite> {
     /**
      * Method to start constructing quads
      * @param format vertex format
@@ -349,5 +350,10 @@ public interface ITessellator {
      * @return the diffuse lighting setting
      */
     boolean getApplyDiffuseLighting();
+
+    @Override
+    default TextureAtlasSprite apply(ResourceLocation loc) {
+        return this.getIcon(loc);
+    }
 }
 

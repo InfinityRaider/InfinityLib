@@ -5,16 +5,13 @@ package com.infinityraider.infinitylib.render.block;
 import com.google.common.base.Function;
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
-import com.infinityraider.infinitylib.block.blockstate.IBlockStateWithPos;
 import com.infinityraider.infinitylib.render.DefaultTransforms;
 import com.infinityraider.infinitylib.render.item.BakedInfItemSuperModel;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -23,8 +20,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 /**
  *
@@ -37,8 +32,9 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     private final IBlockRenderingHandler<B> renderer;
     private final Function<ResourceLocation, TextureAtlasSprite> textures;
     private final BakedInfItemSuperModel itemRenderer;
-    private final Map<IBlockState, Map<EnumFacing, List<BakedQuad>>> cachedQuads;
+    private final Map<IBlockState, List<BakedQuad>[]> cachedQuads;
 
+    @SuppressWarnings("unchecked")
     BakedInfBlockModel(B block, VertexFormat format, IBlockRenderingHandler<B> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
         this.block = block;
         this.format = format;
@@ -51,28 +47,22 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     @Override
     @SuppressWarnings(value = "unchecked")
     public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-        if (state instanceof IBlockStateWithPos) {
-            World world = Minecraft.getMinecraft().theWorld;
-            IBlockState extendedState = ((IBlockStateWithPos<? extends IBlockState>) state).getWrappedState();
-            BlockPos pos = ((IBlockStateWithPos<? extends IBlockState>) state).getPos();
             boolean update;
-            if (!cachedQuads.containsKey(extendedState)) {
-                cachedQuads.put(extendedState, new HashMap<>());
+            int index = side == null ? EnumFacing.values().length : side.ordinal();
+            if (!cachedQuads.containsKey(state)) {
+                cachedQuads.put(state, new List[EnumFacing.values().length + 1]);
                 update = true;
             } else {
-                update = !cachedQuads.get(extendedState).containsKey(side);
+                update = cachedQuads.get(state)[index] == null;
             }
             if (update) {
                 TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(this.textures).setCurrentFace(side);
                 tessellator.startDrawingQuads(this.format);
-                this.renderer.renderWorldBlock(tessellator, world, pos, extendedState, block);
-                cachedQuads.get(extendedState).put(side, tessellator.getQuads());
+                this.renderer.renderWorldBlockStatic(tessellator, state, block, side);
+                cachedQuads.get(state)[index] = tessellator.getQuads();
                 tessellator.draw();
             }
-            return cachedQuads.get(extendedState).get(side);
-        } else {
-            return Collections.emptyList();
-        }
+            return cachedQuads.get(state)[index];
     }
 
     @Override

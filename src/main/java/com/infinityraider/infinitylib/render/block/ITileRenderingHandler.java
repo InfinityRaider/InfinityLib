@@ -14,7 +14,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.List;
-import net.minecraft.tileentity.TileEntity;
 
 public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBlockWithTile<T>, T extends TileEntityBase> extends IBlockRenderingHandler<B> {
     /**
@@ -37,37 +36,22 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
     List<ResourceLocation> getAllTextures();
 
     /**
-     * This method is used for static rendering.
-     * This method is retrofitted to forward to the static tile rendering.
-     */
-    @Override
-    default void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, IBlockState state, B block) {
-        final TileEntity tile = world.getTileEntity(pos);
-        if (tile != null && getTileEntity().getClass().isAssignableFrom(tile.getClass())) {
-            this.renderWorldBlock(tessellator, world, pos, 0, 0, 0, state, block, (T)tile, false, 0, 0);
-        }
-    }
-
-    /**
      * Called to render the block at a specific place in the world,
      * startDrawing() has already been called on the tessellator object.
      * The tessellator is also translated to the block's position
-     *
      * @param tessellator   tessellator object to draw quads
      * @param world         the world for the block
      * @param pos           the position for the block
      * @param x             the precise x-position of the block (only relevant for TESR calls)
      * @param y             the precise y-position of the block (only relevant for TESR calls)
      * @param z             the precise z-position of the block (only relevant for TESR calls)
-     * @param state         the state of the block
      * @param block         the block
      * @param tile          the tile entity (can be null if there is no tile entity)
-     * @param dynamicRender true if called from a TESR, false if not, can be useful if the block has both dynamic and static rendering
      * @param partialTick   partial tick, only useful for dynamic rendering
      * @param destroyStage  destroy stage, only useful for dynamic rendering
      */
-    void renderWorldBlock(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
-                          IBlockState state, B block, T tile, boolean dynamicRender, float partialTick, int destroyStage);
+    void renderWorldBlockDynamic(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
+                                 B block, T tile, float partialTick, int destroyStage);
 
     /**
      * This method is to used by ITileRenderingHandlers.
@@ -93,7 +77,6 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
      * @param entity      entity holding the stack
      * @param type        camera transform type
      */
-    @Deprecated
     void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
                               T tile, ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type);
 
