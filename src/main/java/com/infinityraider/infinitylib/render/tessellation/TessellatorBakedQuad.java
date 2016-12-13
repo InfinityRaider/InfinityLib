@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
@@ -130,20 +131,42 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
      */
     @Override
     public void addVertexWithUV(float x, float y, float z, float u, float v) {
-        if(drawMode == DRAW_MODE_NOT_DRAWING) {
+        this.addVertexAndQuad(x, y, z, u, v, null);
+    }
+
+    /**
+     * Adds a vertex
+     * @param x the x-coordinate for the vertex
+     * @param y the y-coordinate for the vertex
+     * @param z the z-coordinate for the vertex
+     * @param icon the icon
+     * @param u u value for the vertex
+     * @param v v value for the vertex
+     */
+    @Override
+    public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v) {
+        if (icon == null) {
+            icon = Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
+        }
+        this.addVertexAndQuad(x, y, z, icon.getInterpolatedU(u), icon.getInterpolatedV(v), icon);
+    }
+
+    protected void addVertexAndQuad(float x, float y, float z, float u, float v, TextureAtlasSprite quadTexture) {
+        if (drawMode == DRAW_MODE_NOT_DRAWING) {
             throw new RuntimeException("NOT CONSTRUCTING VERTICES");
         }
         double[] coords = this.getTransformationMatrix().transform(x, y, z);
         vertexData.add(new VertexData(getVertexFormat(), (float) coords[0], (float) coords[1], (float) coords[2], u, v)
                 .setRGBA(getRedValueFloat(), getGreenValueFloat(), getBlueValueFloat(), getAlphaValueFloat())
                 .setNormal(getNormal().x, getNormal().y, getNormal().z));
-        if(vertexData.size() == drawMode) {
+        if (vertexData.size() == drawMode) {
             EnumFacing dir = EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z);
-            if(dir == this.face) {
+            if (dir == this.face) {
                 UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(getVertexFormat());
                 quadBuilder.setQuadTint(getTintIndex());
                 quadBuilder.setApplyDiffuseLighting(getApplyDiffuseLighting());
                 quadBuilder.setQuadOrientation(EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z));
+                quadBuilder.setTexture(quadTexture);
                 for (VertexData vertex : vertexData) {
                     vertex.applyVertexData(quadBuilder);
                 }
