@@ -32,10 +32,21 @@ public class ModelTechne<M extends ModelBase> {
     private final List<ModelRenderer> modelRenderers;
     private final List<Tuple<ModelRenderer, List<TexturedQuad>>> texturedQuads;
 
+    private boolean diffuseLighting;
+
     public ModelTechne(M techneModel) {
         this.model = techneModel;
         this.modelRenderers = compileModelRendererList(getModel());
         this.texturedQuads = compileTexturedQuadList(getModelRenderers());
+    }
+
+    public ModelTechne<M> setDiffuseLighting(boolean status) {
+        this.diffuseLighting = status;
+        return this;
+    }
+
+    public boolean getDiffuseLighting() {
+        return this.diffuseLighting;
     }
 
     public M getModel() {
@@ -70,6 +81,38 @@ public class ModelTechne<M extends ModelBase> {
             }
             return ImmutableList.copyOf(list);
         }
+    }
+
+    private BakedQuad createBakedQuad(VertexFormat format, double scale, ModelRenderer renderer, TexturedQuad quad, TextureAtlasSprite icon) {
+        //Transformation
+        TransformationMatrix matrix = getTransformationMatrixForRenderer(renderer, scale);
+
+        //normal for the quad
+        Vec3d vec3d = quad.vertexPositions[1].vector3D.subtractReverse(quad.vertexPositions[0].vector3D);
+        Vec3d vec3d1 = quad.vertexPositions[1].vector3D.subtractReverse(quad.vertexPositions[2].vector3D);
+        Vec3d vec3d2 = vec3d1.crossProduct(vec3d).normalize();
+        double[] normal = matrix.transform(vec3d2.xCoord, vec3d2.yCoord, vec3d2.zCoord);
+
+        //define vertex data for the quad
+        VertexData[] vertexData = new VertexData[quad.vertexPositions.length];
+        for(int i = 0; i < vertexData.length; i++) {
+            PositionTextureVertex vertex = quad.vertexPositions[i];
+            double[] pos = matrix.transform(vertex.vector3D.xCoord*scale, vertex.vector3D.yCoord*scale, vertex.vector3D.zCoord*scale);
+            vertexData[i] = new VertexData(format,
+                    (float) pos[0], (float) pos[1], (float) pos[2],
+                    icon.getInterpolatedU(vertex.texturePositionX*16), icon.getInterpolatedV(vertex.texturePositionY*16));
+            vertexData[i].setRGBA(1, 1, 1, 1);
+            vertexData[i].setNormal((float) normal[0], (float) normal[1], (float) normal[2]);
+        }
+
+        //build and return the quad
+        UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(format);
+        quadBuilder.setTexture(icon);
+        quadBuilder.setApplyDiffuseLighting(this.getDiffuseLighting());
+        for(VertexData data : vertexData) {
+            data.applyVertexData(quadBuilder);
+        }
+        return quadBuilder.build();
     }
 
     /**
@@ -129,36 +172,6 @@ public class ModelTechne<M extends ModelBase> {
             list.add(new Tuple<>(model, ImmutableList.copyOf(quadList)));
         }
         return ImmutableList.copyOf(list);
-    }
-
-    private static BakedQuad createBakedQuad(VertexFormat format, double scale, ModelRenderer renderer, TexturedQuad quad, TextureAtlasSprite icon) {
-        //Transformation
-        TransformationMatrix matrix = getTransformationMatrixForRenderer(renderer, scale);
-
-        //normal for the quad
-        Vec3d vec3d = quad.vertexPositions[1].vector3D.subtractReverse(quad.vertexPositions[0].vector3D);
-        Vec3d vec3d1 = quad.vertexPositions[1].vector3D.subtractReverse(quad.vertexPositions[2].vector3D);
-        Vec3d vec3d2 = vec3d1.crossProduct(vec3d).normalize();
-        double[] normal = matrix.transform(vec3d2.xCoord, vec3d2.yCoord, vec3d2.zCoord);
-
-        //define vertex data for the quad
-        VertexData[] vertexData = new VertexData[quad.vertexPositions.length];
-        for(int i = 0; i < vertexData.length; i++) {
-            PositionTextureVertex vertex = quad.vertexPositions[i];
-            double[] pos = matrix.transform(vertex.vector3D.xCoord*scale, vertex.vector3D.yCoord*scale, vertex.vector3D.zCoord*scale);
-            vertexData[i] = new VertexData(format,
-                    (float) pos[0], (float) pos[1], (float) pos[2],
-                    icon.getInterpolatedU(vertex.texturePositionX*16), icon.getInterpolatedV(vertex.texturePositionY*16));
-            vertexData[i].setRGBA(1, 1, 1, 1);
-            vertexData[i].setNormal((float) normal[0], (float) normal[1], (float) normal[2]);
-        }
-
-        //build and return the quad
-        UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(format);
-        for(VertexData data : vertexData) {
-            data.applyVertexData(quadBuilder);
-        }
-        return quadBuilder.build();
     }
 
     private static BakedQuad createBakedQuad(VertexFormat format, double scale, ModelRenderer renderer, TexturedQuad quad) {

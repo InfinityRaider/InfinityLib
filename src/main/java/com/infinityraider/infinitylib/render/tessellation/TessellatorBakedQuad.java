@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
@@ -46,6 +47,8 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     private int drawMode;
     /** Face being drawn */
     private EnumFacing face;
+    /** Icon currently drawing with */
+    private TextureAtlasSprite icon;
     /** Texture function */
     private Function<ResourceLocation, TextureAtlasSprite> textureFunction;
 
@@ -122,6 +125,25 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     /**
      * Adds a vertex
+     *
+     * @param x the x-coordinate for the vertex
+     * @param y the y-coordinate for the vertex
+     * @param z the z-coordinate for the vertex
+     * @param icon the icon
+     * @param u u value for the vertex
+     * @param v v value for the vertex
+     */
+    @Override
+    public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v) {
+        if (icon == null) {
+            icon = Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
+        }
+        this.icon = icon;
+        this.addVertexWithUV(x, y, z, icon.getInterpolatedU(u), icon.getInterpolatedV(v));
+    }
+
+    /**
+     * Adds a vertex
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex
      * @param z the z-coordinate for the vertex
@@ -144,6 +166,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
                 quadBuilder.setQuadTint(getTintIndex());
                 quadBuilder.setApplyDiffuseLighting(getApplyDiffuseLighting());
                 quadBuilder.setQuadOrientation(EnumFacing.getFacingFromVector(getNormal().x, getNormal().y, getNormal().z));
+                quadBuilder.setTexture(this.icon);
                 for (VertexData vertex : vertexData) {
                     vertex.applyVertexData(quadBuilder);
                 }
