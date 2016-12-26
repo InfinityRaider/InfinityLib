@@ -1,13 +1,18 @@
 package com.infinityraider.infinitylib.block.tile;
 
 import com.infinityraider.infinitylib.network.MessageSyncTile;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import java.util.Collection;
+import java.util.Random;
 
 @SuppressWarnings("unused")
 public abstract class TileEntityBase extends TileEntity {
@@ -25,6 +30,32 @@ public abstract class TileEntityBase extends TileEntity {
 
     public final int zCoord() {
         return this.getPos().getZ();
+    }
+
+    public Random getRandom() {
+        return this.getWorld().rand;
+    }
+
+    public boolean isRemote() {
+        return this.getWorld().isRemote;
+    }
+
+    public void spawnAsEntity(ItemStack stack) {
+        if(!this.isRemote() && stack != null) {
+            Block.spawnAsEntity(this.getWorld(), this.getPos(), stack);
+        }
+    }
+
+    public void spawnAsEntity(ItemStack... stacks) {
+        for(ItemStack stack : stacks) {
+            this.spawnAsEntity(stack);
+        }
+    }
+
+    public void spawnAsEntity(Iterable<ItemStack> stacks) {
+        for(ItemStack stack : stacks) {
+            this.spawnAsEntity(stack);
+        }
     }
 
     @Override
