@@ -10,22 +10,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 @SuppressWarnings("unused")
-public abstract class TileEntityBase extends TileEntity implements ITileEntityStateCache {
-    private IBlockState state;
-
+public abstract class TileEntityBase extends TileEntity {
     public IBlockState getState() {
-        if(this.state == null) {
-            this.state = this.getWorld().getBlockState(this.getPos());
-        }
-        return state;
-    }
-
-    public void resetSate() {
-        this.resetSate(null);
-    }
-
-    public void resetSate(IBlockState newState) {
-        this.state = newState;
+        return this.getWorld().getBlockState(this.getPos());
     }
 
     public final int xCoord() {
