@@ -1,6 +1,11 @@
 Changelog
 ---------
-0.3
+0.4.0
+- FIXED: infinite loop
+- FIXED: crash when mining blocks
+- CHANGE: reworked rendering some more, fixing bugs and running optimizations
+
+0.3.0
 - FIXED: some items being skipped when registering recipes
 - ADDED: various new functionalities
 - CHANGE: overhauled the networking system
