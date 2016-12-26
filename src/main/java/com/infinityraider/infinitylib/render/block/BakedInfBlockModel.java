@@ -36,6 +36,9 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
 
     @SuppressWarnings("unchecked")
     BakedInfBlockModel(B block, VertexFormat format, IBlockRenderingHandler<B> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
+        if(renderer == null) {
+            throw new NullPointerException("Renderer may not be null");
+        }
         this.block = block;
         this.format = format;
         this.renderer = renderer;
