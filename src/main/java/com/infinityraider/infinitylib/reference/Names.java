@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.reference;
 
 public final class Names {
     public static class NBT {
+        public static final String CONNECTION = "IL_CONNECTION";
         public static final String X = "IL_X";
         public static final String Y = "IL_Y";
         public static final String Z = "IL_Z";
