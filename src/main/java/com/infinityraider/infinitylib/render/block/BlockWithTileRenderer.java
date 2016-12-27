@@ -6,7 +6,6 @@ import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
 import com.infinityraider.infinitylib.render.tile.ITesr;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -30,8 +29,6 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
         ITessellator tessellator = TessellatorVertexBuffer.getInstance();
         World world = te.getWorld();
         BlockPos pos = te.getPos();
-        IBlockState state = world.getBlockState(pos);
-        IBlockState extendedState = state.getBlock().getExtendedState(state, world, pos);
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
