@@ -11,6 +11,7 @@ import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -51,6 +52,10 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     @SuppressWarnings(value = "unchecked")
     public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
             boolean update;
+            // Since strange things are afoot here.
+            Objects.requireNonNull(cachedQuads);
+            Objects.requireNonNull(state);
+            Objects.requireNonNull(side);
             int index = side == null ? EnumFacing.values().length : side.ordinal();
             if (!cachedQuads.containsKey(state)) {
                 cachedQuads.put(state, new List[EnumFacing.values().length + 1]);
