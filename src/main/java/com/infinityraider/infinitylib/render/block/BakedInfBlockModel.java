@@ -23,28 +23,24 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 
-/**
- *
- * @author RlonRyan
+/*
+ * Lets try this instead.
  */
 public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> implements IBakedModel {
-	
+
     private final B block;
     private final VertexFormat format;
     private final IBlockRenderingHandler<B> renderer;
     private final Function<ResourceLocation, TextureAtlasSprite> textures;
     private final BakedInfItemSuperModel itemRenderer;
-    private final Map<IBlockState, List<BakedQuad>[]> cachedQuads;
+    private final Map<IBlockState, Map<EnumFacing, List<BakedQuad>>> cachedQuads;
 
     @SuppressWarnings("unchecked")
     BakedInfBlockModel(B block, VertexFormat format, IBlockRenderingHandler<B> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
-        if(renderer == null) {
-            throw new NullPointerException("Renderer may not be null");
-        }
-        this.block = block;
-        this.format = format;
-        this.renderer = renderer;
-        this.textures = textures;
+        this.block = Objects.requireNonNull(block, "The block for a BakedInfBlockModel must not be null!");
+        this.format = Objects.requireNonNull(format, "The vertex format for a BakedInfBlockModel must not be null!");
+        this.renderer = Objects.requireNonNull(renderer, "The renderer for a BakedInfBlockModel must not be null!");
+        this.textures = Objects.requireNonNull(textures, "The texture provider for a BakedInfBlockModel must not be null!");
         this.itemRenderer = inventory ? new BakedInfItemSuperModel(format, this.renderer, textures, DefaultTransforms::getBlockMatrix) : null;
         this.cachedQuads = new HashMap<>();
     }
@@ -52,28 +48,21 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     @Override
     @SuppressWarnings(value = "unchecked")
     public List<BakedQuad> getQuads(IBlockState state, @Nullable EnumFacing side, long rand) {
-            boolean update;
-            // Since strange things are afoot here.
-            Objects.requireNonNull(cachedQuads);
-            Objects.requireNonNull(state);
-            
-            // Since side may be null.
-            int index = (side == null) ? EnumFacing.values().length : side.ordinal();
-            
-            if (!cachedQuads.containsKey(state)) {
-                cachedQuads.put(state, new List[EnumFacing.values().length + 1]);
-                update = true;
-            } else {
-                update = cachedQuads.get(state)[index] == null;
-            }
-            if (update) {
-                TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(this.textures).setCurrentFace(side);
-                tessellator.startDrawingQuads(this.format);
-                this.renderer.renderWorldBlockStatic(tessellator, state, block, side);
-                cachedQuads.get(state)[index] = tessellator.getQuads();
-                tessellator.draw();
-            }
-            return cachedQuads.get(state)[index];
+        // Return the quads.
+        return cachedQuads
+                // Fetch the map.
+                .computeIfAbsent(state, (e) -> new HashMap<>())
+                // Fetch the quads.
+                .computeIfAbsent(side, (s) -> createQuads(state, s, rand));
+    }
+
+    private List<BakedQuad> createQuads(IBlockState state, EnumFacing side, long rand) {
+        TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance().setTextureFunction(this.textures).setCurrentFace(side);
+        tessellator.startDrawingQuads(this.format);
+        this.renderer.renderWorldBlockStatic(tessellator, state, block, side);
+        final List<BakedQuad> result = tessellator.getQuads();
+        tessellator.draw();
+        return result;
     }
 
     @Override
@@ -105,5 +94,5 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     public ItemOverrideList getOverrides() {
         return itemRenderer.getOverrides();
     }
-	
+
 }
