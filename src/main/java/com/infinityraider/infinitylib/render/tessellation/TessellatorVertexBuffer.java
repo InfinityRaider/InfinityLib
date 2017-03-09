@@ -16,6 +16,7 @@ import java.util.Map;
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
 public class TessellatorVertexBuffer extends TessellatorAbstractBase {
+
     private static final Map<VertexBuffer, ThreadLocal<TessellatorVertexBuffer>> instances = new HashMap<>();
 
     private final Tessellator tessellator;
@@ -39,12 +40,12 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     }
 
     private static TessellatorVertexBuffer getInstance(VertexBuffer buffer, Tessellator tessellator) {
-        if(!instances.containsKey(buffer)) {
+        if (!instances.containsKey(buffer)) {
             instances.put(buffer, new ThreadLocal<>());
         }
         ThreadLocal<TessellatorVertexBuffer> threadLocal = instances.get(buffer);
         TessellatorVertexBuffer tess = threadLocal.get();
-        if(tess == null) {
+        if (tess == null) {
             tess = new TessellatorVertexBuffer(buffer, tessellator);
             threadLocal.set(tess);
         }
@@ -52,21 +53,25 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     }
 
     /**
-     * @return VertexBuffer object which this is currently tessellating vertices for
+     * @return VertexBuffer object which this is currently tessellating vertices
+     * for
      */
     public VertexBuffer getVertexBuffer() {
         return buffer;
     }
 
     /**
-     * Sub delegated method call of the startDrawingQuads() method to ensure correct call chain
+     * Sub delegated method call of the startDrawingQuads() method to ensure
+     * correct call chain
      */
     @Override
     protected void onStartDrawingQuadsCall() {
         buffer.begin(GL11.GL_QUADS, getVertexFormat());
     }
+
     /**
      * Method to get all quads constructed
+     *
      * @return emtpy list, no quads are constructed here
      */
     @Override
@@ -75,7 +80,8 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     }
 
     /**
-     * Sub delegated method call of the draw() method to ensure correct call chain
+     * Sub delegated method call of the draw() method to ensure correct call
+     * chain
      */
     @Override
     protected void onDrawCall() {
@@ -88,17 +94,19 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
 
     /**
      * Adds a list of quads to be rendered
+     *
      * @param quads list of quads
      */
     @Override
     public void addQuads(List<BakedQuad> quads) {
-        for(BakedQuad quad : this.transformQuads(quads)) {
-            buffer.addVertexData(quad.getVertexData());
+        for (BakedQuad quad : quads) {
+            buffer.addVertexData(transformQuad(quad).getVertexData());
         }
     }
 
     /**
      * Adds a vertex
+     *
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex
      * @param z the z-coordinate for the vertex
@@ -111,13 +119,14 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         buffer.pos(coords[0], coords[1], coords[2]);
         buffer.color(getRedValueInt(), getGreenValueInt(), getBlueValueInt(), getAlphaValueInt());
         buffer.tex(u, v);
-        buffer.lightmap(getBrightness()>> 16 & 65535, getBrightness() & 65535);
+        buffer.lightmap(getBrightness() >> 16 & 65535, getBrightness() & 65535);
         //buffer.normal(getNormal().x, getNormal().y, getNormal().z);
         buffer.endVertex();
     }
 
     /**
-     * Resets the tessellator
+     * Resets the tessellator.
+     *
      * @return this
      */
     private TessellatorVertexBuffer reset() {
@@ -130,14 +139,14 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     @Override
     protected void applyColorMultiplier(EnumFacing side) {
         float preMultiplier = getMultiplier(transformSide(side));
-        float r = preMultiplier * ((float) (this.getRedValueInt()))/255.0F;
-        float g = preMultiplier * ((float) (this.getGreenValueInt()))/255.0F;
-        float b = preMultiplier * ((float) (this.getBlueValueInt()))/255.0F;
+        float r = preMultiplier * (this.getRedValueInt() / 255.0F);
+        float g = preMultiplier * (this.getGreenValueInt() / 255.0F);
+        float b = preMultiplier * (this.getBlueValueInt() / 255.0F);
         this.setColorRGB_F(r, g, b);
     }
 
     private EnumFacing transformSide(EnumFacing dir) {
-        if(dir == null) {
+        if (dir == null) {
             return null;
         }
         double[] coords = this.getTransformationMatrix().transform(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ());
@@ -148,12 +157,12 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         double x = Math.abs(coords[0]);
         double y = Math.abs(coords[1]);
         double z = Math.abs(coords[2]);
-        if(x > z) {
-            if(x > y) {
+        if (x > z) {
+            if (x > y) {
                 return coords[0] > 0 ? EnumFacing.EAST : EnumFacing.WEST;
             }
         } else {
-            if(z > y) {
+            if (z > y) {
                 return coords[2] > 0 ? EnumFacing.SOUTH : EnumFacing.NORTH;
             }
         }
