@@ -16,9 +16,11 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
+import net.minecraftforge.common.property.ExtendedBlockState;
 
 @SideOnly(Side.CLIENT)
 public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlock> extends IItemRenderingHandler {
+
     /**
      * Gets the block tied to this renderer, used for registering this renderer.
      * A pointer to the Block is saved and referenced.
@@ -28,16 +30,19 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
     B getBlock();
 
     /**
-     * Returns a list containing a ResourceLocation for every texture used to render this Block.
-     * Passed textures are stitched to the Minecraft texture map and icons can be retrieved from them.
+     * Returns a list containing a ResourceLocation for every texture used to
+     * render this Block. Passed textures are stitched to the Minecraft texture
+     * map and icons can be retrieved from them.
+     *
      * @return a list of ResourceLocations
      */
     List<ResourceLocation> getAllTextures();
 
     /**
      * Called to render the block at a specific place in the world,
-     * startDrawing() has already been called on the tessellator object.
-     * The tessellator is also translated to the block's position
+     * startDrawing() has already been called on the tessellator object. The
+     * tessellator is also translated to the block's position
+     *
      * @param tessellator tessellator object to draw quads
      * @param state the state of the block
      * @param block the block
@@ -47,10 +52,11 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
 
     /**
      * Retrofitted to fix block rendering.
+     *
      * @param tessellator
      * @param world
      * @param stack
-     * @param entity 
+     * @param entity
      */
     @Override
     default void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity) {
@@ -58,8 +64,8 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
     }
 
     /**
-     * Called to render the block in an inventory
-     * startDrawing() has already been called on the tessellator object.
+     * Called to render the block in an inventory startDrawing() has already
+     * been called on the tessellator object.
      *
      * @param tessellator tessellator object to draw quads
      * @param world the world object
@@ -70,22 +76,26 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @param type camera transform type
      */
     void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
-                              ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type);
+            ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type);
 
     /**
      * Gets the main icon used for this renderer, used for the particle
+     *
      * @return the particle icon
      */
     TextureAtlasSprite getIcon();
 
     /**
-     * @return true if ambient occlusion should be applied when rendering this block
+     * @return true if ambient occlusion should be applied when rendering this
+     * block
      */
     boolean applyAmbientOcclusion();
 
     /**
      * Checks if this should have 3D rendering in inventories
+     *
      * @return true to have 3D inventory rendering
      */
     boolean doInventoryRendering();
+
 }

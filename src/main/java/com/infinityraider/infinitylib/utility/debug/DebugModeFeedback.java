@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class DebugModeFeedback extends DebugMode {
@@ -26,10 +27,10 @@ public class DebugModeFeedback extends DebugMode {
 
     @Override
     public void debugActionBlockClicked(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        for(String dataLine:getDebugData(world, pos)) {
-            InfinityLib.instance.getLogger().debug(dataLine);
-            player.addChatComponentMessage(new TextComponentString(dataLine));
-        }
+        getDebugData(world, pos, l -> {
+            InfinityLib.instance.getLogger().debug(l);
+            player.addChatComponentMessage(new TextComponentString(l));
+        });
     }
 
     @Override
@@ -39,42 +40,38 @@ public class DebugModeFeedback extends DebugMode {
     public void debugActionEntityClicked(ItemStack stack, EntityPlayer player, EntityLivingBase target, EnumHand hand) {}
 
     /**
-     * Constructs a list of strings representing the debug information for the
+     * Gets strings representing the debug information for the
      * provided location.
      *
      * @param world the world object
      * @param pos the block position
-     * @return a list of strings representing the requested debug data.
+     * @param consumer a consumer accepting the lines of debug data.
      */
-    private List<String> getDebugData(World world, BlockPos pos) {
-        final List<String> debugData = new ArrayList<>();
-
+    private void getDebugData(World world, BlockPos pos, Consumer<String> consumer) {
         final Side side = world.isRemote ? Side.CLIENT : Side.SERVER;
 
         final TileEntity tile = world.getTileEntity(pos);
 
-        debugData.add("------------------");
-        debugData.add(side + " debug info:");
-        debugData.add("------------------");
+        consumer.accept("------------------");
+        consumer.accept(side + " debug info:");
+        consumer.accept("------------------");
         
-        debugData.add("Clicked block at (" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")");
+        consumer.accept("Clicked block at (" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")");
 
         if (tile instanceof IDebuggable) {
             IDebuggable debuggable = (IDebuggable) tile;
             if (side == Side.CLIENT) {
-                debuggable.addClientDebugInfo(debugData);
+                debuggable.addClientDebugInfo(consumer);
             } else {
-                debuggable.addServerDebugInfo(debugData);
+                debuggable.addServerDebugInfo(consumer);
             }
         } else {
             IBlockState state = world.getBlockState(pos);
             Block block = state.getBlock();
-            debugData.add("Block: " + Block.REGISTRY.getNameForObject(block));
-            debugData.add("Meta: " + block.getMetaFromState(state));
+            consumer.accept("Block: " + Block.REGISTRY.getNameForObject(block));
+            consumer.accept("Meta: " + block.getMetaFromState(state));
         }
 
-        debugData.add(" ");
-
-        return debugData;
+        consumer.accept(" ");
     }
 }

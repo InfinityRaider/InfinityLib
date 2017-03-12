@@ -18,9 +18,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.vecmath.Vector3f;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.List;
 
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")

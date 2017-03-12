@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.property.IExtendedBlockState;
 
 /*
  * Lets try this instead.
@@ -33,7 +34,7 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     private final IBlockRenderingHandler<B> renderer;
     private final Function<ResourceLocation, TextureAtlasSprite> textures;
     private final BakedInfItemSuperModel itemRenderer;
-    private final Map<IBlockState, Map<EnumFacing, List<BakedQuad>>> cachedQuads;
+    private final Map<Integer, Map<EnumFacing, List<BakedQuad>>> cachedQuads;
 
     @SuppressWarnings("unchecked")
     BakedInfBlockModel(B block, VertexFormat format, IBlockRenderingHandler<B> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
@@ -51,9 +52,16 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
         // Return the quads.
         return cachedQuads
                 // Fetch the map.
-                .computeIfAbsent(state, (e) -> new HashMap<>())
+                .computeIfAbsent(hashState(state), (e) -> new HashMap<>())
                 // Fetch the quads.
                 .computeIfAbsent(side, (s) -> createQuads(state, s, rand));
+    }
+    
+    private static int hashState(IBlockState state) {
+        int hash = 7;
+        hash = 31 * hash + state.getProperties().hashCode();
+        hash = 31 * hash + ((state instanceof IExtendedBlockState) ? ((IExtendedBlockState)state).getUnlistedProperties().hashCode() : 0);
+        return hash;
     }
 
     private List<BakedQuad> createQuads(IBlockState state, EnumFacing side, long rand) {
