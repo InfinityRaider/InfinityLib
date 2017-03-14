@@ -11,19 +11,23 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 import java.util.function.Function;
-import javax.vecmath.Vector3f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
 public interface ITessellator extends Function<ResourceLocation, TextureAtlasSprite> {
+
     /**
      * Method to start constructing quads
+     *
      * @param format vertex format
      */
     void startDrawingQuads(VertexFormat format);
 
     /**
      * Method to get all quads constructed
+     *
      * @return list of quads, may be emtpy but never null
      */
     List<BakedQuad> getQuads();
@@ -35,12 +39,14 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
 
     /**
      * Gets the current vertex format the tessellator is drawing with
+     *
      * @return the vertex format
      */
     VertexFormat getVertexFormat();
 
     /**
      * Adds a list of quads to be rendered
+     *
      * @param quads list of quads
      */
     void addQuads(List<BakedQuad> quads);
@@ -57,6 +63,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
 
     /**
      * Adds a vertex
+     *
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex
      * @param z the z-coordinate for the vertex
@@ -67,6 +74,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
 
     /**
      * Adds a vertex
+     *
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex
      * @param z the z-coordinate for the vertex
@@ -78,6 +86,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
 
     /**
      * Adds a vertex scaled by 1/16th of a block
+     *
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex
      * @param z the z-coordinate for the vertex
@@ -88,7 +97,9 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     void addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v);
 
     /**
-     * Adds a quad for a scaled face, the face is defined by minimum and maximum coordinates
+     * Adds a quad for a scaled face, the face is defined by minimum and maximum
+     * coordinates
+     *
      * @param minX minimum 2D x-coordinate of the face
      * @param minY minimum 2D y-coordinate of the face
      * @param maxX maximum 2D x-coordinate of the face
@@ -102,6 +113,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     /**
      * Adds two quads for a scaled face, this face will have both sides drawn.
      * The face is defined by minimum and maximum coordinates
+     *
      * @param minX minimum 2D x-coordinate of the face
      * @param minY minimum 2D y-coordinate of the face
      * @param maxX maximum 2D x-coordinate of the face
@@ -113,7 +125,9 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset);
 
     /**
-     * Adds 6 quads for a scaled prism, the prism is defined by maximum and minimum 3D coordinates
+     * Adds 6 quads for a scaled prism, the prism is defined by maximum and
+     * minimum 3D coordinates
+     *
      * @param minX minimum x-coordinate of the face
      * @param minY minimum y-coordinate of the face
      * @param minZ maximum z-coordinate of the face
@@ -125,61 +139,52 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon);
 
     /**
-     * Sets the translation components relative to the absolute coordinate system
-     * @param x the x-coordinate
-     * @param y the y-coordinate
-     * @param z the z-coordinate
-     * @return this
-     */
-    ITessellator setTranslation(double x, double y, double z);
-
-    /**
-     * Sets the rotation components relative to the absolute coordinate system
-     * @param angle rotation ange
-     * @param x the x-direction
-     * @param y the y-direction
-     * @param z the z-direction
-     * @return this
-     */
-    ITessellator setRotation(double angle, double x, double y, double z) ;
-
-    /**
      * Translates the matrix by a vector defined by a BlockPos
+     *
      * @param pos the BlockPos
-     * @return this
      */
-    ITessellator translate(BlockPos pos);
+    void translate(BlockPos pos);
 
     /**
      * Translates the matrix by a vector defined by 3 coordinates
+     *
      * @param x the x coordinate
      * @param y the y coordinate
      * @param z the z coordinate
-     * @return this
      */
-    ITessellator translate(double x, double y, double z);
+    void translate(float x, float y, float z);
 
     /**
-     * Rotates the matrix by an angle around the given direction, rotation center is the current origin
+     * Rotates the matrix by an angle around the given direction, rotation
+     * center is the current origin
+     *
      * @param angle angle to rotate by
      * @param x the x direction
      * @param y the y direction
      * @param z the z direction
-     * @return this
      */
-    ITessellator rotate(double angle, double x, double y, double z);
+    void rotate(float angle, float x, float y, float z);
 
     /**
      * Scales along each axis with the corresponding factor
+     *
      * @param x the x-axis scale factor
      * @param y the y-axis scale factor
      * @param z the z-axis scale factor
-     * @return this
      */
-    ITessellator scale(double x, double y, double z);
+    void scale(float x, float y, float z);
+
+    /**
+     * Transforms a given point according to the currently active transformation
+     * matrix.
+     *
+     * @param pos the point to be transformed.
+     */
+    void transform(Vector4f pos);
 
     /**
      * Gets a TextureAtlasSprite icon from a ResourceLocation
+     *
      * @param loc the ResourceLocation
      * @return the icon
      */
@@ -187,166 +192,127 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
 
     /**
      * Binds a texture to use when rendering
+     *
      * @param loc ResourceLocation pointing towards the texture
-     * @return this
      */
-    ITessellator bindTexture(ResourceLocation loc);
+    void bindTexture(ResourceLocation loc);
 
     /**
      * Sets the normal for the tessellator
+     *
      * @param x the normal x direction
      * @param y the normal y direction
      * @param z the normal z direction
-     * @return this
      */
-    ITessellator setNormal(float x, float y, float z);
+    void setNormal(float x, float y, float z);
 
     /**
      * Sets the normal for the tessellator
+     *
      * @param vec the normal vector
-     * @return this
      */
-    ITessellator setNormal(Vector3f vec);
+    void setNormal(Vector3f vec);
 
     /**
      * Gets the current normal for the tessellator
+     *
      * @return the normal vector
      */
     Vector3f getNormal();
-    
-    /**
-     * Sets the current opaque color multiplier for the quads
-     * @param color the rgb color value
-     * @return this
-     */
-    ITessellator setColor(int color);
-
-    /**
-     * Sets the current transparent color multiplier for the quads
-     * @param color the rgba color value
-     * @return this
-     */
-    ITessellator setColorTransparent(int color);
 
     /**
      * Gets the current color value as an rgb int
+     *
      * @return the color multiplier
      */
     int getColor();
 
     /**
-     * Sets the current color value based on red, green and blue float values, all arguments should be between 0F and 1F
+     * Sets the current color value based on red, green and blue int values, all
+     * arguments should be between 0 and 255
+     *
      * @param red the rgb red value
      * @param green the rgb green value
      * @param blue the rgb blue value
-     * @return this
      */
-    ITessellator setColorRGB_F(float red, float green, float blue);
+    void setColorRGB(float red, float green, float blue);
 
     /**
-     * Sets the current color value based on red, green, blue and alpha values, all arguments should be between 0F and 1F
+     * Sets the current color value based on red, green, blue and alpha values,
+     * all arguments should be between 0 and 255
+     *
      * @param red the rgb red value
      * @param green the rgb green value
      * @param blue the rgb blue value
      * @param alpha the rgb alpha value
-     * @return this
      */
-    ITessellator setColorRGBA_F(float red, float green, float blue, float alpha);
+    void setColorRGBA(float red, float green, float blue, float alpha);
 
     /**
-     * Sets the current color value based on red, green and blue int values, all arguments should be between 0 and 255
-     * @param red the rgb red value
-     * @param green the rgb green value
-     * @param blue the rgb blue value
-     * @return this
+     * Sets the current color's alpha value.
+     *
+     * @param alpha the new alpha value to be used.
      */
-    ITessellator setColorRGB(int red, int green, int blue);
-
-    /**
-     * Sets the current color value based on red, green, blue and alpha values, all arguments should be between 0 and 255
-     * @param red the rgb red value
-     * @param green the rgb green value
-     * @param blue the rgb blue value
-     * @param alpha the rgb alpha value
-     * @return this
-     */
-    ITessellator setColorRGBA(int red, int green, int blue, int alpha);
+    void setAlpha(float alpha);
 
     /**
      * @return current blue value as float, will be between 0 and 1
      */
-    float getRedValueFloat();
+    float getRed();
 
     /**
      * @return current green value as float, will be between 0 and 1
      */
-    float getGreenValueFloat();
+    float getGreen();
 
     /**
      * @return current blue value as float, will be between 0 and 1
      */
-    float getBlueValueFloat();
+    float getBlue();
 
     /**
      * @return current alpha value as float, will be between 0 and 1
      */
-    float getAlphaValueFloat();
-
-    /**
-     * @return current red value as int, will be between 0 and 255
-     */
-    int getRedValueInt();
-
-    /**
-     * @return current green value as int, will be between 0 and 255
-     */
-    int getGreenValueInt();
-
-    /**
-     * @return current red value as int, will be between 0 and 255
-     */
-    int getBlueValueInt();
-
-    /**
-     * @return current alpha value as int, will be between 0 and 255
-     */
-    int getAlphaValueInt();
+    float getAlpha();
 
     /**
      * Sets the brightness of the tessellator
+     *
      * @param value the brightness value
-     * @return this
      */
-    ITessellator setBrightness(int value);
+    void setBrightness(int value);
 
     /**
      * Gets the brightness of the tessellator
+     *
      * @return the brightness value
      */
     int getBrightness();
 
     /**
      * Sets the tint index value to use for the quads
+     *
      * @param index the tint index
-     * @return this
      */
-    ITessellator setTintIndex(int index);
+    void setTintIndex(int index);
 
     /**
      * Gets the current tint index value to use for the quads
+     *
      * @return the tint index
      */
     int getTintIndex();
 
     /**
      * Sets if diffuse lighting should be applied to the quads
+     *
      * @param value the diffuse lighting setting
-     * @return this
      */
-    ITessellator setApplyDiffuseLighting(boolean value);
+    void setApplyDiffuseLighting(boolean value);
 
     /**
      * Gets if diffuse lighting is applied to the quads
+     *
      * @return the diffuse lighting setting
      */
     boolean getApplyDiffuseLighting();
@@ -355,5 +321,5 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     default TextureAtlasSprite apply(ResourceLocation loc) {
         return this.getIcon(loc);
     }
-}
 
+}

@@ -5,7 +5,15 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
+/**
+ * This class is an old way to store a vector, prior to the introduction of the
+ * awesome library JOML. This class will be removed shortly.
+ *
+ * @deprecated Since 0.7.0
+ */
+@Deprecated
 public class Vector {
+
     private double x;
     private double y;
     private double z;
@@ -31,9 +39,15 @@ public class Vector {
     }
 
     public Vector(NBTTagCompound tag) throws UnknownPositionException {
-        if(!tag.hasKey(Names.NBT.X)) {throw new UnknownPositionException();}
-        if(!tag.hasKey(Names.NBT.Y)) {throw new UnknownPositionException();}
-        if(!tag.hasKey(Names.NBT.Z)) {throw new UnknownPositionException();}
+        if (!tag.hasKey(Names.NBT.X)) {
+            throw new UnknownPositionException();
+        }
+        if (!tag.hasKey(Names.NBT.Y)) {
+            throw new UnknownPositionException();
+        }
+        if (!tag.hasKey(Names.NBT.Z)) {
+            throw new UnknownPositionException();
+        }
         this.x = tag.getDouble(Names.NBT.X);
         this.y = tag.getDouble(Names.NBT.Y);
         this.z = tag.getDouble(Names.NBT.Z);
@@ -47,31 +61,50 @@ public class Vector {
         return tag;
     }
 
-    public void setX(double x) {this.x = x;}
+    public void setX(double x) {
+        this.x = x;
+    }
 
-    public void setY(double y) {this.y = y;}
+    public void setY(double y) {
+        this.y = y;
+    }
 
-    public void setZ(double z) {this.z = z;}
+    public void setZ(double z) {
+        this.z = z;
+    }
 
-    public  double getX() {return x;}
+    public double getX() {
+        return x;
+    }
 
-    public  double getY() {return y;}
+    public double getY() {
+        return y;
+    }
 
-    public  double getZ() {return z;}
+    public double getZ() {
+        return z;
+    }
 
-    /** returns a new vector gotten by adding v to this vector (this + v) */
+    /**
+     * returns a new vector gotten by adding v to this vector (this + v)
+     */
     public Vector add(Vector v) {
-        return new Vector(this.x+v.x, this.y+v.y, this.z+v.z);
+        return new Vector(this.x + v.x, this.y + v.y, this.z + v.z);
     }
 
-    /** returns a new vector gotten by substracting vector v from this vector (this - v)*/
+    /**
+     * returns a new vector gotten by substracting vector v from this vector
+     * (this - v)
+     */
     public Vector substract(Vector v) {
-        return new Vector(this.x-v.x, this.y-v.y, this.z-v.z);
+        return new Vector(this.x - v.x, this.y - v.y, this.z - v.z);
     }
 
-    /** scales this vector */
+    /**
+     * scales this vector
+     */
     public Vector scale(double d) {
-        if(d!=1) {
+        if (d != 1) {
             this.x = this.x * d;
             this.y = this.y * d;
             this.z = this.z * d;
@@ -79,66 +112,84 @@ public class Vector {
         return this;
     }
 
-    /** Returns a normalised vector normal to this vector in the xz plane*/
+    /**
+     * Returns a normalised vector normal to this vector in the xz plane
+     */
     public Vector getNormal() {
-        Vector normal = new Vector(1.0D/this.getX(), 0, -1.0/this.getZ());
+        Vector normal = new Vector(1.0D / this.getX(), 0, -1.0 / this.getZ());
         normal.normalize();
         return normal;
     }
 
-    /** Returns a normalised vector normal to this vector and its normal */
+    /**
+     * Returns a normalised vector normal to this vector and its normal
+     */
     public Vector getBiNormal() {
         Vector biNormal = crossProduct(this, this.getNormal());
         biNormal.normalize();
-        return  biNormal;
+        return biNormal;
     }
 
-    /** Normalizes this vector */
+    /**
+     * Normalizes this vector
+     */
     public Vector normalize() {
         double norm = norm();
-        if(norm==0) {
+        if (norm == 0) {
             return this;
         }
-        this.scale(1.0D/norm());
+        this.scale(1.0D / norm());
         return this;
     }
 
-    /** Returns the norm of this vector */
+    /**
+     * Returns the norm of this vector
+     */
     public double norm() {
         return Math.sqrt(dotProduct(this, this));
     }
 
-    /** Calculates the dotproduct of a and b (a.b) */
+    /**
+     * Calculates the dotproduct of a and b (a.b)
+     */
     public static double dotProduct(Vector a, Vector b) {
-        return a.getX()*b.getX() + a.getY()*b.getY() + a.getZ()*b.getZ();
+        return a.getX() * b.getX() + a.getY() * b.getY() + a.getZ() * b.getZ();
     }
 
-    /** Calculates the crossproduct of a and b (axb)*/
+    /**
+     * Calculates the crossproduct of a and b (axb)
+     */
     public static Vector crossProduct(Vector a, Vector b) {
-        double vX = a.y*b.z - a.z*b.y;
-        double vY = a.z*b.x - a.x-b.z;
-        double vZ = a.x*b.y - a.y*-b.x;
+        double vX = a.y * b.z - a.z * b.y;
+        double vY = a.z * b.x - a.x - b.z;
+        double vZ = a.x * b.y - a.y * -b.x;
         return new Vector(vX, vY, vZ);
     }
 
-    /** Projects this vector on the DIRECTION defined by the argument (argument is not modified) */
+    /**
+     * Projects this vector on the DIRECTION defined by the argument (argument
+     * is not modified)
+     */
     public Vector projectOn(Vector v) {
         Vector copy = v.copy();
         copy.normalize();
         double norm = dotProduct(this, copy);
-        if(norm == 0) {
+        if (norm == 0) {
             return NULL_VECTOR.copy();
         }
         copy.scale(norm);
         return copy;
     }
 
-    /** Copies this vector into a new Object */
+    /**
+     * Copies this vector into a new Object
+     */
     public Vector copy() {
         return new Vector(this.x, this.y, this.z);
     }
 
     public static class UnknownPositionException extends Exception {
+
         public UnknownPositionException() {
             super("Position not found on NBT");
         }
@@ -146,7 +197,7 @@ public class Vector {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof Vector) {
+        if (obj instanceof Vector) {
             Vector v = (Vector) obj;
             return v.x == this.x && v.y == this.y && v.z == this.z;
         }

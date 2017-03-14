@@ -36,7 +36,7 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
         GL11.glTranslated(x, y, z);
 
         tessellator.startDrawingQuads(DefaultVertexFormats.BLOCK);
-        tessellator.setColorRGBA(255, 255, 255, 255);
+        tessellator.setColorRGBA(1, 1, 1, 1);
 
         this.getRenderer().renderWorldBlockDynamic(tessellator, world, pos, x, y, z, this.getBlock(), te, partialTicks, destroyStage);
 

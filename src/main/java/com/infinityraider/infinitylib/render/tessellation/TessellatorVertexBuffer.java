@@ -12,6 +12,7 @@ import org.lwjgl.opengl.GL11;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.joml.Vector4f;
 
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
@@ -115,58 +116,23 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      */
     @Override
     public void addVertexWithUV(float x, float y, float z, float u, float v) {
-        double[] coords = this.getTransformationMatrix().transform(x, y, z);
-        buffer.pos(coords[0], coords[1], coords[2]);
-        buffer.color(getRedValueInt(), getGreenValueInt(), getBlueValueInt(), getAlphaValueInt());
+        final Vector4f pos = new Vector4f(x, y, z, 1);
+        this.transform(pos);
+        buffer.pos(pos.x, pos.y, pos.z);
+        buffer.color((int) (this.r * 255), (int) (this.g * 255), (int) (this.b * 255), (int) (this.a * 255));
         buffer.tex(u, v);
         buffer.lightmap(getBrightness() >> 16 & 65535, getBrightness() & 65535);
-        //buffer.normal(getNormal().x, getNormal().y, getNormal().z);
+        //buffer.normal(normal.x, normal.y, normal.z);
         buffer.endVertex();
-    }
-
-    /**
-     * Resets the tessellator.
-     *
-     * @return this
-     */
-    private TessellatorVertexBuffer reset() {
-        this.resetMatrix();
-        this.setColorRGBA(STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR);
-        this.setBrightness(STANDARD_BRIGHTNESS);
-        return this;
     }
 
     @Override
     protected void applyColorMultiplier(EnumFacing side) {
-        float preMultiplier = getMultiplier(transformSide(side));
-        float r = preMultiplier * (this.getRedValueInt() / 255.0F);
-        float g = preMultiplier * (this.getGreenValueInt() / 255.0F);
-        float b = preMultiplier * (this.getBlueValueInt() / 255.0F);
-        this.setColorRGB_F(r, g, b);
-    }
-
-    private EnumFacing transformSide(EnumFacing dir) {
-        if (dir == null) {
-            return null;
-        }
-        double[] coords = this.getTransformationMatrix().transform(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ());
-        double[] translation = this.getTransformationMatrix().getTranslation();
-        coords[0] = coords[0] - translation[0];
-        coords[1] = coords[1] - translation[1];
-        coords[2] = coords[2] - translation[2];
-        double x = Math.abs(coords[0]);
-        double y = Math.abs(coords[1]);
-        double z = Math.abs(coords[2]);
-        if (x > z) {
-            if (x > y) {
-                return coords[0] > 0 ? EnumFacing.EAST : EnumFacing.WEST;
-            }
-        } else {
-            if (z > y) {
-                return coords[2] > 0 ? EnumFacing.SOUTH : EnumFacing.NORTH;
-            }
-        }
-        return coords[1] > 0 ? EnumFacing.UP : EnumFacing.DOWN;
+        // I gave up on transforming the side. This probably is faster anyway...
+        final float preMultiplier = getMultiplier(side);
+        this.r *= preMultiplier;
+        this.g *= preMultiplier;
+        this.b *= preMultiplier;
     }
 
     private float getMultiplier(EnumFacing side) {

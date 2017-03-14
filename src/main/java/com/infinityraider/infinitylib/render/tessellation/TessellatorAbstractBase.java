@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.infinityraider.infinitylib.reference.Constants;
-import com.infinityraider.infinitylib.utility.math.TransformationMatrix;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -16,9 +15,9 @@ import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.vecmath.Vector3f;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import org.joml.MatrixStackf;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
@@ -27,11 +26,13 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     /**
      * Default color (white)
      */
-    public static final int STANDARD_COLOR = 255;
+    public static final float STANDARD_COLOR = 1.0f;
+
     /**
      * Default brightness (max)
      */
     public static final int STANDARD_BRIGHTNESS = 15 << 24;
+
     /**
      * Default normal (up)
      */
@@ -40,46 +41,49 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     /**
      * Current transformation matrix
      */
-    private final Deque<TransformationMatrix> matrices;
+    protected final MatrixStackf matrices;
 
     /**
      * Current vertex format
      */
-    private VertexFormat format;
+    protected VertexFormat format;
+
     /**
      * Current normal
      */
-    private Vector3f normal;
+    protected final Vector3f normal;
+
     /**
      * Current color
      */
-    private int r, g, b, a;
+    protected float r, g, b, a;
+
     /**
      * Current brightness value
      */
-    private int l;
+    protected int l;
+
     /**
      * Current tint index for the quad
      */
-    private int tintIndex;
+    protected int tintIndex;
+
     /**
      * Current diffuse lighting setting for the quad
      */
-    private boolean applyDiffuseLighting;
+    protected boolean applyDiffuseLighting;
 
     protected TessellatorAbstractBase() {
-        this.matrices = new ArrayDeque<>();
-        this.normal = STANDARD_NORMAL;
+        this.matrices = new MatrixStackf(64);
+        this.normal = new Vector3f(STANDARD_NORMAL);
         this.tintIndex = -1;
+        this.r = STANDARD_COLOR;
+        this.g = STANDARD_COLOR;
+        this.b = STANDARD_COLOR;
+        this.a = STANDARD_COLOR;
         this.applyDiffuseLighting = false;
-        this.resetMatrix();
     }
 
-    /**
-     * Method to start constructing quads
-     *
-     * @param vertexFormat vertex format
-     */
     @Override
     public final void startDrawingQuads(VertexFormat vertexFormat) {
         this.format = vertexFormat;
@@ -92,19 +96,16 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     protected abstract void onStartDrawingQuadsCall();
 
-    /**
-     * Method to finalize drawing
-     */
     @Override
     public final void draw() {
         this.onDrawCall();
         this.format = null;
-        this.normal = STANDARD_NORMAL;
+        this.normal.set(STANDARD_NORMAL);
         this.setColorRGBA(STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR);
         this.setBrightness(STANDARD_BRIGHTNESS);
         this.tintIndex = -1;
         this.applyDiffuseLighting = false;
-        this.resetMatrix();
+        this.matrices.clear();
     }
 
     /**
@@ -113,11 +114,6 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      */
     protected abstract void onDrawCall();
 
-    /**
-     * Gets the current vertex format the tessellator is drawing with
-     *
-     * @return the vertex format
-     */
     @Override
     public final VertexFormat getVertexFormat() {
         return format;
@@ -125,28 +121,14 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public void pushMatrix() {
-        this.matrices.push(new TransformationMatrix(this.matrices.getFirst()));
+        this.matrices.pushMatrix();
     }
 
     @Override
     public void popMatrix() {
-        if (this.matrices.size() > 1) {
-            this.matrices.pop();
-        } else {
-            throw new IndexOutOfBoundsException("No matrix to pop!");
-        }
+        this.matrices.popMatrix();
     }
 
-    /**
-     * Adds a vertex
-     *
-     * @param x the x-coordinate for the vertex
-     * @param y the y-coordinate for the vertex
-     * @param z the z-coordinate for the vertex
-     * @param icon the icon
-     * @param u u value for the vertex
-     * @param v v value for the vertex
-     */
     @Override
     public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v) {
         if (icon == null) {
@@ -155,33 +137,11 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         this.addVertexWithUV(x, y, z, icon.getInterpolatedU(u), icon.getInterpolatedV(v));
     }
 
-    /**
-     * Adds a vertex scaled by 1/16th of a block
-     *
-     * @param x the x-coordinate for the vertex
-     * @param y the y-coordinate for the vertex
-     * @param z the z-coordinate for the vertex
-     * @param icon the icon
-     * @param u u value for the vertex
-     * @param v v value for the vertex
-     */
     @Override
     public void addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v) {
         addVertexWithUV(x * Constants.UNIT, y * Constants.UNIT, z * Constants.UNIT, icon, u, v);
     }
 
-    /**
-     * Adds a quad for a scaled face, the face is defined by minimum and maximum
-     * 2D coordinates
-     *
-     * @param minX minimum 2D x-coordinate of the face
-     * @param minY minimum 2D y-coordinate of the face
-     * @param maxX maximum 2D x-coordinate of the face
-     * @param maxY maximum 2D y-coordinate of the face
-     * @param face orientation of the face
-     * @param icon icon to render the face with
-     * @param offset offset of the face along its normal
-     */
     @Override
     public void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
         float x1, x2, x3, x4;
@@ -266,12 +226,12 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             default:
                 return;
         }
-        int rPrev = this.r;
-        int gPrev = this.g;
-        int bPrev = this.b;
-        int aPrev = this.a;
+        float rPrev = this.r;
+        float gPrev = this.g;
+        float bPrev = this.b;
+        float aPrev = this.a;
         this.applyColorMultiplier(face);
-        this.setNormal(new Vector3f(face.getFrontOffsetX(), face.getFrontOffsetY(), face.getFrontOffsetZ()));
+        this.setNormal(face.getFrontOffsetX(), face.getFrontOffsetY(), face.getFrontOffsetZ());
         addScaledVertexWithUV(x1, y1, z1, icon, u1, v1);
         addScaledVertexWithUV(x2, y2, z2, icon, u2, v2);
         addScaledVertexWithUV(x3, y3, z3, icon, u3, v3);
@@ -279,18 +239,6 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         this.setColorRGBA(rPrev, gPrev, bPrev, aPrev);
     }
 
-    /**
-     * Adds two quads for a scaled face, this face will have both sides drawn.
-     * The face is defined by minimum and maximum coordinates
-     *
-     * @param minX minimum 2D x-coordinate of the face
-     * @param minY minimum 2D y-coordinate of the face
-     * @param maxX maximum 2D x-coordinate of the face
-     * @param maxY maximum 2D y-coordinate of the face
-     * @param face orientation of the face
-     * @param icon icon to render the face with
-     * @param offset offset of the face along its normal
-     */
     @Override
     public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
         EnumFacing opposite;
@@ -320,18 +268,6 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         this.drawScaledFace(minX, minY, maxX, maxY, opposite, icon, offset);
     }
 
-    /**
-     * Adds 6 quads for a scaled prism, the prism is defined by maximum and
-     * minimum 3D coordinates
-     *
-     * @param minX minimum x-coordinate of the face
-     * @param minY minimum y-coordinate of the face
-     * @param minZ maximum z-coordinate of the face
-     * @param maxX maximum x-coordinate of the face
-     * @param maxY maximum y-coordinate of the face
-     * @param maxZ maximum z-coordinate of the face
-     * @param icon icon to render the prism with
-     */
     @Override
     public void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon) {
         //bottom
@@ -348,130 +284,26 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.EAST, icon, maxX);
     }
 
-    /**
-     * Sets the translation components relative to the absolute coordinate
-     * system
-     *
-     * @param x the x-coordinate
-     * @param y the y-coordinate
-     * @param z the z-coordinate
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase setTranslation(double x, double y, double z) {
-        this.matrices.getFirst().setTranslation(x, y, z);
-        return this;
-    }
-
-    /**
-     * Sets the rotation components relative to the absolute coordinate system
-     *
-     * @param angle rotation ange
-     * @param x the x-direction
-     * @param y the y-direction
-     * @param z the z-direction
-     * @return this
-     */
-    @Override
-    public TessellatorAbstractBase setRotation(double angle, double x, double y, double z) {
-        this.matrices.getFirst().setRotation(angle, x, y, z);
-        return this;
-    }
-
-    /**
-     * Translates the matrix by a vector defined by a BlockPos
-     *
-     * @param pos the BlockPos
-     * @return this
-     */
-    @Override
-    public TessellatorAbstractBase translate(BlockPos pos) {
+    public void translate(BlockPos pos) {
         this.translate(pos.getX(), pos.getY(), pos.getZ());
-        return this;
     }
 
-    /**
-     * Translates the matrix by a vector defined by 3 coordinates
-     *
-     * @param x the x coordinate
-     * @param y the y coordinate
-     * @param z the z coordinate
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase translate(double x, double y, double z) {
-        this.matrices.getFirst().multiplyRightWith(new TransformationMatrix(x, y, z));
-        return this;
+    public void translate(float x, float y, float z) {
+        this.matrices.translate(x, y, z);
     }
 
-    /**
-     * Rotates the matrix by an angle around the given direction, rotation
-     * center is the current origin
-     *
-     * @param angle angle to rotate by
-     * @param x the x direction
-     * @param y the y direction
-     * @param z the z direction
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase rotate(double angle, double x, double y, double z) {
-        this.matrices.getFirst().multiplyRightWith(new TransformationMatrix(angle, x, y, z));
-        return this;
+    public void rotate(float angle, float x, float y, float z) {
+        this.matrices.rotate((float)Math.toRadians(angle), x, y, z);
     }
 
-    /**
-     * Scales along each axis with the corresponding factor
-     *
-     * @param x the x-axis scale factor
-     * @param y the y-axis scale factor
-     * @param z the z-axis scale factor
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase scale(double x, double y, double z) {
-        this.matrices.getFirst().scale(x, y, z);
-        return this;
+    public void scale(float x, float y, float z) {
+        this.matrices.scale(x, y, z);
     }
 
-    /**
-     * Applies a custom transformation
-     *
-     * @param transformationMatrix transformation matrix defining the custom
-     * transformation
-     * @return this
-     */
-    public TessellatorAbstractBase applyTransformation(TransformationMatrix transformationMatrix) {
-        this.matrices.getFirst().multiplyRightWith(transformationMatrix);
-        return this;
-    }
-
-    /**
-     * Gets the current transformation matrix
-     *
-     * @return the transformation matrix
-     */
-    public TransformationMatrix getTransformationMatrix() {
-        return this.matrices.getFirst();
-    }
-
-    /**
-     * Resets the transformation matrix
-     *
-     * @return this
-     */
-    public TessellatorAbstractBase resetMatrix() {
-        this.matrices.clear();
-        this.matrices.push(new TransformationMatrix());
-        return this;
-    }
-
-    /**
-     * Gets a TextureAtlasSprite icon from a ResourceLocation
-     *
-     * @param loc the ResourceLocation
-     * @return the icon
-     */
     @Override
     public TextureAtlasSprite getIcon(ResourceLocation loc) {
         if (loc != null) {
@@ -481,227 +313,72 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         }
     }
 
-    /**
-     * Binds a texture to use when rendering
-     *
-     * @param loc ResourceLocation pointing towards the texture
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase bindTexture(ResourceLocation loc) {
+    public void bindTexture(ResourceLocation loc) {
         Minecraft.getMinecraft().renderEngine.bindTexture(loc);
-        return this;
     }
 
-    /**
-     * Sets the normal for the tessellator
-     *
-     * @param x the normal x direction
-     * @param y the normal y direction
-     * @param z the normal z direction
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase setNormal(float x, float y, float z) {
-        return this.setNormal(new Vector3f(x, y, z));
+    public void setNormal(float x, float y, float z) {
+        this.normal.set(x, y, z);
     }
 
-    /**
-     * Sets the normal for the tessellator
-     *
-     * @param vec the normal vector
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase setNormal(Vector3f vec) {
-        this.normal = vec == null ? this.normal : vec;
-        return this;
+    public void setNormal(Vector3f vec) {
+        this.normal.set(vec);
     }
 
-    /**
-     * Gets the current normal for the tessellator
-     *
-     * @return the normal vector
-     */
     @Override
     public Vector3f getNormal() {
         return this.normal;
     }
 
-    /**
-     * Sets the current opaque color multiplier for the quads
-     *
-     * @param color the rgb color value
-     * @return this
-     */
-    @Override
-    public TessellatorAbstractBase setColor(int color) {
-        this.setColorTransparent(color);
-        this.a = 255;
-        return this;
-    }
-
-    /**
-     * Sets the current transparent color multiplier for the quads
-     *
-     * @param color the rgba color value
-     * @return this
-     */
-    @Override
-    public TessellatorAbstractBase setColorTransparent(int color) {
-        int red = color >> 16 & 255;
-        int green = color >> 8 & 255;
-        int blue = color & 255;
-        int alpha = this.a;
-        return this.setColorRGBA(red, green, blue, alpha);
-    }
-
-    /**
-     * Gets the current color value as an rgb int
-     *
-     * @return the color multiplier
-     */
     @Override
     public int getColor() {
-        return (this.r << 16) | (this.g << 8) | (this.b);
+        return ((int)(this.r * 255) << 16) | ((int)(this.g * 255) << 8) | ((int)(this.b * 255));
     }
 
-    /**
-     * Sets the current color value based on red, green and blue float values,
-     * all arguments should be between 0F and 1F
-     *
-     * @param red the rgb red value
-     * @param green the rgb green value
-     * @param blue the rgb blue value
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase setColorRGB_F(float red, float green, float blue) {
-        return this.setColorRGBA_F(red, green, blue, 1.0F);
+    public void setColorRGB(float red, float green, float blue) {
+        this.setColorRGBA(red, green, blue, 1);
     }
 
-    /**
-     * Sets the current color value based on red, green, blue and alpha values,
-     * all arguments should be between 0F and 1F
-     *
-     * @param red the rgb red value
-     * @param green the rgb green value
-     * @param blue the rgb blue value
-     * @param alpha the rgb alpha value
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase setColorRGBA_F(float red, float green, float blue, float alpha) {
-        return this.setColorRGBA((int) (red * 255), (int) (green * 255), (int) (blue * 255), (int) (alpha * 255));
-    }
-
-    /**
-     * Sets the current color value based on red, green and blue int values, all
-     * arguments should be between 0 and 255
-     *
-     * @param red the rgb red value
-     * @param green the rgb green value
-     * @param blue the rgb blue value
-     * @return this
-     */
-    @Override
-    public TessellatorAbstractBase setColorRGB(int red, int green, int blue) {
-        return this.setColorRGBA(red, green, blue, 255);
-    }
-
-    /**
-     * Sets the current color value based on red, green, blue and alpha values,
-     * all arguments should be between 0 and 255
-     *
-     * @param red the rgb red value
-     * @param green the rgb green value
-     * @param blue the rgb blue value
-     * @param alpha the rgb alpha value
-     * @return this
-     */
-    @Override
-    public TessellatorAbstractBase setColorRGBA(int red, int green, int blue, int alpha) {
+    public void setColorRGBA(float red, float green, float blue, float alpha) {
         this.r = red;
         this.g = green;
         this.b = blue;
         this.a = alpha;
-        return this;
     }
 
-    /**
-     * @return current blue value as float, will be between 0 and 1
-     */
     @Override
-    public float getRedValueFloat() {
-        return ((float) getRedValueInt()) / 255.0F;
+    public void setAlpha(float alpha) {
+        this.a = alpha;
     }
 
-    /**
-     * @return current green value as float, will be between 0 and 1
-     */
     @Override
-    public float getGreenValueFloat() {
-        return ((float) getGreenValueInt()) / 255.0F;
-    }
-
-    /**
-     * @return current blue value as float, will be between 0 and 1
-     */
-    @Override
-    public float getBlueValueFloat() {
-        return ((float) getBlueValueInt()) / 255.0F;
-    }
-
-    /**
-     * @return current alpha value as float, will be between 0 and 1
-     */
-    @Override
-    public float getAlphaValueFloat() {
-        return ((float) getAlphaValueInt()) / 255.0F;
-    }
-
-    /**
-     * @return current red value as int, will be between 0 and 255
-     */
-    @Override
-    public int getRedValueInt() {
+    public float getRed() {
         return this.r;
     }
 
-    /**
-     * @return current green value as int, will be between 0 and 255
-     */
     @Override
-    public int getGreenValueInt() {
+    public float getGreen() {
         return this.g;
     }
 
-    /**
-     * @return current red value as int, will be between 0 and 255
-     */
     @Override
-    public int getBlueValueInt() {
+    public float getBlue() {
         return this.b;
     }
 
-    /**
-     * @return current alpha value as int, will be between 0 and 255
-     */
     @Override
-    public int getAlphaValueInt() {
+    public float getAlpha() {
         return this.a;
     }
 
-    /**
-     * Sets the brightness of the tessellator
-     *
-     * @param value the brightness value
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase setBrightness(int value) {
+    public void setBrightness(int value) {
         this.l = value;
-        return this;
     }
 
     /**
@@ -714,45 +391,21 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         return this.l;
     }
 
-    /**
-     * Sets the tint index value to use for the quads
-     *
-     * @param index the tint index
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase setTintIndex(int index) {
+    public void setTintIndex(int index) {
         this.tintIndex = index;
-        return this;
     }
 
-    /**
-     * Gets the current tint index value to use for the quads
-     *
-     * @return the tint index
-     */
     @Override
     public int getTintIndex() {
         return this.tintIndex;
     }
 
-    /**
-     * Sets if diffuse lighting should be applied to the quads
-     *
-     * @param value the diffuse lighting setting
-     * @return this
-     */
     @Override
-    public TessellatorAbstractBase setApplyDiffuseLighting(boolean value) {
+    public void setApplyDiffuseLighting(boolean value) {
         this.applyDiffuseLighting = value;
-        return this;
     }
 
-    /**
-     * Gets if diffuse lighting is applied to the quads
-     *
-     * @return the diffuse lighting setting
-     */
     @Override
     public boolean getApplyDiffuseLighting() {
         return this.applyDiffuseLighting;
@@ -760,50 +413,46 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     protected abstract void applyColorMultiplier(EnumFacing side);
 
-    /**
-     * Applies the transformation of the tessellator to a given quad.
-     *
-     * @param quad the quad to be transformed.
-     * @return a new quad following transformation.
-     */
-    protected UnpackedBakedQuad transformQuad(BakedQuad quad) {
+    @Override
+    public final void transform(Vector4f pos) {
+        this.matrices.transform(pos);
+    }
+
+    public final UnpackedBakedQuad transformQuad(BakedQuad quad) {
+        // Fetch required information
         final VertexFormat format = quad.getFormat();
-        final float[][][] vertexData = new float[4][format.getElementCount()][];
+        final float[][][] vertexData = new float[4][format.getElementCount()][4];
+
+        // Objects to be reused in the loop
+        final Vector4f temp = new Vector4f();
+
         //unpack and transform vertex data
         for (int v = 0; v < 4; v++) {
             for (int e = 0; e < format.getElementCount(); e++) {
-                float[] data = new float[4];
-                LightUtil.unpack(quad.getVertexData(), data, format, v, e);
-                vertexData[v][e] = transformUnpackedVertexDataElement(format.getElement(e).getUsage(), data);
+                LightUtil.unpack(quad.getVertexData(), vertexData[v][e], format, v, e);
+                transformUnpackedVertexDataElement(format.getElement(e).getUsage(), vertexData[v][e], temp);
             }
         }
         //create new quad with the transformed vertex data
-        return new UnpackedBakedQuad(vertexData, quad.getTintIndex(), quad.getFace(), quad.getSprite(), this.getApplyDiffuseLighting(), format);
+        return new UnpackedBakedQuad(vertexData, quad.getTintIndex(), quad.getFace(), quad.getSprite(), quad.shouldApplyDiffuseLighting(), format);
     }
 
-    /**
-     * Transforms an unpacked vertex data element
-     *
-     * @param type the type of the vertex data element
-     * @param data the data of the vertex data element
-     * @return the transformed, unpacked vertex data
-     */
-    protected float[] transformUnpackedVertexDataElement(VertexFormatElement.EnumUsage type, float[] data) {
+    public final void transformUnpackedVertexDataElement(VertexFormatElement.EnumUsage type, float[] data, Vector4f temp) {
         switch (type) {
             case POSITION:
             case NORMAL:
-                double[] pos = this.getTransformationMatrix().transform(data[0], data[1], data[2]);
-                data[0] = (float) pos[0];
-                data[1] = (float) pos[1];
-                data[2] = (float) pos[2];
+                this.matrices.transform(data[0], data[1], data[2], 1, temp);
+                data[0] = temp.x;
+                data[1] = temp.y;
+                data[2] = temp.z;
                 break;
             case COLOR:
-                data[0] = getRedValueFloat();
-                data[1] = getGreenValueFloat();
-                data[2] = getBlueValueFloat();
-                data[3] = getAlphaValueFloat();
+                data[0] = getRed();
+                data[1] = getGreen();
+                data[2] = getBlue();
+                data[3] = getAlpha();
                 break;
         }
-        return data;
     }
+
 }

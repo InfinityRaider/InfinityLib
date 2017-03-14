@@ -70,8 +70,7 @@ public abstract class RenderUtilBase {
     }
 
     public static void rotateBlock(ITessellator tess, EnumFacing dir) {
-        tess.translate(0.5, 0, 0.5);
-        //tess.rotate(180, 0F, 0F, 1F);
+        tess.translate(0.5f, 0, 0.5f);
         switch (dir) {
             case WEST:
                 tess.rotate(270, 0, 1, 0);
@@ -83,7 +82,7 @@ public abstract class RenderUtilBase {
                 tess.rotate(90, 0, 1, 0);
                 break;
         }
-        tess.translate(-0.5, 0, -0.5);
+        tess.translate(-0.5f, 0, -0.5f);
     }
 
     public static void renderItemStack(ItemStack stack, double x, double y, double z, double scale, boolean rotate) {

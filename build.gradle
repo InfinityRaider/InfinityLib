@@ -32,3 +32,9 @@ repositories {
         url "http://dvs1.progwml6.com/files/maven"
     }
 }
+
+dependencies {
+    shade "org.joml:joml:1.9.2"
+    compile "org.joml:joml:1.9.2:javadoc"
+    compile "org.joml:joml:1.9.2:sources"
+}

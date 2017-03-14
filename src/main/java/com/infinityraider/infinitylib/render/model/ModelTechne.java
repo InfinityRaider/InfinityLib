@@ -21,13 +21,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Class to render Techne models in 1.8+'s rendering system.
- * Create one object of this class for every Techne model you wish to render,
- * Call getBakedQuads with the desired vertex format to get a list of baked quads, it is advised to cache this.
+ * Class to render Techne models in 1.8+'s rendering system. Create one object
+ * of this class for every Techne model you wish to render, Call getBakedQuads
+ * with the desired vertex format to get a list of baked quads, it is advised to
+ * cache this.
+ *
  * @param <M> the generic type of your Techne model
  */
 @SideOnly(Side.CLIENT)
 public class ModelTechne<M extends ModelBase> {
+
     private final M model;
     private final List<ModelRenderer> modelRenderers;
     private final List<Tuple<ModelRenderer, List<TexturedQuad>>> texturedQuads;
@@ -62,9 +65,9 @@ public class ModelTechne<M extends ModelBase> {
     }
 
     /**
-     * Returns a list of baked quads to render this Techne model,
-     * use this method when the texture of the model is stitched to the texturemap
-     * The returned list should be cached.
+     * Returns a list of baked quads to render this Techne model, use this
+     * method when the texture of the model is stitched to the texturemap The
+     * returned list should be cached.
      *
      * @param format vertex format to create baked quads with
      * @param icon an icon stitched to the texture map used to render this model
@@ -72,14 +75,14 @@ public class ModelTechne<M extends ModelBase> {
      * @return an immutable list of baked quads for this model
      */
     public List<BakedQuad> getBakedQuads(VertexFormat format, TextureAtlasSprite icon, double scale) {
-        if(icon == null) {
+        if (icon == null) {
             return getBakedQuads(format, scale);
         } else {
             List<BakedQuad> list = new ArrayList<>();
             for (Tuple<ModelRenderer, List<TexturedQuad>> tuple : getTexturedQuads()) {
                 list.addAll(tuple.getSecond().stream().map(quad -> createBakedQuad(format, scale * Constants.UNIT, tuple.getFirst(), quad, icon)).collect(Collectors.toList()));
             }
-            return ImmutableList.copyOf(list);
+            return list;
         }
     }
 
@@ -95,12 +98,12 @@ public class ModelTechne<M extends ModelBase> {
 
         //define vertex data for the quad
         VertexData[] vertexData = new VertexData[quad.vertexPositions.length];
-        for(int i = 0; i < vertexData.length; i++) {
+        for (int i = 0; i < vertexData.length; i++) {
             PositionTextureVertex vertex = quad.vertexPositions[i];
-            double[] pos = matrix.transform(vertex.vector3D.xCoord*scale, vertex.vector3D.yCoord*scale, vertex.vector3D.zCoord*scale);
-            vertexData[i] = new VertexData(format,
-                    (float) pos[0], (float) pos[1], (float) pos[2],
-                    icon.getInterpolatedU(vertex.texturePositionX*16), icon.getInterpolatedV(vertex.texturePositionY*16));
+            double[] pos = matrix.transform(vertex.vector3D.xCoord * scale, vertex.vector3D.yCoord * scale, vertex.vector3D.zCoord * scale);
+            vertexData[i] = new VertexData(format);
+            vertexData[i].setXYZ((float) pos[0], (float) pos[1], (float) pos[2]);
+            vertexData[i].setUV(icon.getInterpolatedU(vertex.texturePositionX * 16), icon.getInterpolatedV(vertex.texturePositionY * 16));
             vertexData[i].setRGBA(1, 1, 1, 1);
             vertexData[i].setNormal((float) normal[0], (float) normal[1], (float) normal[2]);
         }
@@ -109,17 +112,17 @@ public class ModelTechne<M extends ModelBase> {
         UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(format);
         quadBuilder.setTexture(icon);
         quadBuilder.setApplyDiffuseLighting(this.getDiffuseLighting());
-        for(VertexData data : vertexData) {
+        for (VertexData data : vertexData) {
             data.applyVertexData(quadBuilder);
         }
         return quadBuilder.build();
     }
 
     /**
-     * Returns a list of baked quads to render this Techne model,
-     * use this method to render from a separate texture.
-     * The texture has to be bound first using Minecraft.getMinecraft().renderEngine.bindTexture()
-     * The returned list should be cached.
+     * Returns a list of baked quads to render this Techne model, use this
+     * method to render from a separate texture. The texture has to be bound
+     * first using Minecraft.getMinecraft().renderEngine.bindTexture() The
+     * returned list should be cached.
      *
      * @param format vertex format to create baked quads with
      * @param scale the scale factor to apply to the model
@@ -127,16 +130,16 @@ public class ModelTechne<M extends ModelBase> {
      */
     public List<BakedQuad> getBakedQuads(VertexFormat format, double scale) {
         List<BakedQuad> list = new ArrayList<>();
-        for(Tuple<ModelRenderer, List<TexturedQuad>> tuple : getTexturedQuads()) {
-            list.addAll(tuple.getSecond().stream().map(quad -> createBakedQuad(format, scale* Constants.UNIT, tuple.getFirst(), quad)).collect(Collectors.toList()));
+        for (Tuple<ModelRenderer, List<TexturedQuad>> tuple : getTexturedQuads()) {
+            list.addAll(tuple.getSecond().stream().map(quad -> createBakedQuad(format, scale * Constants.UNIT, tuple.getFirst(), quad)).collect(Collectors.toList()));
         }
         return ImmutableList.copyOf(list);
     }
 
     private static List<ModelRenderer> compileModelRendererList(ModelBase model) {
         List<ModelRenderer> list = new ArrayList<>();
-        for(Field field : model.getClass().getDeclaredFields()) {
-            if(field.getType().isAssignableFrom(ModelRenderer.class)) {
+        for (Field field : model.getClass().getDeclaredFields()) {
+            if (field.getType().isAssignableFrom(ModelRenderer.class)) {
                 field.setAccessible(true);
                 try {
                     list.add((ModelRenderer) field.get(model));
@@ -150,17 +153,17 @@ public class ModelTechne<M extends ModelBase> {
 
     private static List<Tuple<ModelRenderer, List<TexturedQuad>>> compileTexturedQuadList(List<ModelRenderer> modelRenderers) {
         List<Tuple<ModelRenderer, List<TexturedQuad>>> list = new ArrayList<>();
-        for(ModelRenderer model : modelRenderers) {
+        for (ModelRenderer model : modelRenderers) {
             List<TexturedQuad> quadList = new ArrayList<>();
-            for(ModelBox box : model.cubeList) {
+            for (ModelBox box : model.cubeList) {
                 Field fieldQuads = null;
-                for(Field field : box.getClass().getDeclaredFields()) {
-                    if(field.getType().isAssignableFrom(TexturedQuad[].class)) {
+                for (Field field : box.getClass().getDeclaredFields()) {
+                    if (field.getType().isAssignableFrom(TexturedQuad[].class)) {
                         fieldQuads = field;
                         break;
                     }
                 }
-                if(fieldQuads != null) {
+                if (fieldQuads != null) {
                     fieldQuads.setAccessible(true);
                     try {
                         Collections.addAll(quadList, (TexturedQuad[]) fieldQuads.get(box));
@@ -186,19 +189,18 @@ public class ModelTechne<M extends ModelBase> {
 
         //define vertex data for the quad
         VertexData[] vertexData = new VertexData[quad.vertexPositions.length];
-        for(int i = 0; i < vertexData.length; i++) {
+        for (int i = 0; i < vertexData.length; i++) {
             PositionTextureVertex vertex = quad.vertexPositions[i];
-            double[] pos = matrix.transform(vertex.vector3D.xCoord*scale, vertex.vector3D.yCoord*scale, vertex.vector3D.zCoord*scale);
-            vertexData[i] = new VertexData(format,
-                    (float) pos[0], (float) pos[1], (float) pos[2],
-                    vertex.texturePositionX, vertex.texturePositionY);
+            double[] pos = matrix.transform(vertex.vector3D.xCoord * scale, vertex.vector3D.yCoord * scale, vertex.vector3D.zCoord * scale);
+            vertexData[i].setXYZ((float) pos[0], (float) pos[1], (float) pos[2]);
+            vertexData[i].setUV(vertex.texturePositionX, vertex.texturePositionY);
             vertexData[i].setRGBA(1, 1, 1, 1);
             vertexData[i].setNormal((float) normal[0], (float) normal[1], (float) normal[2]);
         }
 
         //build and return the quad
         UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(format);
-        for(VertexData data : vertexData) {
+        for (VertexData data : vertexData) {
             data.applyVertexData(quadBuilder);
         }
         return quadBuilder.build();
@@ -206,21 +208,21 @@ public class ModelTechne<M extends ModelBase> {
 
     private static TransformationMatrix getTransformationMatrixForRenderer(ModelRenderer renderer, double scale) {
         //by default, the model renders upside down and offset
-        TransformationMatrix matrix  = new TransformationMatrix(180, 1, 0, 0);
+        TransformationMatrix matrix = new TransformationMatrix(180, 1, 0, 0);
         matrix.multiplyRightWith(new TransformationMatrix(8 * scale, - 24 * scale, -  8 * scale));
 
         matrix.multiplyRightWith(new TransformationMatrix(
-                renderer.offsetX + renderer.rotationPointX*scale,
-                renderer.offsetY + renderer.rotationPointY*scale,
-                renderer.offsetZ + renderer.rotationPointZ*scale));
+                renderer.offsetX + renderer.rotationPointX * scale,
+                renderer.offsetY + renderer.rotationPointY * scale,
+                renderer.offsetZ + renderer.rotationPointZ * scale));
         //apparently in the GL call list, the rotation point is used as the offset, I'm not sure why, but it is the case
-        if(renderer.rotateAngleZ != 0) {
+        if (renderer.rotateAngleZ != 0) {
             matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleZ * (180F / (float) Math.PI), 0, 0, 1));
         }
-        if(renderer.rotateAngleY != 0) {
+        if (renderer.rotateAngleY != 0) {
             matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleY * (180F / (float) Math.PI), 0, 1, 0));
         }
-        if(renderer.rotateAngleX != 0) {
+        if (renderer.rotateAngleX != 0) {
             matrix.multiplyRightWith(new TransformationMatrix(renderer.rotateAngleX * (180F / (float) Math.PI), 1, 0, 0));
         }
         return matrix;
