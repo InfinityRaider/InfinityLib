@@ -30,7 +30,6 @@ public interface IItemRenderingHandler {
      * @param world the world object
      * @param stack stack containing this block as an item
      * @param entity entity holding the stack
-     * @param type camera transform type
      */
     @SideOnly(Side.CLIENT)
     void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity);

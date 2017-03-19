@@ -26,10 +26,20 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
         return this.getInventory().getSizeInventory();
     }
 
+    @Override
+    public boolean isEmpty() {
+        return getInventory().isEmpty();
+    }
+
     @Nullable
     @Override
     public ItemStack getStackInSlot(int index) {
         return  this.getInventory().getStackInSlot(index);
+    }
+
+    @Override
+    public int getSlotLimit(int slot) {
+        return getInventory().getInventoryStackLimit();
     }
 
     @Nullable
@@ -60,8 +70,8 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
     }
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer player) {
-        return this.getInventory().isUseableByPlayer(player);
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        return getInventory().isUsableByPlayer(player);
     }
 
     @Override

@@ -102,7 +102,7 @@ public class ByteBufUtil {
             buf.writeInt(-1);
         } else {
             buf.writeInt(e.getEntityId());
-            buf.writeInt(e.worldObj.provider.getDimension());
+            buf.writeInt(e.getEntityWorld().provider.getDimension());
         }
         return buf;
     }

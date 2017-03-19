@@ -18,7 +18,7 @@ public class MessageUtil {
         } catch (IllegalArgumentException ex) {
             message = "Message Formatting Error: \"" + format + "\"!";
         }
-        player.addChatComponentMessage(new TextComponentString(message));
+        player.sendMessage(new TextComponentString(message));
     }
 
 }

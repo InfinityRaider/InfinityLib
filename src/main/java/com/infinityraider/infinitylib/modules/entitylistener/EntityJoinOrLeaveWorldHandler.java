@@ -68,6 +68,12 @@ public class EntityJoinOrLeaveWorldHandler implements IWorldEventListener {
                               double xSpeed, double ySpeed, double zSpeed, int... parameters) {}
 
     @Override
+    public void spawnParticle(int id, boolean ignoreRange, boolean minParticles, double xCoord, double yCoord, double zCoord,
+                              double xSpeed, double ySpeed, double zSpeed, int... parameters) {
+
+    }
+
+    @Override
     public void broadcastSound(int soundID, BlockPos pos, int data) {}
 
     @Override

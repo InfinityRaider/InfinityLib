@@ -85,12 +85,12 @@ public class RayTraceHelper {
 
         if (!Double.isNaN(start.xCoord) && !Double.isNaN(start.yCoord) && !Double.isNaN(start.zCoord)) {
             if (!Double.isNaN(ray.xCoord) && !Double.isNaN(ray.yCoord) && !Double.isNaN(ray.zCoord)) {
-                int x2 = MathHelper.floor_double(ray.xCoord);
-                int y2 = MathHelper.floor_double(ray.yCoord);
-                int z2 = MathHelper.floor_double(ray.zCoord);
-                int x1 = MathHelper.floor_double(start.xCoord);
-                int y1 = MathHelper.floor_double(start.yCoord);
-                int z1 = MathHelper.floor_double(start.zCoord);
+                int x2 = MathHelper.fastFloor(ray.xCoord);
+                int y2 = MathHelper.fastFloor(ray.yCoord);
+                int z2 = MathHelper.fastFloor(ray.zCoord);
+                int x1 = MathHelper.fastFloor(start.xCoord);
+                int y1 = MathHelper.fastFloor(start.yCoord);
+                int z1 = MathHelper.fastFloor(start.zCoord);
                 BlockPos pos = new BlockPos(x1, y1, z1);
                 IBlockState state = world.getBlockState(pos);
                 Block blockStart = state.getBlock();
@@ -166,9 +166,9 @@ public class RayTraceHelper {
                         start = new Vec3d(start.xCoord + deltaX * zNew, start.yCoord + deltaY * zNew, dZ);
                     }
 
-                    x1 = MathHelper.floor_double(start.xCoord) - (enumfacing == EnumFacing.EAST ? 1 : 0);
-                    y1 = MathHelper.floor_double(start.yCoord) - (enumfacing == EnumFacing.UP ? 1 : 0);
-                    z1 = MathHelper.floor_double(start.zCoord) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
+                    x1 = MathHelper.fastFloor(start.xCoord) - (enumfacing == EnumFacing.EAST ? 1 : 0);
+                    y1 = MathHelper.fastFloor(start.yCoord) - (enumfacing == EnumFacing.UP ? 1 : 0);
+                    z1 = MathHelper.fastFloor(start.zCoord) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
                     pos = new BlockPos(x1, y1, z1);
 
                     List<Entity> entities = world.getEntitiesInAABBexcluding(entity, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1), filter);

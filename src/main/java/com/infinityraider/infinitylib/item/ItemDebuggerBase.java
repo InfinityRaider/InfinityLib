@@ -41,11 +41,12 @@ public abstract class ItemDebuggerBase extends ItemBase {
     protected abstract List<DebugMode> getDebugModes();
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(ItemStack stack, World world, EntityPlayer player, EnumHand hand) {
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        ItemStack stack = player.getActiveItemStack();
         if (player.isSneaking()) {
             if (!world.isRemote) {
                 DebugMode mode = this.changeDebugMode(stack);
-                player.addChatComponentMessage(new TextComponentString("Set debug mode to " + mode.debugName()));
+                player.sendMessage(new TextComponentString("Set debug mode to " + mode.debugName()));
             }
         } else {
             this.getDebugMode(stack).debugActionClicked(stack, world, player, hand);
@@ -54,8 +55,9 @@ public abstract class ItemDebuggerBase extends ItemBase {
     }
 
     @Override
-    public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         if(!player.isSneaking()) {
+            ItemStack stack = player.getActiveItemStack();
             this.getDebugMode(stack).debugActionBlockClicked(stack, player, world, pos, hand, side, hitX, hitY, hitZ);
         }
         return EnumActionResult.PASS;

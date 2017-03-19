@@ -7,6 +7,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.MoverType;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -90,7 +91,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    public final void moveEntity(double x, double y, double z) {}
+    public final void move(MoverType type, double x, double y, double z) {}
 
     @Override
     protected final void doBlockCollisions() {}

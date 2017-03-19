@@ -8,6 +8,7 @@ import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.network.datasync.DataSerializer;
 import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -126,9 +127,10 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
     }
 
     public void register(InfinityMod mod) {
-        EntityRegistry.registerModEntity(entityClass, name, lastId, mod, trackingDistance, updateFrequency, velocityUpdates);
+        ResourceLocation registryName = new ResourceLocation(mod.getModId(), name);
+        EntityRegistry.registerModEntity(registryName, entityClass, name, lastId, mod, trackingDistance, updateFrequency, velocityUpdates);
         if(hasEgg) {
-            EntityRegistry.registerEgg(entityClass, primaryColor, secondaryColor);
+            EntityRegistry.registerEgg(registryName, primaryColor, secondaryColor);
         }
         if(doSpawn) {
             EntityRegistry.addSpawn(mod.getModId() + "." + name, weight, min, max, type, biomes);

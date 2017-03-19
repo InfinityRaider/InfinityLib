@@ -15,26 +15,26 @@ public interface IInventoryItemHandler extends IInventory, IItemHandler {
 
     @Override
     default ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-        if(!isValidSlot(slot) || stack == null || stack.stackSize <= 0) {
+        if(!isValidSlot(slot) || stack == null || stack.getCount() <= 0) {
             return null;
         }
         ItemStack inSlot = this.getStackInSlot(slot);
-        if(inSlot == null || inSlot.stackSize <= 0) {
+        if(inSlot == null || inSlot.getCount() <= 0) {
             if(!simulate) {
                 this.setInventorySlotContents(slot, stack.copy());
             }
             return null;
         } else if(ItemStack.areItemsEqual(inSlot, stack) && ItemStack.areItemStackTagsEqual(inSlot, stack)) {
             int max = stack.getItem().getItemStackLimit(stack);
-            int transfer = Math.min(stack.stackSize, max - inSlot.stackSize);
+            int transfer = Math.min(stack.getCount(), max - inSlot.getCount());
             if(!simulate) {
-                inSlot.stackSize = inSlot.stackSize + transfer;
+                inSlot.setCount(inSlot.getCount() + transfer);
                 this.setInventorySlotContents(slot, inSlot);
             }
-            if(transfer >= stack.stackSize) {
+            if(transfer >= stack.getCount()) {
                 return null;
             } else {
-                stack.stackSize = stack.stackSize - transfer;
+                stack.setCount(stack.getCount() - transfer);
                 return stack;
             }
         } else {
@@ -48,20 +48,20 @@ public interface IInventoryItemHandler extends IInventory, IItemHandler {
             return null;
         }
         ItemStack inSlot = this.getStackInSlot(slot);
-        if(inSlot == null || inSlot.stackSize < 0) {
+        if(inSlot == null || inSlot.getCount() < 0) {
             return null;
         } else {
             amount = Math.min(amount, inSlot.getItem().getItemStackLimit(inSlot));
             ItemStack stack = inSlot.copy();
-            if(amount >= inSlot.stackSize) {
+            if(amount >= inSlot.getCount()) {
                 if(!simulate) {
                     this.setInventorySlotContents(slot, null);
                 }
                 return stack;
             } else {
-                stack.stackSize = amount;
+                stack.setCount(amount);
                 if(!simulate) {
-                    inSlot.stackSize = inSlot.stackSize - amount;
+                    inSlot.setCount(inSlot.getCount() - amount);
                     this.setInventorySlotContents(slot, inSlot);
                 }
                 return stack;

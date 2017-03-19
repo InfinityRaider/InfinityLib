@@ -34,7 +34,7 @@ public class ModHelper {
 		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
 			if ((block instanceof Block) && block.isEnabled()) {
 				mod.getLogger().debug("Registering Block: " + block.getInternalName());
-				RegisterHelper.registerBlock((Block) block, mod.getModId(), block.getInternalName(), block.getItemBlockClass());
+				RegisterHelper.registerBlock((Block) block, mod.getModId(), block.getInternalName());
 				for (String tag : block.getOreTags()) {
 					OreDictionary.registerOre(tag, (Block) block);
 				}

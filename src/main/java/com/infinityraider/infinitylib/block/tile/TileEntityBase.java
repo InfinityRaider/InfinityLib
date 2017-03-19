@@ -78,7 +78,7 @@ public abstract class TileEntityBase extends TileEntity {
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         this.readFromNBT(pkt.getNbtCompound());
-        worldObj.markBlockRangeForRenderUpdate(getPos(), getPos());
+        this.getWorld().markBlockRangeForRenderUpdate(getPos(), getPos());
     }
 
     @Override
@@ -99,8 +99,8 @@ public abstract class TileEntityBase extends TileEntity {
     protected abstract void readTileNBT(NBTTagCompound tag);
 
     public void markForUpdate() {
-        IBlockState state = worldObj.getBlockState(this.getPos());
-        worldObj.notifyBlockUpdate(getPos(), state, state, 3);
+        IBlockState state = this.getWorld().getBlockState(this.getPos());
+        this.getWorld().notifyBlockUpdate(getPos(), state, state, 3);
         this.markDirty();
     }
 
@@ -109,8 +109,8 @@ public abstract class TileEntityBase extends TileEntity {
     }
 
     public void syncToClient(boolean renderUpdate) {
-        if(!this.worldObj.isRemote) {
-            new MessageSyncTile(this, renderUpdate).sendToAllAround(this.worldObj, this.xCoord(), this.yCoord(), this.zCoord(), 128);
+        if(!this.getWorld().isRemote) {
+            new MessageSyncTile(this, renderUpdate).sendToAllAround(this.getWorld(), this.xCoord(), this.yCoord(), this.zCoord(), 128);
         }
     }
 }

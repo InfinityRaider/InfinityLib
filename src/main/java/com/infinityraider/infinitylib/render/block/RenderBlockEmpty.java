@@ -15,8 +15,6 @@ import net.minecraft.world.World;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import net.minecraftforge.common.property.ExtendedBlockState;
 
 public class RenderBlockEmpty<B extends BlockBase & ICustomRenderedBlock> implements IBlockRenderingHandler<B> {
 

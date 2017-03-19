@@ -6,5 +6,5 @@ import net.minecraft.world.World;
 
 public interface IInfinityBlockWithTile<T extends TileEntity> extends IInfinityBlock, ITileEntityProvider {
     @Override
-    T createNewTileEntity(World worldIn, int meta);
+    T createNewTileEntity(World world, int meta);
 }

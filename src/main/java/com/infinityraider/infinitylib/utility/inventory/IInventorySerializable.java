@@ -15,7 +15,7 @@ public interface IInventorySerializable extends IInventory {
         for(int i = 0; i < this.getSizeInventory(); i++) {
             NBTTagCompound tagAt = new NBTTagCompound();
             ItemStack stack = this.getStackInSlot(i);
-            boolean flag = stack != null && stack.stackSize > 0;
+            boolean flag = stack != null && stack.getCount() > 0;
             tagAt.setBoolean(Names.NBT.FLAG, flag);
             if(flag) {
                 stack.writeToNBT(tagAt);
@@ -32,7 +32,7 @@ public interface IInventorySerializable extends IInventory {
             for(int i = 0; i < this.getSizeInventory(); i++) {
                 NBTTagCompound tagAt = list.getCompoundTagAt(i);
                 if(tagAt.getBoolean(Names.NBT.FLAG)) {
-                    ItemStack stack = ItemStack.loadItemStackFromNBT(tagAt);
+                    ItemStack stack = new ItemStack(tagAt);
                     this.setInventorySlotContents(i, stack);
                 } else {
                     this.setInventorySlotContents(i, null);

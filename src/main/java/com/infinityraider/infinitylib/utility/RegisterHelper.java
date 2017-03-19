@@ -2,7 +2,6 @@ package com.infinityraider.infinitylib.utility;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
@@ -12,23 +11,17 @@ import java.util.ArrayList;
 
 public abstract class RegisterHelper {
     public static void registerBlock(Block block, String modId, String name) {
-        RegisterHelper.registerBlock(block, modId, name, null);
-    }
-
-    public static void registerBlock(Block block, String modId, String name, Class<? extends ItemBlock> itemClass) {
         String unlocalized = modId.toLowerCase() + ':' + name;
         block.setUnlocalizedName(unlocalized);
-        if (itemClass != null) {
-            GameRegistry.registerBlock(block, itemClass, unlocalized);
-        } else {
-            GameRegistry.registerBlock(block, unlocalized);
-        }
+        block.setRegistryName(unlocalized);
+        GameRegistry.register(block);
     }
 
     public static void registerItem(Item item, String modId, String name) {
         String unlocalized = modId.toLowerCase() + ':' + name;
         item.setUnlocalizedName(unlocalized);
-        GameRegistry.registerItem(item, unlocalized);
+        item.setRegistryName(unlocalized);
+        GameRegistry.register(item);
     }
 
     public static void removeRecipe(ItemStack stack) {
