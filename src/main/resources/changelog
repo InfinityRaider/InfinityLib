@@ -1,5 +1,8 @@
 Changelog
 ---------
+0.8.0
+- UPGRADED: Matrix math system.
+
 0.7.0
 - FIXED: Major quad caching error that caused severe memory and performance issues.
 - ADDED: Debug information system now uses consumers instead of lists, to allow for lower memory footprint, as well as immediate returns.
