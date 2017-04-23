@@ -39,24 +39,6 @@ public abstract class TileEntityBase extends TileEntity {
         return this.getWorld().isRemote;
     }
 
-    public void spawnAsEntity(ItemStack stack) {
-        if(!this.isRemote() && stack != null) {
-            Block.spawnAsEntity(this.getWorld(), this.getPos(), stack);
-        }
-    }
-
-    public void spawnAsEntity(ItemStack... stacks) {
-        for(ItemStack stack : stacks) {
-            this.spawnAsEntity(stack);
-        }
-    }
-
-    public void spawnAsEntity(Iterable<ItemStack> stacks) {
-        for(ItemStack stack : stacks) {
-            this.spawnAsEntity(stack);
-        }
-    }
-
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
         return oldState.getBlock() != newState.getBlock();
