@@ -1,5 +1,8 @@
 Changelog
 ---------
+0.10.0
+- TWEAK: Changed the way that IItemWithRecipe works, as to make it more generic and useful.
+
 0.9.0
 - FIXED: Container item duplication bug, wherein items could be duplicated by destroying blocks that were containers.
 - ADDED: SpawnItemInWorld helper function in WorldHelper, that allows for spawning items in the world in a safe manner that leaves clear logs.

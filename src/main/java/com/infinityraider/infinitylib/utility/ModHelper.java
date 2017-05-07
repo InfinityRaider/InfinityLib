@@ -65,17 +65,9 @@ public class ModHelper {
 
 	public void registerRecipes(InfinityMod mod) {
 		//blocks
-		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
-			if (block.isEnabled() && (block instanceof IItemWithRecipe)) {
-				((IItemWithRecipe) block).getRecipes().forEach(GameRegistry::addRecipe);
-			}
-		});
+		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IRecipeRegister.class, IRecipeRegister::registerRecipes);
 		//items
-		ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
-			if (item.isEnabled() && (item instanceof IItemWithRecipe)) {
-				((IItemWithRecipe) item).getRecipes().forEach(GameRegistry::addRecipe);
-			}
-		});
+		ReflectionHelper.forEachIn(mod.getModItemRegistry(), IRecipeRegister.class, IRecipeRegister::registerRecipes);
 	}
 
 	@SideOnly(Side.CLIENT)
