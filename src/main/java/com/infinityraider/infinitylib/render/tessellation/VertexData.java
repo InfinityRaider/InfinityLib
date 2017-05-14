@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
+import java.util.Objects;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
@@ -7,7 +8,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-@SuppressWarnings("unused")
 public class VertexData {
 
     private final VertexFormat format;
@@ -79,6 +79,47 @@ public class VertexData {
                 builder.put(index);
 
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof VertexData) {
+            final VertexData other = (VertexData) obj;
+            return Objects.equals(this.format, other.format)
+                    && (this.x == other.x)
+                    && (this.y == other.y)
+                    && (this.z == other.z)
+                    && (this.u == other.u)
+                    && (this.v == other.v)
+                    && (this.r == other.r)
+                    && (this.g == other.g)
+                    && (this.b == other.b)
+                    && (this.a == other.a)
+                    && (this.nX == other.nX)
+                    && (this.nY == other.nY)
+                    && (this.nZ == other.nZ);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.format);
+        hash = 89 * hash + Float.floatToIntBits(this.x);
+        hash = 89 * hash + Float.floatToIntBits(this.y);
+        hash = 89 * hash + Float.floatToIntBits(this.z);
+        hash = 89 * hash + Float.floatToIntBits(this.u);
+        hash = 89 * hash + Float.floatToIntBits(this.v);
+        hash = 89 * hash + Float.floatToIntBits(this.r);
+        hash = 89 * hash + Float.floatToIntBits(this.g);
+        hash = 89 * hash + Float.floatToIntBits(this.b);
+        hash = 89 * hash + Float.floatToIntBits(this.a);
+        hash = 89 * hash + Float.floatToIntBits(this.nX);
+        hash = 89 * hash + Float.floatToIntBits(this.nY);
+        hash = 89 * hash + Float.floatToIntBits(this.nZ);
+        return hash;
     }
 
 }

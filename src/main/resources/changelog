@@ -1,6 +1,7 @@
 Changelog
 ---------
 0.10.0
+- FIXED: Block rendering mixup due to hashing collision with cached quads. Now the render system works as well as it should.
 - TWEAK: Changed the way that IItemWithRecipe works, as to make it more generic and useful.
 
 0.9.0
