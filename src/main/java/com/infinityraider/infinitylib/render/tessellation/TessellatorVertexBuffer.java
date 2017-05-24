@@ -119,10 +119,9 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         final Vector4f pos = new Vector4f(x, y, z, 1);
         this.transform(pos);
         buffer.pos(pos.x, pos.y, pos.z);
-        buffer.color((int) (this.r * 255), (int) (this.g * 255), (int) (this.b * 255), (int) (this.a * 255));
         buffer.tex(u, v);
-        buffer.lightmap(getBrightness() >> 16 & 65535, getBrightness() & 65535);
-        //buffer.normal(normal.x, normal.y, normal.z);
+        buffer.color((int) (this.r * 255), (int) (this.g * 255), (int) (this.b * 255), (int) (this.a * 255));
+        buffer.normal(normal.x, normal.y, normal.z);
         buffer.endVertex();
     }
 
