@@ -1,23 +1,16 @@
 package com.infinityraider.infinitylib.container;
 
-import java.util.Objects;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 
-public class ContainerBase<T extends TileEntity> extends Container {
+public class ContainerBase extends Container {
 
     public static final int PLAYER_INVENTORY_SIZE = 36;
 
-    protected final T tile;
-
-    public ContainerBase(T tile, InventoryPlayer inventory, int xOffset, int yOffset) {
-        // Set the TileEntity associated with the container.
-        this.tile = Objects.requireNonNull(tile, "The TileEntity associated with a container may not be null!");
-
+    public ContainerBase(InventoryPlayer inventory, int xOffset, int yOffset) {
         // Add the player's main inventory to the container.
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
@@ -33,18 +26,9 @@ public class ContainerBase<T extends TileEntity> extends Container {
         }
     }
 
-    /**
-     * Fetches the TileEntity associated with this container.
-     *
-     * @return The TileEntity associated with this container.
-     */
-    public T getTile() {
-        return tile;
-    }
-
     @Override
     public boolean canInteractWith(EntityPlayer player) {
-        return !tile.isInvalid();
+        return true;
     }
 
     @Override
