@@ -88,7 +88,21 @@ public class ModelTechne<M extends ModelBase> {
      * @return an immutable list of baked quads for this model
      */
     public List<BakedQuad> getBakedQuads(VertexFormat format, TextureAtlasSprite icon) {
-        Matrix4f matrix = new Matrix4f();
+        return this.getBakedQuads(format, icon, 1);
+    }
+
+    /**
+     * Returns a list of baked quads to render this Techne model, use this
+     * method when the texture of the model is stitched to the texturemap The
+     * returned list should be cached.
+     *
+     * @param format vertex format to create baked quads with
+     * @param icon an icon stitched to the texture map used to render this model
+     * @param scale the scaling to apply to the model
+     * @return an immutable list of baked quads for this model
+     */
+    public List<BakedQuad> getBakedQuads(VertexFormat format, TextureAtlasSprite icon, float scale) {
+        Matrix4f matrix = new Matrix4f().identity().scale(scale);
         return getTexturedQuads().stream().flatMap(t
                 -> t.getSecond().stream().map(quad
                         -> createBakedQuad(format, t.getFirst(), quad, matrix, icon)
