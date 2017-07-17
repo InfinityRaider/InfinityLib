@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.container;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.tileentity.TileEntity;
 
@@ -22,5 +23,10 @@ public class ContainerTileBase<T extends TileEntity> extends ContainerBase {
      */
     public T getTile() {
         return this.tile;
+    }
+
+    @Override
+    public boolean canInteractWith(EntityPlayer player) {
+        return !getTile().isInvalid();
     }
 }
