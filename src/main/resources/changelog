@@ -1,5 +1,13 @@
 Changelog
 ---------
+0.12.0
+- TWEAK: Better dual wielded attacking
+- ADDED: Translation helper (wrapper should help making porting mc versions easier)
+- FIXED: Container duplication bug
+
+0.11.0
+- CHANGE: Backfixed some overzealous changes with regard to agricraft which broke the other mods
+
 0.10.0
 - TWEAK: Change quad format used by dynamic renderers.
 - TWEAK: Upgrade InfinityProperty blockstate return types.
