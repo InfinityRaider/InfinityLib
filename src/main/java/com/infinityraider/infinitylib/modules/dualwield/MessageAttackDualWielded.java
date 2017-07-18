@@ -39,7 +39,9 @@ public class MessageAttackDualWielded extends MessageBase<IMessage> {
             ItemStack stack = player.getHeldItem(left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
             if(stack != null && stack.getItem() instanceof IDualWieldedWeapon) {
                 IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-                weapon.onItemAttack(stack, player, entity, shift, ctrl, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
+                EnumHand hand = left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+                weapon.onItemAttack(stack, player, entity, shift, ctrl, hand);
+                ModuleDualWield.getInstance().attackTargetEntityWithCurrentItem(player, entity, weapon, stack, hand);
             }
         }
     }
