@@ -3,6 +3,7 @@ Changelog
 0.12.0
 - TWEAK: Better dual wielded attacking
 - ADDED: Translation helper (wrapper should help making porting mc versions easier)
+- ADDED: Registering of sounds
 - FIXED: Container duplication bug
 
 0.11.0
