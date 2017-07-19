@@ -46,4 +46,7 @@ public interface IProxy extends IProxyBase {
 
     @Override
     default void activateRequiredModules() {}
+
+    @Override
+    default void registerSounds() {}
 }
