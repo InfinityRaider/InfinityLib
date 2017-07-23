@@ -100,6 +100,11 @@ public interface IProxyBase {
      */
     void registerCapabilities();
 
+    /**
+     * Called to register the sounds for this mod
+     */
+    void registerSounds();
+
     /** Registers an event handler */
     default void registerEventHandler(Object handler) {
         MinecraftForge.EVENT_BUS.register(handler);

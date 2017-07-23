@@ -34,6 +34,9 @@ public interface IDualWieldedWeapon {
      * If cancelled client side this will not be called server side.
      * If not cancelled client side, returning true server side will not cancel the attack
      *
+     * Damage should not be applied from this method, this method is primarily to determine if the attack should happen or not,
+     * If the attack happens, logic is further mimicked and calls are forwarded to the conventional Item methods.
+     *
      * @param stack ItemStack holding this item
      * @param player attacking player
      * @param e attacked entity
@@ -43,4 +46,13 @@ public interface IDualWieldedWeapon {
      * @return if the attack should be cancelled
      */
     boolean onItemAttack(ItemStack stack, EntityPlayer player, Entity e, boolean shift, boolean ctrl, EnumHand hand);
+
+    /**
+     * When attacking a player using an axe, and if the player is blocking with a shield, it is possible to break the target's blocking.
+     *
+     * @return true from this method if the weapon should have this behaviour (wihtout having to extend ItemAxe)
+     */
+    default boolean isEffectiveAgainstShield() {
+        return false;
+    }
 }

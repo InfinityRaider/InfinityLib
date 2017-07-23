@@ -88,17 +88,31 @@ public class ModelTechne<M extends ModelBase> {
      * @return an immutable list of baked quads for this model
      */
     public List<BakedQuad> getBakedQuads(VertexFormat format, TextureAtlasSprite icon) {
-        Matrix4f matrix = new Matrix4f();
+        return this.getBakedQuads(format, icon, 1);
+    }
+
+    /**
+     * Returns a list of baked quads to render this Techne model, use this
+     * method when the texture of the model is stitched to the texturemap The
+     * returned list should be cached.
+     *
+     * @param format vertex format to create baked quads with
+     * @param icon an icon stitched to the texture map used to render this model
+     * @param scale the scaling to apply to the model
+     * @return an immutable list of baked quads for this model
+     */
+    public List<BakedQuad> getBakedQuads(VertexFormat format, TextureAtlasSprite icon, float scale) {
+        Matrix4f matrix = new Matrix4f().identity();
         return getTexturedQuads().stream().flatMap(t
                 -> t.getSecond().stream().map(quad
-                        -> createBakedQuad(format, t.getFirst(), quad, matrix, icon)
+                        -> createBakedQuad(format, t.getFirst(), quad, matrix, scale * Constants.UNIT, icon)
                 )
         ).collect(Collectors.toList());
     }
 
-    private BakedQuad createBakedQuad(VertexFormat format, ModelRenderer renderer, TexturedQuad quad, Matrix4f matrix, TextureAtlasSprite icon) {
+    private BakedQuad createBakedQuad(VertexFormat format, ModelRenderer renderer, TexturedQuad quad, Matrix4f matrix, float scale, TextureAtlasSprite icon) {
         //Transformation
-        loadRenderMatrix(renderer, matrix);
+        loadRenderMatrix(renderer, matrix, scale);
 
         //normal for the quad
         Vec3d vec3d = quad.vertexPositions[1].vector3D.subtractReverse(quad.vertexPositions[0].vector3D);
@@ -113,7 +127,7 @@ public class ModelTechne<M extends ModelBase> {
         for (int i = 0; i < vertexData.length; i++) {
             PositionTextureVertex vertex = quad.vertexPositions[i];
             vertexData[i] = new VertexData(format);
-            pos.set((float) vertex.vector3D.xCoord, (float) vertex.vector3D.yCoord, (float) vertex.vector3D.zCoord, 1);
+            pos.set((float) vertex.vector3D.xCoord * scale, (float) vertex.vector3D.yCoord * scale, (float) vertex.vector3D.zCoord * scale, 1);
             matrix.transform(pos);
             vertexData[i].setXYZ(pos.x, pos.y, pos.z);
             vertexData[i].setRGBA(1, 1, 1, 1);
@@ -176,14 +190,15 @@ public class ModelTechne<M extends ModelBase> {
         return ImmutableList.copyOf(list);
     }
 
-    private static void loadRenderMatrix(ModelRenderer renderer, Matrix4f matrix) {
+    private static void loadRenderMatrix(ModelRenderer renderer, Matrix4f matrix, float scale) {
         //by default, the model renders upside down and offset
-        matrix.identity();
-        matrix.translate(renderer.offsetX, renderer.offsetY, renderer.offsetZ);
-        matrix.scale(Constants.UNIT);
-        matrix.rotate((float) Math.toRadians(180), 1, 0, 0);
-        matrix.translate(renderer.rotationPointX, renderer.rotationPointY, renderer.rotationPointZ);
-        matrix.translate(8, -24, -8);
+        matrix.identity()
+                .rotate((float) Math.toRadians(180), 1, 0, 0 )
+                .translate(8 * scale, - 24 * scale, -  8 * scale)
+                .translate(
+                        renderer.offsetX + renderer.rotationPointX * scale,
+                        renderer.offsetY + renderer.rotationPointY * scale,
+                        renderer.offsetZ + renderer.rotationPointZ * scale);
 
         //apparently in the GL call list, the rotation point is used as the offset, I'm not sure why, but it is the case
         if (renderer.rotateAngleZ != 0) {

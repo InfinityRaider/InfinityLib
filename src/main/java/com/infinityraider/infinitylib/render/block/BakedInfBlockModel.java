@@ -8,6 +8,7 @@ import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.render.DefaultTransforms;
 import com.infinityraider.infinitylib.render.item.BakedInfItemSuperModel;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
+import com.infinityraider.infinitylib.utility.HashableBlockState;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     private final IBlockRenderingHandler<B> renderer;
     private final Function<ResourceLocation, TextureAtlasSprite> textures;
     private final BakedInfItemSuperModel itemRenderer;
-    private final Map<Integer, Map<EnumFacing, List<BakedQuad>>> cachedQuads;
+    private final Map<HashableBlockState, Map<EnumFacing, List<BakedQuad>>> cachedQuads;
 
     @SuppressWarnings("unchecked")
     BakedInfBlockModel(B block, VertexFormat format, IBlockRenderingHandler<B> renderer, Function<ResourceLocation, TextureAtlasSprite> textures, boolean inventory) {
@@ -52,16 +53,9 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
         // Return the quads.
         return cachedQuads
                 // Fetch the map.
-                .computeIfAbsent(hashState(state), (e) -> new HashMap<>())
+                .computeIfAbsent(new HashableBlockState(state), (e) -> new HashMap<>())
                 // Fetch the quads.
                 .computeIfAbsent(side, (s) -> createQuads(state, s, rand));
-    }
-    
-    private static int hashState(IBlockState state) {
-        int hash = 7;
-        hash = 31 * hash + state.getProperties().hashCode();
-        hash = 31 * hash + ((state instanceof IExtendedBlockState) ? ((IExtendedBlockState)state).getUnlistedProperties().hashCode() : 0);
-        return hash;
     }
 
     private List<BakedQuad> createQuads(IBlockState state, EnumFacing side, long rand) {

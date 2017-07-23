@@ -90,6 +90,7 @@ public abstract class InfinityMod {
         ModHelper.getInstance().RegisterBlocksAndItems(this);
         InfinityLib.proxy.registerRenderers(this);
         InfinityLib.proxy.registerEntities(this);
+        proxy().registerSounds();
         proxy().preInitEnd(event);
         this.getLogger().debug("Pre-Initialization Complete");
     }

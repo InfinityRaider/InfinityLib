@@ -1,5 +1,27 @@
 Changelog
 ---------
+0.12.0
+- TWEAK: Better dual wielded attacking
+- ADDED: Translation helper (wrapper should help making porting mc versions easier)
+- ADDED: Registering of sounds
+- FIXED: Container duplication bug
+
+0.11.0
+- CHANGE: Backfixed some overzealous changes with regard to agricraft which broke the other mods
+
+0.10.0
+- TWEAK: Change quad format used by dynamic renderers.
+- TWEAK: Upgrade InfinityProperty blockstate return types.
+- FIXED: Block rendering mixup due to hashing collision with cached quads. Now the render system works as well as it should.
+- TWEAK: Changed the way that IItemWithRecipe works, as to make it more generic and useful.
+
+0.9.0
+- FIXED: Container item duplication bug, wherein items could be duplicated by destroying blocks that were containers.
+- ADDED: SpawnItemInWorld helper function in WorldHelper, that allows for spawning items in the world in a safe manner that leaves clear logs.
+
+0.8.0
+- UPGRADED: Matrix math system.
+
 0.7.0
 - FIXED: Major quad caching error that caused severe memory and performance issues.
 - ADDED: Debug information system now uses consumers instead of lists, to allow for lower memory footprint, as well as immediate returns.
