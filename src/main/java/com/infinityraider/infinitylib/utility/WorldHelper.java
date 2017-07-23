@@ -85,7 +85,7 @@ public class WorldHelper {
             sb.append("\t- At Location: ").append(optPos.map(p -> p.toString()).orElse("<NULL>")).append("\n");
             sb.append("\t- ItemStack:\n");
             sb.append("\t\t- Item: ").append(optStack.map(i -> i.getItem()).map(i -> i.toString()).orElse("<NULL>")).append("\n");
-            sb.append("\t\t- Amount: ").append(optStack.map(i -> i.stackSize).map(i -> i.toString()).orElse("<NULL>")).append("\n");
+            sb.append("\t\t- Amount: ").append(optStack.map(i -> i.getCount()).map(i -> i.toString()).orElse("<NULL>")).append("\n");
             sb.append("\t\t- Meta: ").append(optStack.filter(i -> i.getItem() != null).map(i -> i.getMetadata()).map(i -> i.toString()).orElse("<NULL>")).append("\n");
             sb.append("\t\t- Tags: ").append(optStack.map(i -> i.getTagCompound()).map(i -> i.toString()).orElse("<NULL>")).append("\n");
             // Append Stack Trace

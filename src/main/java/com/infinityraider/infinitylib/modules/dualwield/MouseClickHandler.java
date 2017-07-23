@@ -35,11 +35,7 @@ public class MouseClickHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onLeftClick(MouseEvent event) {
-<<<<<<< HEAD
-        EntityPlayer player = Minecraft.getMinecraft().player;
-=======
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
->>>>>>> master
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
         ItemStack stack = player.getHeldItemOffhand();
         if(event.getButton() != LMB) {
             return;
@@ -66,11 +62,7 @@ public class MouseClickHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onRightClick(MouseEvent event) {
-<<<<<<< HEAD
-        EntityPlayer player = Minecraft.getMinecraft().player;
-=======
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
->>>>>>> master
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
         ItemStack stack = player.getHeldItemMainhand();
         if(event.getButton() != RMB) {
             return;

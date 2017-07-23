@@ -239,7 +239,7 @@ public class ModuleDualWield extends Module {
                         //Set stack to null if stack size becomes zero
                         if (target instanceof EntityLivingBase) {
                             stack.hitEntity((EntityLivingBase)target, player);
-                            if (stack.stackSize <= 0) {
+                            if (stack.getCount() <= 0) {
                                 player.setHeldItem(hand, null);
                                 ForgeEventFactory.onPlayerDestroyItem(player, stack, EnumHand.MAIN_HAND);
                             }
