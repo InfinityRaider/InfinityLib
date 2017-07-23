@@ -42,7 +42,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getActiveItemStack();
+        ItemStack stack = player.getHeldItem(hand);
         if (player.isSneaking()) {
             if (!world.isRemote) {
                 DebugMode mode = this.changeDebugMode(stack);
