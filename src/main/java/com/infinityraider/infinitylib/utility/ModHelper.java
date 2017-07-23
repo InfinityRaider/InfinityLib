@@ -2,8 +2,6 @@ package com.infinityraider.infinitylib.utility;
 
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.*;
-import com.infinityraider.infinitylib.block.tile.ITileEntityStateCache;
-import com.infinityraider.infinitylib.handler.TileEntityStateHandler;
 import com.infinityraider.infinitylib.item.*;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
 import com.infinityraider.infinitylib.item.IAutoRenderedItem;
@@ -61,26 +59,15 @@ public class ModHelper {
 				TileEntity te = block.createNewTileEntity(null, 0);
 				assert (te != null);
 				GameRegistry.registerTileEntity(te.getClass(), mod.getModId().toLowerCase() + ":tile." + block.getInternalName());
-				if(te instanceof ITileEntityStateCache) {
-                    TileEntityStateHandler.getInstance().register();
-                }
 			}
 		});
 	}
 
 	public void registerRecipes(InfinityMod mod) {
 		//blocks
-		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
-			if (block.isEnabled() && (block instanceof IItemWithRecipe)) {
-				((IItemWithRecipe) block).getRecipes().forEach(GameRegistry::addRecipe);
-			}
-		});
+		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IRecipeRegister.class, IRecipeRegister::registerRecipes);
 		//items
-		ReflectionHelper.forEachIn(mod.getModBlockRegistry(), ItemBase.class, (ItemBase item) -> {
-			if (item.isEnabled() && (item instanceof IItemWithRecipe)) {
-				((IItemWithRecipe) item).getRecipes().forEach(GameRegistry::addRecipe);
-			}
-		});
+		ReflectionHelper.forEachIn(mod.getModItemRegistry(), IRecipeRegister.class, IRecipeRegister::registerRecipes);
 	}
 
 	@SideOnly(Side.CLIENT)

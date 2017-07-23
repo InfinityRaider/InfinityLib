@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.utility.debug;
 
-import java.util.List;
+import java.util.function.Consumer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -13,10 +13,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  */
 public interface IDebuggable {
 
-    void addServerDebugInfo(List<String> lines);
+    void addServerDebugInfo(Consumer<String> consumer);
 
     @SideOnly(Side.CLIENT)
-    default void addClientDebugInfo(List<String> lines) {
-        // NOP
+    default void addClientDebugInfo(Consumer<String> consumer) {
+        consumer.accept("No client debug information available.");
     }
+
 }

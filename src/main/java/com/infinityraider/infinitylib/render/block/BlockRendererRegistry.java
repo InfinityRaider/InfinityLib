@@ -28,6 +28,7 @@ import java.util.Map;
 
 @SideOnly(Side.CLIENT)
 public class BlockRendererRegistry implements ICustomModelLoader {
+
     private static final BlockRendererRegistry INSTANCE = new BlockRendererRegistry();
 
     public static BlockRendererRegistry getInstance() {
@@ -54,7 +55,8 @@ public class BlockRendererRegistry implements ICustomModelLoader {
     }
 
     @Override
-    public void onResourceManagerReload(IResourceManager resourceManager) {}
+    public void onResourceManagerReload(IResourceManager resourceManager) {
+    }
 
     public List<ICustomRenderedBlock> getRegisteredBlocks() {
         return ImmutableList.copyOf(blocks);
@@ -74,7 +76,7 @@ public class BlockRendererRegistry implements ICustomModelLoader {
         };
         ModelLoader.setCustomStateMapper((BlockBase) customRenderedBlock, stateMapper);
         //register renderers
-        if(customRenderedBlock instanceof ICustomRenderedBlockWithTile) {
+        if (customRenderedBlock instanceof ICustomRenderedBlockWithTile) {
             registerTileRenderer((ICustomRenderedBlockWithTile) customRenderedBlock);
         } else {
             registerBlockRenderer(customRenderedBlock);

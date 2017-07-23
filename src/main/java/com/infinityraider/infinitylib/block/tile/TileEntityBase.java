@@ -1,7 +1,9 @@
 package com.infinityraider.infinitylib.block.tile;
 
 import com.infinityraider.infinitylib.network.MessageSyncTile;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -9,23 +11,12 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.Random;
+
 @SuppressWarnings("unused")
-public abstract class TileEntityBase extends TileEntity implements ITileEntityStateCache {
-    private IBlockState state;
-
+public abstract class TileEntityBase extends TileEntity {
     public IBlockState getState() {
-        if(this.state == null) {
-            this.state = this.getWorld().getBlockState(this.getPos());
-        }
-        return state;
-    }
-
-    public void resetSate() {
-        this.resetSate(null);
-    }
-
-    public void resetSate(IBlockState newState) {
-        this.state = newState;
+        return this.getWorld().getBlockState(this.getPos());
     }
 
     public final int xCoord() {
@@ -38,6 +29,14 @@ public abstract class TileEntityBase extends TileEntity implements ITileEntitySt
 
     public final int zCoord() {
         return this.getPos().getZ();
+    }
+
+    public Random getRandom() {
+        return this.getWorld().rand;
+    }
+
+    public boolean isRemote() {
+        return this.getWorld().isRemote;
     }
 
     @Override

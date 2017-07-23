@@ -6,7 +6,6 @@ import com.google.common.base.Function;
 import java.util.List;
 import javax.vecmath.Matrix4f;
 
-import com.infinityraider.infinitylib.render.item.IItemRenderingHandler;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;

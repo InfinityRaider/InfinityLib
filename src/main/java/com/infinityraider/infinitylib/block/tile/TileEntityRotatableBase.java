@@ -48,5 +48,4 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
         // EnumFacing can actually handle all this stuff!
         this.setOrientation(EnumFacing.getHorizontal(cardinal));
     }
-
 }

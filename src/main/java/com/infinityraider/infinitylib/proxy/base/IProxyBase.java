@@ -4,8 +4,10 @@ import com.infinityraider.infinitylib.capability.CapabilityHandler;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -98,6 +100,11 @@ public interface IProxyBase {
      */
     void registerCapabilities();
 
+    /**
+     * Called to register the sounds for this mod
+     */
+    void registerSounds();
+
     /** Registers an event handler */
     default void registerEventHandler(Object handler) {
         MinecraftForge.EVENT_BUS.register(handler);
@@ -123,6 +130,13 @@ public interface IProxyBase {
      * @return The effective side, on the server, this is always Side.SERVER, on the client it is dependent on the thread
      */
     Side getEffectiveSide();
+
+    /**
+     * @return The minecraft server instance
+     */
+    default MinecraftServer getMinecraftServer() {
+        return FMLCommonHandler.instance().getMinecraftServerInstance();
+    }
 
     /**
      * @return the instance of the EntityPlayer on the client, null on the server

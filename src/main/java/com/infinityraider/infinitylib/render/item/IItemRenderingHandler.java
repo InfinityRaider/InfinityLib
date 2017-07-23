@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.render.item;
 
+import com.infinityraider.infinitylib.render.DefaultTransforms;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
@@ -33,5 +34,10 @@ public interface IItemRenderingHandler {
      */
     @SideOnly(Side.CLIENT)
     void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity);
+
+    @SideOnly(Side.CLIENT)
+    default DefaultTransforms.Transformer getPerspectiveTransformer() {
+        return DefaultTransforms::getItemMatrix;
+    }
 
 }

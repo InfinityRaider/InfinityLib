@@ -40,6 +40,9 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
     private EnumCreatureType type;
     private Biome[] biomes;
 
+    /** registering callback */
+    private Runnable callback;
+
     /** rendering */
     private IRenderFactory<E> renderFactory;
 
@@ -52,6 +55,7 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
         this.enabled = true;
         this.hasEgg = false;
         this.doSpawn = false;
+        this.callback = () -> {};
     }
 
     public EntityRegistryEntry<E> enable(boolean status) {
@@ -116,6 +120,11 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
         return this;
     }
 
+    public EntityRegistryEntry<E> onRegisterCallBack(Runnable callback) {
+        this.callback = callback;
+        return this;
+    }
+
     public void register(InfinityMod mod) {
         EntityRegistry.registerModEntity(entityClass, name, lastId, mod, trackingDistance, updateFrequency, velocityUpdates);
         if(hasEgg) {
@@ -125,6 +134,7 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
             EntityRegistry.addSpawn(mod.getModId() + "." + name, weight, min, max, type, biomes);
         }
         lastId = lastId + 1;
+        this.callback.run();
     }
 
     @SideOnly(Side.CLIENT)
