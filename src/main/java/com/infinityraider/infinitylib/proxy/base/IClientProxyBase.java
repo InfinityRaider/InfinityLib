@@ -10,19 +10,19 @@ import net.minecraftforge.fml.relauncher.Side;
 public interface IClientProxyBase extends IProxyBase {
     @Override
     default EntityPlayer getClientPlayer() {
-        return Minecraft.getMinecraft().thePlayer;
+        return Minecraft.getMinecraft().player;
     }
 
     @Override
     default World getClientWorld() {
-        return Minecraft.getMinecraft().theWorld;
+        return Minecraft.getMinecraft().world;
     }
 
     @Override
     default World getWorldByDimensionId(int dimension) {
         Side effectiveSide = FMLCommonHandler.instance().getEffectiveSide();
         if(effectiveSide == Side.SERVER) {
-            return FMLClientHandler.instance().getServer().worldServerForDimension(dimension);
+            return FMLClientHandler.instance().getServer().getWorld(dimension);
         } else {
             return getClientWorld();
         }

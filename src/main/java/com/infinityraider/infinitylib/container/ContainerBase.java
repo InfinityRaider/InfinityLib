@@ -39,19 +39,19 @@ public class ContainerBase extends Container {
         ItemStack stackInSlot;
         //try to stack with existing stacks first
         if (stack.isStackable()) {
-            while (stack.stackSize > 0 && (!backwards && slotIndex < stop || backwards && slotIndex >= start)) {
+            while (stack.getCount() > 0 && (!backwards && slotIndex < stop || backwards && slotIndex >= start)) {
                 slot = this.inventorySlots.get(slotIndex);
                 stackInSlot = slot.getStack();
                 if (stackInSlot != null && slot.isItemValid(stack) && stackInSlot.getItem() == stack.getItem() && (!stack.getHasSubtypes() || stack.getItemDamage() == stackInSlot.getItemDamage()) && ItemStack.areItemStackTagsEqual(stack, stackInSlot)) {
-                    int combinedSize = stackInSlot.stackSize + stack.stackSize;
+                    int combinedSize = stackInSlot.getCount() + stack.getCount();
                     if (combinedSize <= stack.getMaxStackSize()) {
-                        stack.stackSize = 0;
-                        stackInSlot.stackSize = combinedSize;
+                        stack.setCount(0);
+                        stackInSlot.setCount(combinedSize);
                         slot.onSlotChanged();
                         foundSlot = true;
-                    } else if (stackInSlot.stackSize < stack.getMaxStackSize()) {
-                        stack.stackSize -= stack.getMaxStackSize() - stackInSlot.stackSize;
-                        stackInSlot.stackSize = stack.getMaxStackSize();
+                    } else if (stackInSlot.getCount() < stack.getMaxStackSize()) {
+                        stack.setCount(stack.getCount() - (stack.getMaxStackSize() - stackInSlot.getCount()));
+                        stackInSlot.setCount(stack.getMaxStackSize());
                         slot.onSlotChanged();
                         foundSlot = true;
                     }
@@ -60,7 +60,7 @@ public class ContainerBase extends Container {
             }
         }
         //put in empty slot
-        if (stack.stackSize > 0) {
+        if (stack.getCount() > 0) {
             slotIndex = backwards ? stop - 1 : start;
             while (!backwards && slotIndex < stop || backwards && slotIndex >= start && !foundSlot) {
                 slot = this.inventorySlots.get(slotIndex);
@@ -68,7 +68,7 @@ public class ContainerBase extends Container {
                 if (stackInSlot == null && slot.isItemValid(stack)) {
                     slot.putStack(stack.copy());
                     slot.onSlotChanged();
-                    stack.stackSize = 0;
+                    stack.setCount(0);
                     foundSlot = true;
                     break;
                 }

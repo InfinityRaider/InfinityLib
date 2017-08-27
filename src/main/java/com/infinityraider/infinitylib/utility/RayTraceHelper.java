@@ -57,7 +57,7 @@ public class RayTraceHelper {
         if(look == null) {
             return Optional.empty();
         }
-        Vec3d trace = eyes.addVector(look.xCoord * distance, look.yCoord * distance, look.zCoord * distance);
+        Vec3d trace = eyes.addVector(look.x * distance, look.y * distance, look.z * distance);
         return Optional.of(new Tuple<>(eyes, trace));
     }
 
@@ -83,14 +83,14 @@ public class RayTraceHelper {
             Entity entity, World world, Vec3d start, Vec3d ray, boolean stopOnLiquid,
             boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock, Predicate<? super Entity> filter) {
 
-        if (!Double.isNaN(start.xCoord) && !Double.isNaN(start.yCoord) && !Double.isNaN(start.zCoord)) {
-            if (!Double.isNaN(ray.xCoord) && !Double.isNaN(ray.yCoord) && !Double.isNaN(ray.zCoord)) {
-                int x2 = MathHelper.floor_double(ray.xCoord);
-                int y2 = MathHelper.floor_double(ray.yCoord);
-                int z2 = MathHelper.floor_double(ray.zCoord);
-                int x1 = MathHelper.floor_double(start.xCoord);
-                int y1 = MathHelper.floor_double(start.yCoord);
-                int z1 = MathHelper.floor_double(start.zCoord);
+        if (!Double.isNaN(start.x) && !Double.isNaN(start.y) && !Double.isNaN(start.z)) {
+            if (!Double.isNaN(ray.x) && !Double.isNaN(ray.y) && !Double.isNaN(ray.z)) {
+                int x2 = MathHelper.floor(ray.x);
+                int y2 = MathHelper.floor(ray.y);
+                int z2 = MathHelper.floor(ray.z);
+                int x1 = MathHelper.floor(start.x);
+                int y1 = MathHelper.floor(start.y);
+                int z1 = MathHelper.floor(start.z);
                 BlockPos pos = new BlockPos(x1, y1, z1);
                 IBlockState state = world.getBlockState(pos);
                 Block blockStart = state.getBlock();
@@ -105,7 +105,7 @@ public class RayTraceHelper {
                 RayTraceResult result = null;
                 int k1 = 200;
                 while (k1-- >= 0) {
-                    if (Double.isNaN(start.xCoord) || Double.isNaN(start.yCoord) || Double.isNaN(start.zCoord)) {
+                    if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z)) {
                         return null;
                     }
                     if (x1 == x2 && y1 == y2 && z1 == z2) {
@@ -125,20 +125,20 @@ public class RayTraceHelper {
                     double xNew = 999.0D;
                     double yNew = 999.0D;
                     double zNew = 999.0D;
-                    double deltaX = ray.xCoord - start.xCoord;
-                    double deltaY = ray.yCoord - start.yCoord;
-                    double deltaZ = ray.zCoord - start.zCoord;
+                    double deltaX = ray.x - start.x;
+                    double deltaY = ray.y - start.y;
+                    double deltaZ = ray.z - start.z;
 
                     if (flagX) {
-                        xNew = (dX - start.xCoord) / deltaX;
+                        xNew = (dX - start.x) / deltaX;
                     }
 
                     if (flagY) {
-                        yNew = (dY - start.yCoord) / deltaY;
+                        yNew = (dY - start.y) / deltaY;
                     }
 
                     if (flagZ) {
-                        zNew = (dZ - start.zCoord) / deltaZ;
+                        zNew = (dZ - start.z) / deltaZ;
                     }
 
                     if (xNew == -0.0D) {
@@ -157,18 +157,18 @@ public class RayTraceHelper {
 
                     if (xNew < yNew && xNew < zNew) {
                         enumfacing = x2 > x1 ? EnumFacing.WEST : EnumFacing.EAST;
-                        start = new Vec3d(dX, start.yCoord + deltaY * xNew, start.zCoord + deltaZ * xNew);
+                        start = new Vec3d(dX, start.y + deltaY * xNew, start.z + deltaZ * xNew);
                     } else if (yNew < zNew) {
                         enumfacing = y2 > y1 ? EnumFacing.DOWN : EnumFacing.UP;
-                        start = new Vec3d(start.xCoord + deltaX * yNew, dY, start.zCoord + deltaZ * yNew);
+                        start = new Vec3d(start.x + deltaX * yNew, dY, start.z + deltaZ * yNew);
                     } else {
                         enumfacing = z2 > z1 ? EnumFacing.NORTH : EnumFacing.SOUTH;
-                        start = new Vec3d(start.xCoord + deltaX * zNew, start.yCoord + deltaY * zNew, dZ);
+                        start = new Vec3d(start.x + deltaX * zNew, start.y + deltaY * zNew, dZ);
                     }
 
-                    x1 = MathHelper.floor_double(start.xCoord) - (enumfacing == EnumFacing.EAST ? 1 : 0);
-                    y1 = MathHelper.floor_double(start.yCoord) - (enumfacing == EnumFacing.UP ? 1 : 0);
-                    z1 = MathHelper.floor_double(start.zCoord) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
+                    x1 = MathHelper.floor(start.x) - (enumfacing == EnumFacing.EAST ? 1 : 0);
+                    y1 = MathHelper.floor(start.y) - (enumfacing == EnumFacing.UP ? 1 : 0);
+                    z1 = MathHelper.floor(start.z) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
                     pos = new BlockPos(x1, y1, z1);
 
                     List<Entity> entities = world.getEntitiesInAABBexcluding(entity, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1), filter);

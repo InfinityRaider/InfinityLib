@@ -102,7 +102,7 @@ public class ByteBufUtil {
             buf.writeInt(-1);
         } else {
             buf.writeInt(e.getEntityId());
-            buf.writeInt(e.worldObj.provider.getDimension());
+            buf.writeInt(e.getEntityWorld().provider.getDimension());
         }
         return buf;
     }
@@ -184,9 +184,9 @@ public class ByteBufUtil {
     }
 
     public static ByteBuf writeVec3d(ByteBuf buf, Vec3d data) {
-        buf.writeDouble(data.xCoord);
-        buf.writeDouble(data.yCoord);
-        buf.writeDouble(data.zCoord);
+        buf.writeDouble(data.x);
+        buf.writeDouble(data.y);
+        buf.writeDouble(data.z);
         return buf;
     }
 

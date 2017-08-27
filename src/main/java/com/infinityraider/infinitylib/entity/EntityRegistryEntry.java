@@ -3,23 +3,20 @@ package com.infinityraider.infinitylib.entity;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.modules.entitytargeting.ModuleEntityTargeting;
 import com.infinityraider.infinitylib.utility.IToggleable;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.*;
 import net.minecraft.network.datasync.DataSerializer;
 import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.IForgeRegistry;
 
-public class EntityRegistryEntry<E extends Entity> implements IToggleable {
-    private static int lastId = 0;
-
-    private Class<? extends E> entityClass;
-    private String name;
+public class EntityRegistryEntry<E extends Entity> extends EntityEntry implements IToggleable {
     private boolean enabled;
 
     /** general entity data */
@@ -47,8 +44,7 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
     private IRenderFactory<E> renderFactory;
 
     public EntityRegistryEntry(Class<? extends  E> entityClass, String name) {
-        this.entityClass = entityClass;
-        this.name = name;
+        super(entityClass, name);
         this.trackingDistance = 32;
         this.updateFrequency = 1;
         this.velocityUpdates = true;
@@ -56,6 +52,12 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
         this.hasEgg = false;
         this.doSpawn = false;
         this.callback = () -> {};
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<E> getEntityClass() {
+        return (Class<E>) super.getEntityClass();
     }
 
     public EntityRegistryEntry<E> enable(boolean status) {
@@ -108,7 +110,7 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
         ModuleEntityTargeting module = ModuleEntityTargeting.getInstance();
         module.activate();
         for(Class<? extends EntityCreature> aggressor : aggressors) {
-            module.registerEntityTargeting(this.entityClass, aggressor);
+            module.registerEntityTargeting(this.getEntityClass(), aggressor);
         }
         return this;
     }
@@ -125,22 +127,23 @@ public class EntityRegistryEntry<E extends Entity> implements IToggleable {
         return this;
     }
 
-    public void register(InfinityMod mod) {
-        EntityRegistry.registerModEntity(entityClass, name, lastId, mod, trackingDistance, updateFrequency, velocityUpdates);
+    @SuppressWarnings("unchecked")
+    public void register(InfinityMod mod, IForgeRegistry<EntityEntry> registry) {
+        ResourceLocation registryName = new ResourceLocation(mod.getModId(), this.getName());
         if(hasEgg) {
-            EntityRegistry.registerEgg(entityClass, primaryColor, secondaryColor);
+            this.setEgg(new EntityList.EntityEggInfo(registryName, primaryColor, secondaryColor));
         }
-        if(doSpawn) {
-            EntityRegistry.addSpawn(mod.getModId() + "." + name, weight, min, max, type, biomes);
+        if(doSpawn && EntityLiving.class.isAssignableFrom(this.getEntityClass())) {
+            EntityRegistry.addSpawn((Class<? extends EntityLiving>) this.getEntityClass(), weight, min, max, type, biomes);
         }
-        lastId = lastId + 1;
+        registry.register(this);
         this.callback.run();
     }
 
     @SideOnly(Side.CLIENT)
-    public void registerClient(InfinityMod mod) {
-        this.register(mod);
-        RenderingRegistry.registerEntityRenderingHandler(entityClass, renderFactory);
+    public void registerClient(InfinityMod mod, IForgeRegistry<EntityEntry> registry) {
+        this.register(mod, registry);
+        RenderingRegistry.registerEntityRenderingHandler(this.getEntityClass(), renderFactory);
     }
 
     @Override

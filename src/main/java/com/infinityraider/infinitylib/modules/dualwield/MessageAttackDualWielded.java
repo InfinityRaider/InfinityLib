@@ -34,7 +34,7 @@ public class MessageAttackDualWielded extends MessageBase<IMessage> {
 
     @Override
     protected void processMessage(MessageContext ctx) {
-        EntityPlayer player = ctx.getServerHandler().playerEntity;
+        EntityPlayer player = ctx.getServerHandler().player;
         if(player != null) {
             ItemStack stack = player.getHeldItem(left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
             if(stack != null && stack.getItem() instanceof IDualWieldedWeapon) {

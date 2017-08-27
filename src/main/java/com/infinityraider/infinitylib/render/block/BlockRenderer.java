@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.render.block;
 
-import com.google.common.base.Function;
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -12,6 +11,7 @@ import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.*;
+import java.util.function.Function;
 
 @SideOnly(Side.CLIENT)
 public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock> implements IModel {

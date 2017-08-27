@@ -32,6 +32,11 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
         return  this.getInventory().getStackInSlot(index);
     }
 
+    @Override
+    public int getSlotLimit(int slot) {
+        return this.getInventory().getInventoryStackLimit();
+    }
+
     @Nullable
     @Override
     public ItemStack decrStackSize(int index, int count) {
@@ -60,8 +65,8 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
     }
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer player) {
-        return this.getInventory().isUseableByPlayer(player);
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        return this.getInventory().isUsableByPlayer(player);
     }
 
     @Override

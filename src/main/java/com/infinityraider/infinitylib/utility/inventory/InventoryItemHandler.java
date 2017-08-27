@@ -49,6 +49,11 @@ public class InventoryItemHandler implements IInventoryItemHandler {
         return this.getItemHandler().extractItem(slot, amount, simulate);
     }
 
+    @Override
+    public int getSlotLimit(int slot) {
+        return this.getItemHandler().getSlotLimit(slot);
+    }
+
 
     /**
      * ------------------
@@ -76,7 +81,7 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     public ItemStack removeStackFromSlot(int index) {
         ItemStack stack = this.getStackInSlot(index);
         if(stack != null) {
-            stack = this.extractItem(index, stack.stackSize, false);
+            stack = this.extractItem(index, stack.getCount(), false);
         }
         return stack;
     }
@@ -85,7 +90,7 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     public void setInventorySlotContents(int index, @Nullable ItemStack stack) {
         ItemStack inSlot = this.getStackInSlot(index);
         if(inSlot != null) {
-            this.extractItem(index, inSlot.stackSize, false);
+            this.extractItem(index, inSlot.getCount(), false);
         }
         this.insertItem(index, stack, false);
     }
@@ -99,7 +104,7 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     public void markDirty() {}
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer player) {
+    public boolean isUsableByPlayer(EntityPlayer player) {
         return true;
     }
 
@@ -112,7 +117,7 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
         ItemStack simulated = this.insertItem(index, stack, true);
-        return simulated.stackSize != stack.stackSize;
+        return simulated.getCount() != stack.getCount();
     }
 
     @Override

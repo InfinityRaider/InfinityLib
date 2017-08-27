@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.render.item;
 
-import com.google.common.base.Function;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
@@ -11,6 +10,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Function;
 
 @SideOnly(Side.CLIENT)
 public class ItemRenderer implements IModel {

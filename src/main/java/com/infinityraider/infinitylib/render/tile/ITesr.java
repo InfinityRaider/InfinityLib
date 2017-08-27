@@ -13,6 +13,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @FunctionalInterface
 public interface ITesr<T extends TileEntity> {
 	
-	void renderTileEntityAt(T te, double x, double y, double z, float partialTicks, int destroyStage);
+	void renderTileEntityAt(T te, double x, double y, double z, float partialTicks, int destroyStage, float alpha);
 	
 }

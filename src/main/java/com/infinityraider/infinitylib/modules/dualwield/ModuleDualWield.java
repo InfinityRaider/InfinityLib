@@ -5,7 +5,6 @@ import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
-import net.minecraft.entity.boss.EntityDragonPart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
@@ -13,7 +12,6 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
-import net.minecraft.stats.AchievementList;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
@@ -216,12 +214,8 @@ public class ModuleDualWield extends Module {
                                 }
                             }
                         }
-                        //Overkill achievement
-                        if (dmg >= 18.0F) {
-                            player.addStat(AchievementList.OVERKILL);
-                        }
                         //Don't forget this...
-                        player.setLastAttacker(targetEntity);
+                        player.setLastAttackedEntity(targetEntity);
                         //Thorns enchantment (I'm starting to hate this method more and more...)
                         if (targetEntity instanceof EntityLivingBase) {
                             EnchantmentHelper.applyThornEnchantments((EntityLivingBase)targetEntity, player);
@@ -230,8 +224,8 @@ public class ModuleDualWield extends Module {
                         EnchantmentHelper.applyArthropodEnchantments(player, targetEntity);
                         //Ender dragon logic... really?
                         Entity target = targetEntity;
-                        if (targetEntity instanceof EntityDragonPart) {
-                            IEntityMultiPart multiEntityPart = ((EntityDragonPart)targetEntity).entityDragonObj;
+                        if (targetEntity instanceof MultiPartEntityPart) {
+                            IEntityMultiPart multiEntityPart = ((MultiPartEntityPart)targetEntity).parent;
                             if (multiEntityPart instanceof EntityLivingBase) {
                                 target = (EntityLivingBase) multiEntityPart;
                             }
@@ -239,7 +233,7 @@ public class ModuleDualWield extends Module {
                         //Set stack to null if stack size becomes zero
                         if (target instanceof EntityLivingBase) {
                             stack.hitEntity((EntityLivingBase)target, player);
-                            if (stack.stackSize <= 0) {
+                            if (stack.getCount() <= 0) {
                                 player.setHeldItem(hand, null);
                                 ForgeEventFactory.onPlayerDestroyItem(player, stack, EnumHand.MAIN_HAND);
                             }

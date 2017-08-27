@@ -7,6 +7,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.MoverType;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -82,7 +83,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     public final void extinguish() {}
 
     @Override
-    protected final void kill() {}
+    protected final void outOfWorld() {}
 
     @Override
     public final boolean isOffsetPositionInLiquid(double x, double y, double z) {
@@ -90,7 +91,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    public final void moveEntity(double x, double y, double z) {}
+    public final void move(MoverType type, double x, double y, double z) {}
 
     @Override
     protected final void doBlockCollisions() {}
@@ -139,7 +140,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    protected final void resetHeight() {}
+    protected final void doWaterSplashEffect() {}
 
     @Override
     public final void spawnRunningParticles() {}
@@ -158,7 +159,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    public final void moveRelative(float strafe, float forward, float friction) {}
+    public final void moveRelative(float strafe, float up, float forward, float friction) {}
 
     @Override
     public final void setPositionAndRotation(double x, double y, double z, float yaw, float pitch) {}
@@ -316,7 +317,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    public final boolean verifyExplosion(Explosion explosion, World world, BlockPos pos, IBlockState blockState, float f) {
+    public final boolean canExplosionDestroyBlock(Explosion explosion, World world, BlockPos pos, IBlockState blockState, float f) {
         return false;
     }
 

@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -13,6 +12,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+
 import org.joml.Vector4f;
 
 /**

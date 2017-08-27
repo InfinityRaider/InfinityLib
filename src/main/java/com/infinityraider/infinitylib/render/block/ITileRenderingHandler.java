@@ -49,9 +49,10 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
      * @param tile          the tile entity (can be null if there is no tile entity)
      * @param partialTick   partial tick, only useful for dynamic rendering
      * @param destroyStage  destroy stage, only useful for dynamic rendering
+     * @param alpha         alhpa value to render the block with
      */
     void renderWorldBlockDynamic(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
-                                 B block, T tile, float partialTick, int destroyStage);
+                                 B block, T tile, float partialTick, int destroyStage, float alpha);
 
     /**
      * This method is to used by ITileRenderingHandlers.

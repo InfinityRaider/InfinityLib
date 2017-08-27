@@ -13,8 +13,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -29,7 +27,7 @@ public class DebugModeFeedback extends DebugMode {
     public void debugActionBlockClicked(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         getDebugData(world, pos, l -> {
             InfinityLib.instance.getLogger().debug(l);
-            player.addChatComponentMessage(new TextComponentString(l));
+            player.sendMessage(new TextComponentString(l));
         });
     }
 

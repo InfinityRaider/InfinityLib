@@ -1,8 +1,8 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
@@ -18,12 +18,12 @@ import org.joml.Vector4f;
 @SuppressWarnings("unused")
 public class TessellatorVertexBuffer extends TessellatorAbstractBase {
 
-    private static final Map<VertexBuffer, ThreadLocal<TessellatorVertexBuffer>> instances = new HashMap<>();
+    private static final Map<BufferBuilder, ThreadLocal<TessellatorVertexBuffer>> instances = new HashMap<>();
 
     private final Tessellator tessellator;
-    private final VertexBuffer buffer;
+    private final BufferBuilder buffer;
 
-    private TessellatorVertexBuffer(VertexBuffer buffer, Tessellator tessellator) {
+    private TessellatorVertexBuffer(BufferBuilder buffer, Tessellator tessellator) {
         this.buffer = buffer;
         this.tessellator = tessellator;
     }
@@ -36,11 +36,11 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         return getInstance(tessellator.getBuffer(), tessellator);
     }
 
-    public static TessellatorVertexBuffer getInstance(VertexBuffer buffer) {
+    public static TessellatorVertexBuffer getInstance(BufferBuilder buffer) {
         return getInstance(buffer, null);
     }
 
-    private static TessellatorVertexBuffer getInstance(VertexBuffer buffer, Tessellator tessellator) {
+    private static TessellatorVertexBuffer getInstance(BufferBuilder buffer, Tessellator tessellator) {
         if (!instances.containsKey(buffer)) {
             instances.put(buffer, new ThreadLocal<>());
         }
@@ -57,7 +57,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      * @return VertexBuffer object which this is currently tessellating vertices
      * for
      */
-    public VertexBuffer getVertexBuffer() {
+    public BufferBuilder getVertexBuffer() {
         return buffer;
     }
 

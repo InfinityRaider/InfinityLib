@@ -118,7 +118,7 @@ public class ModelTechne<M extends ModelBase> {
         Vec3d vec3d = quad.vertexPositions[1].vector3D.subtractReverse(quad.vertexPositions[0].vector3D);
         Vec3d vec3d1 = quad.vertexPositions[1].vector3D.subtractReverse(quad.vertexPositions[2].vector3D);
         Vec3d vec3d2 = vec3d1.crossProduct(vec3d).normalize();
-        final Vector4f normal = new Vector4f((float) vec3d2.xCoord, (float) vec3d2.yCoord, (float) vec3d2.zCoord, 1);
+        final Vector4f normal = new Vector4f((float) vec3d2.x, (float) vec3d2.y, (float) vec3d2.z, 1);
         matrix.transform(normal);
         final Vector4f pos = new Vector4f();
 
@@ -127,7 +127,7 @@ public class ModelTechne<M extends ModelBase> {
         for (int i = 0; i < vertexData.length; i++) {
             PositionTextureVertex vertex = quad.vertexPositions[i];
             vertexData[i] = new VertexData(format);
-            pos.set((float) vertex.vector3D.xCoord * scale, (float) vertex.vector3D.yCoord * scale, (float) vertex.vector3D.zCoord * scale, 1);
+            pos.set((float) vertex.vector3D.x * scale, (float) vertex.vector3D.y * scale, (float) vertex.vector3D.z * scale, 1);
             matrix.transform(pos);
             vertexData[i].setXYZ(pos.x, pos.y, pos.z);
             vertexData[i].setRGBA(1, 1, 1, 1);

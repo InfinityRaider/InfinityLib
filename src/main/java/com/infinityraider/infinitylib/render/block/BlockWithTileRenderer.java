@@ -25,7 +25,7 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
     }
 
     @Override
-    public void renderTileEntityAt(T te, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void renderTileEntityAt(T te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         
         // Fetch the tessellator instance.
         ITessellator tessellator = TessellatorVertexBuffer.getInstance();
@@ -50,7 +50,7 @@ public class BlockWithTileRenderer<B extends BlockBase & ICustomRenderedBlockWit
         tessellator.startDrawingQuads(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
 
         // Call the block renderer to render the block dynamically.
-        this.getRenderer().renderWorldBlockDynamic(tessellator, world, pos, x, y, z, this.getBlock(), te, partialTicks, destroyStage);
+        this.getRenderer().renderWorldBlockDynamic(tessellator, world, pos, x, y, z, this.getBlock(), te, partialTicks, destroyStage, alpha);
 
         // Finish tesselator drawing quads.
         tessellator.draw();

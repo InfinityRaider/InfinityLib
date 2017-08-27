@@ -28,7 +28,7 @@ public class MessageMouseButtonPressed extends MessageBase<MessageSwingArm> {
 
     @Override
     protected void processMessage(MessageContext ctx) {
-        EntityPlayer player = ctx.getServerHandler().playerEntity;
+        EntityPlayer player = ctx.getServerHandler().player;
         ItemStack stack = player.getHeldItem(left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
         if (stack != null && stack.getItem() instanceof IDualWieldedWeapon) {
             IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
@@ -39,7 +39,7 @@ public class MessageMouseButtonPressed extends MessageBase<MessageSwingArm> {
     @Override
     protected MessageSwingArm getReply(MessageContext ctx) {
         if(ctx.side == Side.SERVER) {
-            new MessageSwingArm(ctx.getServerHandler().playerEntity, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND).sendToAll();
+            new MessageSwingArm(ctx.getServerHandler().player, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND).sendToAll();
         }
         return null;
     }

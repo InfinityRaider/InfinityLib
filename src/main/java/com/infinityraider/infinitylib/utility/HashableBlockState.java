@@ -2,9 +2,10 @@
  */
 package com.infinityraider.infinitylib.utility;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
 import java.util.Objects;
+import java.util.Optional;
+
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;

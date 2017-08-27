@@ -18,7 +18,7 @@ public interface IServerProxyBase extends IProxyBase {
 
     @Override
     default World getWorldByDimensionId(int dimension) {
-        return FMLServerHandler.instance().getServer().worldServerForDimension(dimension);
+        return FMLServerHandler.instance().getServer().getWorld(dimension);
     }
 
     @Override

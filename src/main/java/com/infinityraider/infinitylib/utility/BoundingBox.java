@@ -1,8 +1,8 @@
 package com.infinityraider.infinitylib.utility;
 
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -211,7 +211,7 @@ public class BoundingBox implements Iterable<BlockPos> {
 
     @SideOnly(Side.CLIENT)
     public void renderWireFrame(Tessellator tessellator, Color color) {
-        VertexBuffer buffer = tessellator.getBuffer();
+        BufferBuilder buffer = tessellator.getBuffer();
         GlStateManager.disableTexture2D();
         GlStateManager.disableLighting();
         GL11.glTranslatef(minX(), minY(), minZ());

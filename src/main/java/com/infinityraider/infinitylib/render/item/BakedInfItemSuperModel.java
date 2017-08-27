@@ -2,10 +2,10 @@
  */
 package com.infinityraider.infinitylib.render.item;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
+import java.util.function.Function;
 import javax.vecmath.Matrix4f;
 
 import com.infinityraider.infinitylib.render.DefaultTransforms;
@@ -23,6 +23,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.commons.lang3.tuple.Pair;
 
 @SideOnly(Side.CLIENT)
 public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements IBakedModel, IItemOverriden {
@@ -76,8 +77,8 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
         return ItemCameraTransforms.DEFAULT;
     }
 
-    public Matrix4f handlePerspective(ItemCameraTransforms.TransformType transform) {
-        return this.transformer.apply(transform);
+    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType transform) {
+        return Pair.of(this, this.transformer.apply(transform));
     }
 
     @Override
