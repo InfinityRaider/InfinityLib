@@ -14,6 +14,11 @@ public interface IInventoryItemHandler extends IInventory, IItemHandler {
     }
 
     @Override
+    default int getSlotLimit(int slot) {
+        return this.getInventoryStackLimit();
+    }
+
+    @Override
     default ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
         if(!isValidSlot(slot) || stack == null || stack.getCount() <= 0) {
             return ItemStack.EMPTY;

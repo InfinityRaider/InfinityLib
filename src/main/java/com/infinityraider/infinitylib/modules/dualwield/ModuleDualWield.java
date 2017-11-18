@@ -234,7 +234,7 @@ public class ModuleDualWield extends Module {
                         if (target instanceof EntityLivingBase) {
                             stack.hitEntity((EntityLivingBase)target, player);
                             if (stack.getCount() <= 0) {
-                                player.setHeldItem(hand, null);
+                                player.setHeldItem(hand, ItemStack.EMPTY);
                                 ForgeEventFactory.onPlayerDestroyItem(player, stack, EnumHand.MAIN_HAND);
                             }
                         }

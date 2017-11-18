@@ -136,7 +136,7 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     @Override
     public void clear() {
         for(int i = 0; i < this.getSizeInventory(); i++) {
-            this.setInventorySlotContents(i, null);
+            this.setInventorySlotContents(i, ItemStack.EMPTY);
         }
     }
 
