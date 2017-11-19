@@ -29,51 +29,6 @@ public class InfinityLib extends InfinityMod {
     }
 
     @Override
-    public Object getModBlockRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModItemRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModBiomeRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModEnchantmentRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModEntityRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModPotionRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModPotionTypeRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModSoundRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModVillagerProfessionRegistry() {
-        return this;
-    }
-
-    @Override
     public void registerMessages(INetworkWrapper wrapper) {
         wrapper.registerMessage(MessageSetEntityDead.class);
         wrapper.registerMessage(MessageSyncTile.class);

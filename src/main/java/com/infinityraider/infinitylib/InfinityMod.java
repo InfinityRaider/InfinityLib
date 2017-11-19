@@ -63,69 +63,87 @@ public abstract class InfinityMod {
      * The object returned by this should have a field for each of its blocks
      * @return Block registry object or class
      */
-    public abstract Object getModBlockRegistry();
+    public Object getModBlockRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the Items, recipes, renderers, etc. for all the mod's items.
      * The object returned by this should have a field for each of its items
      * @return Item registry object or class
      */
-    public abstract Object getModItemRegistry();
+    public Object getModItemRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the Biomes for all the mod's biomes.
      * The object returned by this should have a field for each of its biomes
      * @return Biome registry object or class
      */
-    public abstract Object getModBiomeRegistry();
+    public Object getModBiomeRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the Enchantments for all the mod's enchantments.
      * The object returned by this should have a field for each of its enchantments
      * @return Enchantment registry object or class
      */
-    public abstract Object getModEnchantmentRegistry();
+    public  Object getModEnchantmentRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the Entities for all the mod's entities.
      * The object returned by this should have a field for each of its entities
      * @return Entity registry object or class
      */
-    public abstract Object getModEntityRegistry();
+    public  Object getModEntityRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the Potions for all the mod's potions.
      * The object returned by this should have a field for each of its Potions
      * @return Potion registry object or class
      */
-    public abstract Object getModPotionRegistry();
+    public Object getModPotionRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the PotionTypes for all the mod's potion type.
      * The object returned by this should have a field for each of its PotionTypes
      * @return PotionType registry object or class
      */
-    public abstract Object getModPotionTypeRegistry();
+    public Object getModPotionTypeRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the Sounds for all the mod's sounds.
      * The object returned by this should have a field for each of its SoundEvents
      * @return SoundEvent registry object or class
      */
-    public abstract Object getModSoundRegistry();
+    public Object getModSoundRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the VillagerProfessions for all the mod's villager professions.
      * The object returned by this should have a field for each of its VillagerProfessions
      * @return VillagerProfession registry object or class
      */
-    public abstract Object getModVillagerProfessionRegistry();
+    public Object getModVillagerProfessionRegistry() {
+        return null;
+    }
 
     /**
      * Register all messages added by this mod
      * @param wrapper NetworkWrapper instance to register messages to
      */
-    public abstract void registerMessages(INetworkWrapper wrapper);
+    public void registerMessages(INetworkWrapper wrapper) {}
 
 
     /**
