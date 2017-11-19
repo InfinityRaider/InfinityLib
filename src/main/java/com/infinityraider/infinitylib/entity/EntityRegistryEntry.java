@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.entity;
 
+import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.modules.entitytargeting.ModuleEntityTargeting;
 import com.infinityraider.infinitylib.utility.IToggleable;
@@ -136,7 +137,7 @@ public class EntityRegistryEntry<E extends Entity> extends EntityEntry implement
         if(doSpawn && EntityLiving.class.isAssignableFrom(this.getEntityClass())) {
             EntityRegistry.addSpawn((Class<? extends EntityLiving>) this.getEntityClass(), weight, min, max, type, biomes);
         }
-        registry.register(this);
+        InfinityLib.proxy.register(mod, registry, this, this.getName());
         this.callback.run();
     }
 

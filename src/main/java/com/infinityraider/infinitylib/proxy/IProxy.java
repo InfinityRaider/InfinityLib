@@ -15,6 +15,7 @@ import net.minecraft.item.Item;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionType;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -25,6 +26,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 public interface IProxy extends IProxyBase {
     default void registerBlocks(InfinityMod mod, IForgeRegistry<Block> registry) {
@@ -34,7 +36,7 @@ public interface IProxy extends IProxyBase {
                 mod.getLogger().debug("Registering Block: " + block.getInternalName());
                 String unlocalized = mod.getModId().toLowerCase() + ':' + block.getInternalName();
                 ((Block) block).setUnlocalizedName(unlocalized);
-                registry.register((Block) block);
+                register(mod, registry, (Block) block, block.getInternalName());
                 for (String tag : block.getOreTags()) {
                     OreDictionary.registerOre(tag, (Block) block);
                 }
@@ -58,7 +60,7 @@ public interface IProxy extends IProxyBase {
                 mod.getLogger().debug("Registering Item: " + item.getInternalName());
                 String unlocalized = mod.getModId().toLowerCase() + ':' + item.getInternalName();
                 ((Item) item).setUnlocalizedName(unlocalized);
-                registry.register((Item) item);
+                register(mod, registry, (Item) item, item.getInternalName());
                 for (String tag : item.getOreTags()) {
                     OreDictionary.registerOre(tag, (Item) item);
                 }
@@ -67,35 +69,47 @@ public interface IProxy extends IProxyBase {
     }
 
     default void registerBiomes(InfinityMod mod, IForgeRegistry<Biome> registry) {
-        ReflectionHelper.forEachIn(mod.getModBiomeRegistry(), Biome.class, registry::register);
+        ReflectionHelper.forEachIn(mod.getModBiomeRegistry(), Biome.class,
+                biome -> register(mod, registry, biome, biome.getBiomeName()));
     }
 
     default void registerEnchantments(InfinityMod mod, IForgeRegistry<Enchantment> registry) {
-        ReflectionHelper.forEachIn(mod.getModEnchantmentRegistry(), Enchantment.class, registry::register);
+        ReflectionHelper.forEachIn(mod.getModEnchantmentRegistry(), Enchantment.class,
+                enchantment -> register(mod, registry, enchantment, enchantment.getName()));
     }
 
     default void registerEntities(InfinityMod mod, IForgeRegistry<EntityEntry> registry) {
-        ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
-            if(entry.isEnabled()) {
-                entry.register(mod, registry);
-            }
-        });
+        ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class,
+                (EntityRegistryEntry entry) -> {
+                    if (entry.isEnabled()) {
+                        entry.register(mod, registry);
+                    }
+                });
     }
 
     default void registerPotions(InfinityMod mod, IForgeRegistry<Potion> registry) {
-        ReflectionHelper.forEachIn(mod.getModPotionRegistry(), Potion.class, registry::register);
+        ReflectionHelper.forEachIn(mod.getModPotionRegistry(), Potion.class,
+                potion -> register(mod, registry, potion, potion.getName()));
     }
 
     default void registerPotionTypes(InfinityMod mod, IForgeRegistry<PotionType> registry) {
-        ReflectionHelper.forEachIn(mod.getModPotionTypeRegistry(), PotionType.class, registry::register);
+        ReflectionHelper.forEachIn(mod.getModPotionTypeRegistry(), PotionType.class,
+                type -> register(mod, registry, type, type.getNamePrefixed("type")));
     }
 
     default void registerSounds(InfinityMod mod, IForgeRegistry<SoundEvent> registry) {
-        ReflectionHelper.forEachIn(mod.getModSoundRegistry(), SoundEvent.class, registry::register);
+        ReflectionHelper.forEachIn(mod.getModSoundRegistry(), SoundEvent.class,
+                sound -> register(mod, registry, sound, sound.getSoundName().getResourcePath()));
     }
 
     default void registerVillagerProfessions(InfinityMod mod, IForgeRegistry<VillagerRegistry.VillagerProfession> registry) {
-        ReflectionHelper.forEachIn(mod.getModVillagerProfessionRegistry(), VillagerRegistry.VillagerProfession.class, registry::register);
+        ReflectionHelper.forEachIn(mod.getModVillagerProfessionRegistry(), VillagerRegistry.VillagerProfession.class,
+                profession -> register(mod, registry, profession, profession.toString()));
+    }
+
+    default <T extends IForgeRegistryEntry<T>> void register(InfinityMod mod, IForgeRegistry<T> registry, T object, String name) {
+        object.setRegistryName(new ResourceLocation(mod.getModId().toLowerCase(), name.toLowerCase()));
+        registry.register(object);
     }
 
     @Override
