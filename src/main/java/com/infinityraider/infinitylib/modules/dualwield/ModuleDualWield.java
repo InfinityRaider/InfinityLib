@@ -168,7 +168,7 @@ public class ModuleDualWield extends Module {
                                     .filter(e -> e != player
                                             && e != targetEntity
                                             && !player.isOnSameTeam(e)
-                                            && player.getDistanceSqToEntity(e) < 9.0D)
+                                            && player.getDistanceSq(e) < 9.0D)
                                     .forEach(e -> {
                                         e.knockBack(player, 0.4F, (double) MathHelper.sin(player.rotationYaw * 0.017453292F), (double) (-MathHelper.cos(player.rotationYaw * 0.017453292F)));
                                         e.attackEntityFrom(DamageSource.causePlayerDamage(player), 1.0F);

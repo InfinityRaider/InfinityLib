@@ -176,9 +176,6 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     @Override
     public final void addVelocity(double x, double y, double z) {}
 
-    @Override
-    protected final void setBeenAttacked() {}
-
     public final boolean attackEntityFrom(DamageSource source, float amount) {
         return false;
     }
