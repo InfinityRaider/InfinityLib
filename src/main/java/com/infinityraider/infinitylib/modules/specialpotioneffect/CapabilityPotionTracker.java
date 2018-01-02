@@ -32,8 +32,8 @@ public class CapabilityPotionTracker implements ICapabilityImplementation<Entity
     }
 
     @Override
-    public PotionTracker onValueAddedToCarrier(PotionTracker value, EntityLivingBase carrier) {
-        return value.setEntity(carrier);
+    public PotionTracker createNewValue(EntityLivingBase carrier) {
+        return new PotionTracker(carrier);
     }
 
     @Override
@@ -49,11 +49,6 @@ public class CapabilityPotionTracker implements ICapabilityImplementation<Entity
     @Override
     public Class<PotionTracker> getCapabilityClass() {
         return PotionTracker.class;
-    }
-
-    @Override
-    public PotionTracker call() throws Exception {
-        return new PotionTracker();
     }
 
     public static PotionTracker getPotionTracker(EntityLivingBase entity) {
