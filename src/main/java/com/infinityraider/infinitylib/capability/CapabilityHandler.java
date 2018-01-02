@@ -31,12 +31,12 @@ public class CapabilityHandler {
             this.map.put(implementation.getCarrierClass(), new ArrayList<>());
         }
         this.map.get(implementation.getCarrierClass()).add(implementation);
-        CapabilityManager.INSTANCE.register(implementation.getCapabilityClass(), new CapabilityStorage(), implementation);
+        CapabilityManager.INSTANCE.register(implementation.getCapabilityClass(), new CapabilityStorage(), () -> null);
     }
 
     protected <T extends ICapabilityProvider, C extends ISerializable> void addCapability(
             AttachCapabilitiesEvent event, ICapabilityImplementation<T , C> implementation, T carrier) {
-        C value = implementation.onValueAddedToCarrier(implementation.getCapability().getDefaultInstance(), carrier);
+        C value = implementation.createNewValue(carrier);
         event.addCapability(implementation.getCapabilityKey(), new CapabilityProvider<>(implementation.getCapability(), value));
     }
 

@@ -11,19 +11,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class PotionTracker implements ISerializable {
-    private EntityLivingBase entity;
+    private final EntityLivingBase entity;
 
     private Set<Integer> activeEffects;
 
-    protected PotionTracker() {
+    protected PotionTracker(EntityLivingBase entity) {
         this.activeEffects = new HashSet<>();
-    }
-
-    public PotionTracker setEntity(EntityLivingBase entity) {
-        if(this.entity == null) {
-            this.entity = entity;
-        }
-        return this;
+        this.entity = entity;
     }
 
     public EntityLivingBase getEntity() {

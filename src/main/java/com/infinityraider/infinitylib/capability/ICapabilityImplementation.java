@@ -7,12 +7,12 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
 import java.util.concurrent.Callable;
 
-public interface ICapabilityImplementation<C extends ICapabilityProvider, V extends ISerializable> extends Callable<V> {
+public interface ICapabilityImplementation<C extends ICapabilityProvider, V extends ISerializable> {
     Capability<V> getCapability();
 
     boolean shouldApplyCapability(C carrier);
 
-    V onValueAddedToCarrier(V value, C carrier);
+    V createNewValue(C carrier);
 
     ResourceLocation getCapabilityKey();
 
