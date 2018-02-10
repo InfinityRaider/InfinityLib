@@ -33,15 +33,15 @@ public class DamageDealer {
         this.damageMultiplier = damageMultiplier;
     }
 
-    public void applyDamage(EntityLivingBase target, float amount) {
+    public void applyDamage(Entity target, float amount) {
         target.attackEntityFrom(this.createDamage(), amount * this.damageMultiplier);
     }
 
-    public void applyDamage(EntityLivingBase target, Entity source, float amount) {
+    public void applyDamage(Entity target, Entity source, float amount) {
         target.attackEntityFrom(this.createDamage(source), amount * this.damageMultiplier);
     }
 
-    public void applyDamage(EntityLivingBase target, Entity source, Entity cause, float amount) {
+    public void applyDamage(Entity target, Entity source, Entity cause, float amount) {
         target.attackEntityFrom(this.createDamage(source, cause), amount * this.damageMultiplier);
     }
 
