@@ -1,13 +1,28 @@
 package com.infinityraider.infinitylib.proxy;
 
 import com.infinityraider.infinitylib.InfinityMod;
+import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
+import com.infinityraider.infinitylib.block.IInfinityBlock;
+import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
 import com.infinityraider.infinitylib.handler.ConfigurationHandler;
+import com.infinityraider.infinitylib.item.IAutoRenderedItem;
+import com.infinityraider.infinitylib.item.ICustomRenderedItem;
+import com.infinityraider.infinitylib.item.IInfinityItem;
+import com.infinityraider.infinitylib.item.IItemWithModel;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
-import com.infinityraider.infinitylib.utility.ModHelper;
+import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
+import com.infinityraider.infinitylib.render.item.ItemRendererRegistry;
+import com.infinityraider.infinitylib.utility.ReflectionHelper;
+import net.minecraft.block.Block;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.item.Item;
+import net.minecraft.util.Tuple;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -32,13 +47,48 @@ public class ClientProxy implements IProxy, IClientProxyBase {
     }
 
     @Override
-    public void registerEntities(InfinityMod mod) {
-        ModHelper.getInstance().registerEntitiesClient(mod);
+    public void registerBlocks(InfinityMod mod, IForgeRegistry<Block> registry) {
+        //blocks
+        IProxy.super.registerBlocks(mod, registry);
+        //renderers
+        ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
+            if (block.isEnabled() && (block instanceof ICustomRenderedBlock)) {
+                BlockRendererRegistry.getInstance().registerCustomBlockRenderer((ICustomRenderedBlock) block);
+            }
+        });
+        for (ICustomRenderedBlock block : BlockRendererRegistry.getInstance().getRegisteredBlocks()) {
+            mod.getLogger().debug("registered custom renderer for " + block.getBlockModelResourceLocation());
+        }
     }
 
     @Override
-    public void registerRenderers(InfinityMod mod) {
-        ModHelper.getInstance().initRenderers(mod);
+    public void registerItems(InfinityMod mod, IForgeRegistry<Item> registry) {
+        //items
+        IProxy.super.registerItems(mod, registry);
+        //renderers
+        ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
+            if ((item instanceof Item) && item.isEnabled()) {
+                if (item instanceof IItemWithModel) {
+                    for (Tuple<Integer, ModelResourceLocation> entry : ((IItemWithModel) item).getModelDefinitions()) {
+                        ModelLoader.setCustomModelResourceLocation((Item) item, entry.getFirst(), entry.getSecond());
+                    }
+                }
+                if (item instanceof IAutoRenderedItem) {
+                    ItemRendererRegistry.getInstance().registerCustomItemRendererAuto((Item & IAutoRenderedItem) item);
+                } else if (item instanceof ICustomRenderedItem) {
+                    ItemRendererRegistry.getInstance().registerCustomItemRenderer((Item) item, ((ICustomRenderedItem) item).getRenderer());
+                }
+            }
+        });
+    }
+
+    @Override
+    public void registerEntities(InfinityMod mod) {
+        ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
+            if(entry.isEnabled()) {
+                entry.registerClient(mod);
+            }
+        });
     }
 
     @Override

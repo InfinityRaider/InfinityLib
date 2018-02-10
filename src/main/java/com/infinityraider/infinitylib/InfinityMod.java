@@ -5,13 +5,23 @@ import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.utility.InfinityLogger;
 import com.infinityraider.infinitylib.utility.ModEventHandlerHack;
-import com.infinityraider.infinitylib.utility.ModHelper;
+import net.minecraft.block.Block;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
@@ -26,6 +36,7 @@ public abstract class InfinityMod {
     public InfinityMod() {
         this.logger = new InfinityLogger(this);
         this.networkWrapper = new NetworkWrapper(this);
+        MinecraftForge.EVENT_BUS.register(this);
         ModEventHandlerHack.doHack(this);   //you ain't seen nothing
     }
 
@@ -52,28 +63,139 @@ public abstract class InfinityMod {
      * The object returned by this should have a field for each of its blocks
      * @return Block registry object or class
      */
-    public abstract Object getModBlockRegistry();
+    public Object getModBlockRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the Items, recipes, renderers, etc. for all the mod's items.
      * The object returned by this should have a field for each of its items
      * @return Item registry object or class
      */
-    public abstract Object getModItemRegistry();
+    public Object getModItemRegistry() {
+        return null;
+    }
+
+    /**
+     * Used to register the Biomes for all the mod's biomes.
+     * The object returned by this should have a field for each of its biomes
+     * @return Biome registry object or class
+     */
+    public Object getModBiomeRegistry() {
+        return null;
+    }
+
+    /**
+     * Used to register the Enchantments for all the mod's enchantments.
+     * The object returned by this should have a field for each of its enchantments
+     * @return Enchantment registry object or class
+     */
+    public  Object getModEnchantmentRegistry() {
+        return null;
+    }
 
     /**
      * Used to register the Entities for all the mod's entities.
      * The object returned by this should have a field for each of its entities
      * @return Entity registry object or class
      */
-    public abstract Object getModEntityRegistry();
+    public  Object getModEntityRegistry() {
+        return null;
+    }
+
+    /**
+     * Used to register the Potions for all the mod's potions.
+     * The object returned by this should have a field for each of its Potions
+     * @return Potion registry object or class
+     */
+    public Object getModPotionRegistry() {
+        return null;
+    }
+
+    /**
+     * Used to register the PotionTypes for all the mod's potion type.
+     * The object returned by this should have a field for each of its PotionTypes
+     * @return PotionType registry object or class
+     */
+    public Object getModPotionTypeRegistry() {
+        return null;
+    }
+
+    /**
+     * Used to register the Sounds for all the mod's sounds.
+     * The object returned by this should have a field for each of its SoundEvents
+     * @return SoundEvent registry object or class
+     */
+    public Object getModSoundRegistry() {
+        return null;
+    }
+
+    /**
+     * Used to register the VillagerProfessions for all the mod's villager professions.
+     * The object returned by this should have a field for each of its VillagerProfessions
+     * @return VillagerProfession registry object or class
+     */
+    public Object getModVillagerProfessionRegistry() {
+        return null;
+    }
 
     /**
      * Register all messages added by this mod
      * @param wrapper NetworkWrapper instance to register messages to
      */
     public abstract void registerMessages(INetworkWrapper wrapper);
+    /**
+     * ----------------------------
+     * Registering events
+     * ----------------------------
+     */
 
+    @SubscribeEvent
+    public final void registerBlocks(RegistryEvent.Register<Block> event) {
+        InfinityLib.proxy.registerBlocks(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerItems(RegistryEvent.Register<Item> event) {
+        InfinityLib.proxy.registerItems(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerBiomes(RegistryEvent.Register<Biome> event) {
+        InfinityLib.proxy.registerBiomes(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerEnchantments(RegistryEvent.Register<Enchantment> event) {
+        InfinityLib.proxy.registerEnchantments(this, event.getRegistry());
+    }
+
+    /*
+    @SubscribeEvent
+    public final void registerEntities(RegistryEvent.Register<EntityEntry> event) {
+        InfinityLib.proxy.registerEntities(this, event.getRegistry());
+    }
+    */
+
+    @SubscribeEvent
+    public final void registerPotions(RegistryEvent.Register<Potion> event) {
+        InfinityLib.proxy.registerPotions(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerPotionTypes(RegistryEvent.Register<PotionType> event) {
+        InfinityLib.proxy.registerPotionTypes(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerSounds(RegistryEvent.Register<SoundEvent> event) {
+        InfinityLib.proxy.registerSounds(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerVillagerProfessions(RegistryEvent.Register<VillagerRegistry.VillagerProfession> event) {
+        InfinityLib.proxy.registerVillagerProfessions(this, event.getRegistry());
+    }
 
     /**
      * ----------------------------
@@ -87,10 +209,8 @@ public abstract class InfinityMod {
         proxy().initConfiguration(event);
         proxy().preInitStart(event);
         proxy().activateRequiredModules();
-        ModHelper.getInstance().RegisterBlocksAndItems(this);
-        InfinityLib.proxy.registerRenderers(this);
         InfinityLib.proxy.registerEntities(this);
-        proxy().registerSounds();
+        InfinityLib.proxy.registerRecipes(this);
         proxy().preInitEnd(event);
         this.getLogger().debug("Pre-Initialization Complete");
     }
@@ -102,7 +222,6 @@ public abstract class InfinityMod {
         proxy().registerCapabilities();
         proxy().registerEventHandlers();
         registerMessages(this.getNetworkWrapper());
-        ModHelper.getInstance().registerRecipes(this);
         proxy().initEnd(event);
         this.getLogger().debug("Initialization Complete");
     }

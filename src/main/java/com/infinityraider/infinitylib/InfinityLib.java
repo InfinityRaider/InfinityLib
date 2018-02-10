@@ -29,21 +29,6 @@ public class InfinityLib extends InfinityMod {
     }
 
     @Override
-    public Object getModBlockRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModItemRegistry() {
-        return this;
-    }
-
-    @Override
-    public Object getModEntityRegistry() {
-        return this;
-    }
-
-    @Override
     public void registerMessages(INetworkWrapper wrapper) {
         wrapper.registerMessage(MessageSetEntityDead.class);
         wrapper.registerMessage(MessageSyncTile.class);
