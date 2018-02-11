@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.render;
 
-import com.infinityraider.infinitylib.handler.ConfigurationHandler;
+import com.infinityraider.infinitylib.config.ModConfiguration;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
 import net.minecraft.block.Block;
@@ -148,7 +148,7 @@ public abstract class RenderUtilBase {
      * green line along y axis and blue line along z axis.
      */
     public static final void renderCoordinateSystemDebug() {
-        if(ConfigurationHandler.getInstance().debug) {
+        if(ModConfiguration.getInstance().debug()) {
             Tessellator tessellator = Tessellator.getInstance();
             VertexBuffer buffer = tessellator.getBuffer();
             GlStateManager.disableTexture2D();

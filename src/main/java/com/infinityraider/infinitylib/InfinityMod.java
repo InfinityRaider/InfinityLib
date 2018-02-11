@@ -1,5 +1,7 @@
 package com.infinityraider.infinitylib;
 
+import com.infinityraider.infinitylib.config.IModConfiguration;
+import com.infinityraider.infinitylib.config.InfinityConfigurationHandler;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
@@ -32,10 +34,12 @@ import net.minecraftforge.fml.relauncher.Side;
 public abstract class InfinityMod {
     private final InfinityLogger logger;
     private final INetworkWrapper networkWrapper;
+    private final InfinityConfigurationHandler configurationHandler;
 
     public InfinityMod() {
         this.logger = new InfinityLogger(this);
         this.networkWrapper = new NetworkWrapper(this);
+        this.configurationHandler = new InfinityConfigurationHandler(this);
         MinecraftForge.EVENT_BUS.register(this);
         ModEventHandlerHack.doHack(this);   //you ain't seen nothing
         this.initializeAPI();
@@ -49,6 +53,10 @@ public abstract class InfinityMod {
         return this.networkWrapper;
     }
 
+    public final InfinityConfigurationHandler getConfigurationHandler() {
+        return this.configurationHandler;
+    }
+
     /**
      * @return The sided proxy object for this mod
      */
@@ -58,6 +66,8 @@ public abstract class InfinityMod {
      * @return The mod ID of the mod
      */
     public abstract String getModId();
+
+    public abstract IModConfiguration getConfiguration();
 
     /**
      * Used to register the Blocks, recipes, renderers, TileEntities, etc. for all the mod's blocks.
@@ -213,7 +223,7 @@ public abstract class InfinityMod {
     @Mod.EventHandler
     public final void preInit(FMLPreInitializationEvent event) {
         this.getLogger().debug("Starting Pre-Initialization");
-        proxy().initConfiguration(event);
+        InfinityLib.proxy.initModConfiguration(this.getConfigurationHandler(), event);
         proxy().preInitStart(event);
         proxy().activateRequiredModules();
         InfinityLib.proxy.registerEntities(this);

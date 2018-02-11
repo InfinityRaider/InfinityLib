@@ -3,8 +3,8 @@ package com.infinityraider.infinitylib.proxy;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
+import com.infinityraider.infinitylib.config.InfinityConfigurationHandler;
 import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
-import com.infinityraider.infinitylib.handler.ConfigurationHandler;
 import com.infinityraider.infinitylib.item.IAutoRenderedItem;
 import com.infinityraider.infinitylib.item.ICustomRenderedItem;
 import com.infinityraider.infinitylib.item.IInfinityItem;
@@ -41,9 +41,9 @@ public class ClientProxy implements IProxy, IClientProxyBase {
     }
 
     @Override
-    public void initConfiguration(FMLPreInitializationEvent event) {
-        IProxy.super.initConfiguration(event);
-        ConfigurationHandler.getInstance().initClientConfigs(event);
+    public void initModConfiguration(InfinityConfigurationHandler handler, FMLPreInitializationEvent event) {
+        IProxy.super.initModConfiguration(handler, event);
+        handler.initializeConfigurationClient(event);
     }
 
     @Override

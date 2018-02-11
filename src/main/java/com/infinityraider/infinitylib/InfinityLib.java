@@ -1,5 +1,7 @@
 package com.infinityraider.infinitylib;
 
+import com.infinityraider.infinitylib.config.IModConfiguration;
+import com.infinityraider.infinitylib.config.ModConfiguration;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.MessageSetEntityDead;
@@ -26,6 +28,11 @@ public class InfinityLib extends InfinityMod {
     @Override
     public String getModId() {
         return Reference.MOD_ID;
+    }
+
+    @Override
+    public IModConfiguration getConfiguration() {
+        return ModConfiguration.getInstance();
     }
 
     @Override

@@ -3,8 +3,8 @@ package com.infinityraider.infinitylib.proxy;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.IInfinityBlockWithTile;
+import com.infinityraider.infinitylib.config.InfinityConfigurationHandler;
 import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
-import com.infinityraider.infinitylib.handler.ConfigurationHandler;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
@@ -128,9 +128,8 @@ public interface IProxy extends IProxyBase {
         Module.getActiveModules().forEach(Module::postInit);
     }
 
-    @Override
-    default void initConfiguration(FMLPreInitializationEvent event) {
-        ConfigurationHandler.getInstance().init(event);
+    default void initModConfiguration(InfinityConfigurationHandler handler, FMLPreInitializationEvent event) {
+        handler.initializeConfiguration(event);
     }
 
     @Override
