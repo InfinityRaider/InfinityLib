@@ -14,6 +14,8 @@ public class DamageDealer {
     private float damageMultiplier;
 
     private Function<EntityLivingBase, ITextComponent> deathMessenger;
+    private IDamageCallbackPre damageCallbackPre;
+    private IDamageCallbackPost damageCallbackPost;
 
     private boolean projectile;
     private boolean explosion;
@@ -33,16 +35,29 @@ public class DamageDealer {
         this.damageMultiplier = damageMultiplier;
     }
 
-    public void applyDamage(Entity target, float amount) {
-        target.attackEntityFrom(this.createDamage(), amount * this.damageMultiplier);
+    public void apply(Entity target, float amount) {
+        this.apply(target, this.createDamage(), amount);
     }
 
-    public void applyDamage(Entity target, Entity source, float amount) {
-        target.attackEntityFrom(this.createDamage(source), amount * this.damageMultiplier);
+    public void apply(Entity target, Entity source, float amount) {
+        this.apply(target, this.createDamage(source), amount);
     }
 
-    public void applyDamage(Entity target, Entity source, Entity cause, float amount) {
-        target.attackEntityFrom(this.createDamage(source, cause), amount * this.damageMultiplier);
+    public void apply(Entity target, Entity source, Entity cause, float amount) {
+        this.apply(target, this.createDamage(source, cause), amount);
+    }
+
+    private void apply(Entity target, InfinityDamageSource dmg, float amount) {
+        amount = amount * this.damageMultiplier;
+        if(this.damageCallbackPre != null) {
+            amount = this.damageCallbackPre.preDamage(target, dmg, amount);
+        }
+        if(amount > 0) {
+            target.attackEntityFrom(dmg, amount);
+        }
+        if(this.damageCallbackPost != null) {
+            this.damageCallbackPost.postDamage(target, dmg, amount);
+        }
     }
 
     public String getName() {
@@ -51,6 +66,16 @@ public class DamageDealer {
 
     public DamageDealer setDamageMultiplier(float damageMultiplier) {
         this.damageMultiplier = damageMultiplier;
+        return this;
+    }
+
+    public DamageDealer setDamageCallback(IDamageCallbackPre damageCallback) {
+        this.damageCallbackPre = damageCallback;
+        return this;
+    }
+
+    public DamageDealer setDamageCallback(IDamageCallbackPost damageCallback) {
+        this.damageCallbackPost = damageCallback;
         return this;
     }
 
@@ -99,7 +124,7 @@ public class DamageDealer {
         return this;
     }
 
-    public InfinityDamageSource createDamage(Entity source) {
+    private InfinityDamageSource createDamage(Entity source) {
         if(source instanceof EntityThrowable) {
             return this.createDamage(source, (((EntityThrowable) source).getThrower()));
         } else {
@@ -107,13 +132,13 @@ public class DamageDealer {
         }
     }
 
-    public InfinityDamageSource createDamage(Entity source, Entity cause) {
+    private InfinityDamageSource createDamage(Entity source, Entity cause) {
         InfinityDamageSource dmg = this.createDamage();
         return dmg.setSource(source).setCause(cause);
     }
 
-    public InfinityDamageSource createDamage() {
-        InfinityDamageSource dmg = new InfinityDamageSource(this.getName()).setDeathMessager(this.deathMessenger);
+    private InfinityDamageSource createDamage() {
+        InfinityDamageSource dmg = new InfinityDamageSource(this.getName()).setDeathMessenger(this.deathMessenger);
         if(this.projectile) {
             dmg.setProjectile();
         }
@@ -141,26 +166,26 @@ public class DamageDealer {
         return dmg;
     }
 
-    private static class InfinityDamageSource extends DamageSource {
+    public static class InfinityDamageSource extends DamageSource {
         private Entity source;
         private Entity cause;
         private Function<EntityLivingBase, ITextComponent> deathMessenger;
 
-        public InfinityDamageSource(String damageTypeIn) {
+        private InfinityDamageSource(String damageTypeIn) {
             super(damageTypeIn);
         }
 
-        public InfinityDamageSource setSource(Entity source) {
+        private InfinityDamageSource setSource(Entity source) {
             this.source = source;
             return this;
         }
 
-        public InfinityDamageSource setCause(Entity cause) {
+        private InfinityDamageSource setCause(Entity cause) {
             this.cause = cause;
             return this;
         }
 
-        public InfinityDamageSource setDeathMessager(Function<EntityLivingBase, ITextComponent> deathMessenger) {
+        private InfinityDamageSource setDeathMessenger(Function<EntityLivingBase, ITextComponent> deathMessenger) {
             this.deathMessenger = deathMessenger;
             return this;
         }
@@ -181,5 +206,15 @@ public class DamageDealer {
         public ITextComponent getDeathMessage(EntityLivingBase target) {
             return this.deathMessenger == null ? super.getDeathMessage(target) : deathMessenger.apply(target);
         }
+    }
+
+    @FunctionalInterface
+    public interface IDamageCallbackPre {
+        float preDamage(Entity target, InfinityDamageSource dmg, float amount);
+    }
+
+    @FunctionalInterface
+    public interface IDamageCallbackPost {
+        void postDamage(Entity target, InfinityDamageSource dmg, float amount);
     }
 }
