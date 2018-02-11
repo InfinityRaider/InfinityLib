@@ -38,6 +38,7 @@ public abstract class InfinityMod {
         this.networkWrapper = new NetworkWrapper(this);
         MinecraftForge.EVENT_BUS.register(this);
         ModEventHandlerHack.doHack(this);   //you ain't seen nothing
+        this.initializeAPI();
     }
 
     public final InfinityLogger getLogger() {
@@ -144,6 +145,12 @@ public abstract class InfinityMod {
      * @param wrapper NetworkWrapper instance to register messages to
      */
     public abstract void registerMessages(INetworkWrapper wrapper);
+
+    /**
+     * Use to initialize the mod API
+     */
+    public void initializeAPI() {}
+
     /**
      * ----------------------------
      * Registering events
