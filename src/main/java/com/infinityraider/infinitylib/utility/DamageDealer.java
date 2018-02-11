@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
@@ -39,22 +40,36 @@ public class DamageDealer {
         this.apply(target, this.createDamage(), amount);
     }
 
+    public void apply(Entity target, float amount, Vec3d dir) {
+        this.apply(target, this.createDamage().setDirection(dir), amount);
+    }
+
     public void apply(Entity target, Entity source, float amount) {
         this.apply(target, this.createDamage(source), amount);
+    }
+
+    public void apply(Entity target, Entity source, float amount, Vec3d dir) {
+        this.apply(target, this.createDamage(source).setDirection(dir), amount);
     }
 
     public void apply(Entity target, Entity source, Entity cause, float amount) {
         this.apply(target, this.createDamage(source, cause), amount);
     }
 
-    private void apply(Entity target, InfinityDamageSource dmg, float amount) {
+    public void apply(Entity target, Entity source, Entity cause, float amount, Vec3d dir) {
+        this.apply(target, this.createDamage(source, cause).setDirection(dir), amount);
+    }
+
+    protected void apply(Entity target, InfinityDamageSource dmg, float amount) {
+        //apply multiplier
         amount = amount * this.damageMultiplier;
+        //pre damage callback
         if(this.damageCallbackPre != null) {
             amount = this.damageCallbackPre.preDamage(target, dmg, amount);
         }
-        if(amount > 0) {
-            target.attackEntityFrom(dmg, amount);
-        }
+        //apply damage
+        dmg.apply(target, amount);
+        //post damage callback
         if(this.damageCallbackPost != null) {
             this.damageCallbackPost.postDamage(target, dmg, amount);
         }
@@ -124,7 +139,7 @@ public class DamageDealer {
         return this;
     }
 
-    private InfinityDamageSource createDamage(Entity source) {
+    protected InfinityDamageSource createDamage(Entity source) {
         if(source instanceof EntityThrowable) {
             return this.createDamage(source, (((EntityThrowable) source).getThrower()));
         } else {
@@ -132,35 +147,41 @@ public class DamageDealer {
         }
     }
 
-    private InfinityDamageSource createDamage(Entity source, Entity cause) {
+    protected InfinityDamageSource createDamage(Entity source, Entity cause) {
         InfinityDamageSource dmg = this.createDamage();
         return dmg.setSource(source).setCause(cause);
     }
 
-    private InfinityDamageSource createDamage() {
-        InfinityDamageSource dmg = new InfinityDamageSource(this.getName()).setDeathMessenger(this.deathMessenger);
-        if(this.projectile) {
+    protected InfinityDamageSource createDamage() {
+        return applySettings(new InfinityDamageSource(this.getName()));
+    }
+
+    protected InfinityDamageSource applySettings(InfinityDamageSource dmg) {
+        if(this.deathMessenger != null) {
+            dmg.setDeathMessenger(this.deathMessenger);
+        }
+        if (this.projectile) {
             dmg.setProjectile();
         }
-        if(this.explosion) {
+        if (this.explosion) {
             dmg.setExplosion();
         }
-        if(this.bypassArmor) {
+        if (this.bypassArmor) {
             dmg.setDamageBypassesArmor();
         }
-        if(this.hurtCreative) {
+        if (this.hurtCreative) {
             dmg.setDamageAllowedInCreativeMode();
         }
-        if(this.absolute) {
+        if (this.absolute) {
             dmg.setDamageIsAbsolute();
         }
-        if(this.scalable) {
+        if (this.scalable) {
             dmg.setDifficultyScaled();
         }
-        if(this.fireDamage) {
+        if (this.fireDamage) {
             dmg.setFireDamage();
         }
-        if(this.magicDamage) {
+        if (this.magicDamage) {
             dmg.setMagicDamage();
         }
         return dmg;
@@ -169,23 +190,29 @@ public class DamageDealer {
     public static class InfinityDamageSource extends DamageSource {
         private Entity source;
         private Entity cause;
+        private Vec3d direction;
         private Function<EntityLivingBase, ITextComponent> deathMessenger;
 
-        private InfinityDamageSource(String damageTypeIn) {
+        protected InfinityDamageSource(String damageTypeIn) {
             super(damageTypeIn);
         }
 
-        private InfinityDamageSource setSource(Entity source) {
+        public InfinityDamageSource setSource(Entity source) {
             this.source = source;
             return this;
         }
 
-        private InfinityDamageSource setCause(Entity cause) {
+        public InfinityDamageSource setCause(Entity cause) {
             this.cause = cause;
             return this;
         }
 
-        private InfinityDamageSource setDeathMessenger(Function<EntityLivingBase, ITextComponent> deathMessenger) {
+        public InfinityDamageSource setDirection(Vec3d direction) {
+            this.direction = direction;
+            return this;
+        }
+
+        public InfinityDamageSource setDeathMessenger(Function<EntityLivingBase, ITextComponent> deathMessenger) {
             this.deathMessenger = deathMessenger;
             return this;
         }
@@ -202,9 +229,19 @@ public class DamageDealer {
             return this.cause == null ? super.getEntity() : this.cause;
         }
 
+        public Vec3d getDirection() {
+            return this.direction;
+        }
+
         @Override
         public ITextComponent getDeathMessage(EntityLivingBase target) {
             return this.deathMessenger == null ? super.getDeathMessage(target) : deathMessenger.apply(target);
+        }
+
+        public void apply(Entity target, float amount) {
+            if(amount > 0) {
+                target.attackEntityFrom(this, amount);
+            }
         }
     }
 
