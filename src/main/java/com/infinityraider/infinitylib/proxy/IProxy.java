@@ -130,6 +130,7 @@ public interface IProxy extends IProxyBase {
 
     default void initModConfiguration(InfinityConfigurationHandler handler, FMLPreInitializationEvent event) {
         handler.initializeConfiguration(event);
+        this.registerEventHandler(handler);
     }
 
     @Override
