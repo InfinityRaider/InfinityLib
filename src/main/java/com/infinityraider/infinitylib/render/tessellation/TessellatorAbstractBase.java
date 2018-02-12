@@ -138,8 +138,110 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
+    public void addScaledVertexWithUV(float x, float y, float z, float u, float v) {
+        addVertexWithUV(x * Constants.UNIT, y * Constants.UNIT, z * Constants.UNIT, u * Constants.UNIT, v * Constants.UNIT);
+    }
+
+    @Override
     public void addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v) {
         addVertexWithUV(x * Constants.UNIT, y * Constants.UNIT, z * Constants.UNIT, icon, u, v);
+    }
+
+    @Override
+    public void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, float offset) {
+        float x1, x2, x3, x4;
+        float y1, y2, y3, y4;
+        float z1, z2, z3, z4;
+        float u1, u2, u3, u4;
+        float v1, v2, v3, v4;
+        final int uv = 17;
+        switch (face) {
+            case UP: {
+                x1 = x4 = maxX;
+                x2 = x3 = minX;
+                z1 = z2 = minY;
+                z3 = z4 = maxY;
+                y1 = y2 = y3 = y4 = offset;
+                u2 = u3 = (minX % uv);
+                u1 = u4 = (maxX % uv);
+                v3 = v4 = maxY % uv;
+                v1 = v2 = minY % uv;
+                break;
+            }
+            case DOWN: {
+                x1 = x2 = maxX;
+                x3 = x4 = minX;
+                z1 = z4 = minY;
+                z2 = z3 = maxY;
+                y1 = y2 = y3 = y4 = offset;
+                u1 = u2 = maxX % uv;
+                u3 = u4 = minX % uv;
+                v1 = v4 = 16 - (minY % uv);
+                v2 = v3 = 16 - (maxY % uv);
+                break;
+            }
+            case WEST: {
+                z1 = z2 = maxX;
+                z3 = z4 = minX;
+                y1 = y4 = minY;
+                y2 = y3 = maxY;
+                x1 = x2 = x3 = x4 = offset;
+                u1 = u2 = maxX % uv;
+                u3 = u4 = minX % uv;
+                v1 = v4 = (16 - minY % uv);
+                v2 = v3 = (16 - maxY % uv);
+                break;
+            }
+            case EAST: {
+                z1 = z2 = minX;
+                z3 = z4 = maxX;
+                y1 = y4 = minY;
+                y2 = y3 = maxY;
+                x1 = x2 = x3 = x4 = offset;
+                u1 = u2 = (16 - minX % uv);
+                u3 = u4 = (16 - maxX % uv);
+                v1 = v4 = (16 - minY % uv);
+                v2 = v3 = (16 - maxY % uv);
+                break;
+            }
+            case NORTH: {
+                x1 = x2 = maxX;
+                x3 = x4 = minX;
+                y1 = y4 = maxY;
+                y2 = y3 = minY;
+                z1 = z2 = z3 = z4 = offset;
+                u1 = u2 = (16 - maxX % uv);
+                u3 = u4 = (16 - minX % uv);
+                v1 = v4 = (16 - maxY % uv);
+                v2 = v3 = (16 - minY % uv);
+                break;
+            }
+            case SOUTH: {
+                x1 = x2 = maxX;
+                x3 = x4 = minX;
+                y1 = y4 = minY;
+                y2 = y3 = maxY;
+                z1 = z2 = z3 = z4 = offset;
+                u1 = u2 = maxX % uv;
+                u3 = u4 = minX % uv;
+                v1 = v4 = (16 - minY % uv);
+                v2 = v3 = (16 - maxY % uv);
+                break;
+            }
+            default:
+                return;
+        }
+        float rPrev = this.r;
+        float gPrev = this.g;
+        float bPrev = this.b;
+        float aPrev = this.a;
+        this.applyColorMultiplier(face);
+        this.setNormal(face.getFrontOffsetX(), face.getFrontOffsetY(), face.getFrontOffsetZ());
+        addScaledVertexWithUV(x1, y1, z1, u1, v1);
+        addScaledVertexWithUV(x2, y2, z2, u2, v2);
+        addScaledVertexWithUV(x3, y3, z3, u3, v3);
+        addScaledVertexWithUV(x4, y4, z4, u4, v4);
+        this.setColorRGBA(rPrev, gPrev, bPrev, aPrev);
     }
 
     @Override
@@ -240,32 +342,39 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
-    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
-        EnumFacing opposite;
-        switch (face) {
-            case NORTH:
-                opposite = EnumFacing.SOUTH;
-                break;
-            case SOUTH:
-                opposite = EnumFacing.NORTH;
-                break;
-            case EAST:
-                opposite = EnumFacing.WEST;
-                break;
-            case WEST:
-                opposite = EnumFacing.EAST;
-                break;
-            case UP:
-                opposite = EnumFacing.DOWN;
-                break;
-            case DOWN:
-                opposite = EnumFacing.UP;
-                break;
-            default:
-                return;
+    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, float offset) {
+        if(face == null) {
+            return;
         }
+        EnumFacing opposite = face.getOpposite();
+        this.drawScaledFace(minX, minY, maxX, maxY, face, offset);
+        this.drawScaledFace(minX, minY, maxX, maxY, opposite, offset);
+    }
+
+    @Override
+    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
+        if(face == null) {
+            return;
+        }
+        EnumFacing opposite = face.getOpposite();
         this.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset);
         this.drawScaledFace(minX, minY, maxX, maxY, opposite, icon, offset);
+    }
+
+    @Override
+    public void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+        //bottom
+        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.DOWN, minY);
+        //top
+        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.UP, maxY);
+        //north
+        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.NORTH, minZ);
+        //south
+        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.SOUTH, maxZ);
+        //west
+        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.WEST, minX);
+        //east
+        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.EAST, maxX);
     }
 
     @Override
@@ -285,9 +394,35 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
+    public void drawScaledCylinder(float x, float y, float z, float r, float h,int quads) {
+        this.drawScaledCylinderOutside(x, y, z, r, h, quads);
+        this.drawScaledCylinderInside(x, y, z, r, h, quads);
+    }
+
+    @Override
     public void drawScaledCylinder(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads) {
         this.drawScaledCylinderOutside(x, y, z, r, h, texture, quads);
         this.drawScaledCylinderInside(x, y, z, r, h, texture, quads);
+    }
+
+    @Override
+    public void drawScaledCylinderOutside(float x, float y, float z, float r, float h, int quads) {
+        float prevX = x + r;
+        float prevZ = z;
+        float prevU = 0;
+        for(int i = 0; i < quads; i ++) {
+            double angle = ((i+1)%quads)*2*Math.PI/quads;
+            float newX = (float) (r*Math.cos(angle)) + x;
+            float newZ = (float) (r*Math.sin(angle)) + z;
+            float newU = Constants.WHOLE*((float) (i+1))/quads;
+            this.addScaledVertexWithUV(prevX, 0, prevZ, prevU, 16);
+            this.addScaledVertexWithUV(prevX, h, prevZ, prevU, 0);
+            this.addScaledVertexWithUV(newX, h, newZ, newU, 0);
+            this.addScaledVertexWithUV(newX, 0, newZ, newU, 16);
+            prevX = newX;
+            prevZ = newZ;
+            prevU = newU;
+        }
     }
 
     @Override
@@ -310,6 +445,27 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         }
     }
 
+    @Override
+    public void drawScaledCylinderInside(float x, float y, float z, float r, float h, int quads) {
+        float prevX = x + r;
+        float prevZ = z;
+        float prevU = 0;
+        for(int i = 0; i < quads; i ++) {
+            double angle = ((i+1)%quads)*2*Math.PI/quads;
+            float newX = (float) (r*Math.cos(angle)) + x;
+            float newZ = (float) (r*Math.sin(angle)) + z;
+            float newU = Constants.WHOLE*((float) (i+1))/quads;
+            this.addScaledVertexWithUV(prevX, 0, prevZ, prevU, 16);
+            this.addScaledVertexWithUV(newX, 0, newZ, newU, 16);
+            this.addScaledVertexWithUV(newX, h, newZ, newU, 0);
+            this.addScaledVertexWithUV(prevX, h, prevZ, prevU, 0);
+            prevX = newX;
+            prevZ = newZ;
+            prevU = newU;
+        }
+    }
+
+    @Override
     public void drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads) {
         float prevX = x + r;
         float prevZ = z;
@@ -499,5 +655,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 break;
         }
     }
+
+
 
 }

@@ -90,6 +90,17 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param x the x-coordinate for the vertex
      * @param y the y-coordinate for the vertex
      * @param z the z-coordinate for the vertex
+     * @param u u value for the vertex
+     * @param v v value for the vertex
+     */
+    void addScaledVertexWithUV(float x, float y, float z, float u, float v);
+
+    /**
+     * Adds a vertex scaled by 1/16th of a block
+     *
+     * @param x the x-coordinate for the vertex
+     * @param y the y-coordinate for the vertex
+     * @param z the z-coordinate for the vertex
      * @param icon the icon
      * @param u u value for the vertex
      * @param v v value for the vertex
@@ -105,10 +116,36 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param maxX maximum 2D x-coordinate of the face
      * @param maxY maximum 2D y-coordinate of the face
      * @param face orientation of the face
+     * @param offset offset of the face along its normal
+     */
+    void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, float offset);
+
+    /**
+     * Adds a quad for a scaled face, the face is defined by minimum and maximum
+     * coordinates
+     *
+     * @param minX minimum 2D x-coordinate of the face
+     * @param minY minimum 2D y-coordinate of the face
+     * @param maxX maximum 2D x-coordinate of the face
+     * @param maxY maximum 2D y-coordinate of the face
+     * @param face orientation of the face
      * @param icon icon to render the face with
      * @param offset offset of the face along its normal
      */
     void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset);
+
+    /**
+     * Adds two quads for a scaled face, this face will have both sides drawn.
+     * The face is defined by minimum and maximum coordinates
+     *
+     * @param minX minimum 2D x-coordinate of the face
+     * @param minY minimum 2D y-coordinate of the face
+     * @param maxX maximum 2D x-coordinate of the face
+     * @param maxY maximum 2D y-coordinate of the face
+     * @param face orientation of the face
+     * @param offset offset of the face along its normal
+     */
+    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, float offset);
 
     /**
      * Adds two quads for a scaled face, this face will have both sides drawn.
@@ -134,9 +171,34 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param maxX maximum x-coordinate of the face
      * @param maxY maximum y-coordinate of the face
      * @param maxZ maximum z-coordinate of the face
+     */
+    void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
+
+    /**
+     * Adds 6 quads for a scaled prism, the prism is defined by maximum and
+     * minimum 3D coordinates
+     *
+     * @param minX minimum x-coordinate of the face
+     * @param minY minimum y-coordinate of the face
+     * @param minZ maximum z-coordinate of the face
+     * @param maxX maximum x-coordinate of the face
+     * @param maxY maximum y-coordinate of the face
+     * @param maxZ maximum z-coordinate of the face
      * @param icon icon to render the prism with
      */
     void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon);
+
+    /**
+     * Adds a specified number of quads to approximate a cylinder along the y axis
+     *
+     * @param x the center x-coordinate
+     * @param y the bottom of the cylinder
+     * @param z the center z-coordinate
+     * @param r the radius of the cylinder
+     * @param h the height of the cylinder
+     * @param quads the number of quads
+     */
+    void drawScaledCylinder(float x, float y, float z, float r, float h, int quads);
 
     /**
      * Adds a specified number of quads to approximate a cylinder along the y axis
@@ -159,10 +221,34 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param z the center z-coordinate
      * @param r the radius of the cylinder
      * @param h the height of the cylinder
+     * @param quads the number of quads
+     */
+    void drawScaledCylinderInside(float x, float y, float z, float r, float h, int quads);
+
+    /**
+     * Adds a specified number of quads to approximate the inside of a cylinder along the y axis
+     *
+     * @param x the center x-coordinate
+     * @param y the bottom of the cylinder
+     * @param z the center z-coordinate
+     * @param r the radius of the cylinder
+     * @param h the height of the cylinder
      * @param texture the texture to use
      * @param quads the number of quads
      */
     void drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads);
+
+    /**
+     * Adds a specified number of quads to approximate the outside of a cylinder along the y axis
+     *
+     * @param x the center x-coordinate
+     * @param y the bottom of the cylinder
+     * @param z the center z-coordinate
+     * @param r the radius of the cylinder
+     * @param h the height of the cylinder
+     * @param quads the number of quads
+     */
+    void drawScaledCylinderOutside(float x, float y, float z, float r, float h, int quads);
 
     /**
      * Adds a specified number of quads to approximate the outside of a cylinder along the y axis

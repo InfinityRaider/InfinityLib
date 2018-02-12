@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -118,10 +120,19 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     public void addVertexWithUV(float x, float y, float z, float u, float v) {
         final Vector4f pos = new Vector4f(x, y, z, 1);
         this.transform(pos);
-        buffer.pos(pos.x, pos.y, pos.z);
-        buffer.tex(u, v);
-        buffer.color((int) (this.r * 255), (int) (this.g * 255), (int) (this.b * 255), (int) (this.a * 255));
-        buffer.normal(normal.x, normal.y, normal.z);
+        List<VertexFormatElement> elements = this.getVertexFormat().getElements();
+        if(elements.contains(DefaultVertexFormats.POSITION_3F)) {
+            buffer.pos(pos.x, pos.y, pos.z);
+        }
+        if(elements.contains(DefaultVertexFormats.TEX_2F)) {
+            buffer.tex(u, v);
+        }
+        if(elements.contains(DefaultVertexFormats.COLOR_4UB)) {
+            buffer.color((int) (this.r * 255), (int) (this.g * 255), (int) (this.b * 255), (int) (this.a * 255));
+        }
+        if(elements.contains(DefaultVertexFormats.NORMAL_3B)) {
+            buffer.normal(normal.x, normal.y, normal.z);
+        }
         buffer.endVertex();
     }
 
