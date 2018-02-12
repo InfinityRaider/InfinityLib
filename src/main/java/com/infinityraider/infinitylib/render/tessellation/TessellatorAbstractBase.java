@@ -285,6 +285,51 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
+    public void drawScaledCylinder(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads) {
+        this.drawScaledCylinderOutside(x, y, z, r, h, texture, quads);
+        this.drawScaledCylinderInside(x, y, z, r, h, texture, quads);
+    }
+
+    @Override
+    public void drawScaledCylinderOutside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads) {
+        float prevX = x + r;
+        float prevZ = z;
+        float prevU = 0;
+        for(int i = 0; i < quads; i ++) {
+            double angle = ((i+1)%quads)*2*Math.PI/quads;
+            float newX = (float) (r*Math.cos(angle)) + x;
+            float newZ = (float) (r*Math.sin(angle)) + z;
+            float newU = Constants.WHOLE*((float) (i+1))/quads;
+            this.addScaledVertexWithUV(prevX, 0, prevZ, texture, prevU, 16);
+            this.addScaledVertexWithUV(prevX, h, prevZ, texture, prevU, 0);
+            this.addScaledVertexWithUV(newX, h, newZ, texture, newU, 0);
+            this.addScaledVertexWithUV(newX, 0, newZ, texture, newU, 16);
+            prevX = newX;
+            prevZ = newZ;
+            prevU = newU;
+        }
+    }
+
+    public void drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads) {
+        float prevX = x + r;
+        float prevZ = z;
+        float prevU = 0;
+        for(int i = 0; i < quads; i ++) {
+            double angle = ((i+1)%quads)*2*Math.PI/quads;
+            float newX = (float) (r*Math.cos(angle)) + x;
+            float newZ = (float) (r*Math.sin(angle)) + z;
+            float newU = Constants.WHOLE*((float) (i+1))/quads;
+            this.addScaledVertexWithUV(prevX, 0, prevZ, texture, prevU, 16);
+            this.addScaledVertexWithUV(newX, 0, newZ, texture, newU, 16);
+            this.addScaledVertexWithUV(newX, h, newZ, texture, newU, 0);
+            this.addScaledVertexWithUV(prevX, h, prevZ, texture, prevU, 0);
+            prevX = newX;
+            prevZ = newZ;
+            prevU = newU;
+        }
+    }
+
+    @Override
     public void translate(BlockPos pos) {
         this.translate(pos.getX(), pos.getY(), pos.getZ());
     }
