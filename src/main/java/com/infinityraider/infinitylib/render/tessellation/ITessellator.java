@@ -196,9 +196,10 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param z the center z-coordinate
      * @param r the radius of the cylinder
      * @param h the height of the cylinder
+     * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinder(float x, float y, float z, float r, float h, int quads);
+    void drawScaledCylinder(float x, float y, float z, float r, float h, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate a cylinder along the y axis
@@ -209,9 +210,10 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param r the radius of the cylinder
      * @param h the height of the cylinder
      * @param texture the texture to use
+     * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinder(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads);
+    void drawScaledCylinder(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate the inside of a cylinder along the y axis
@@ -221,9 +223,10 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param z the center z-coordinate
      * @param r the radius of the cylinder
      * @param h the height of the cylinder
+     * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinderInside(float x, float y, float z, float r, float h, int quads);
+    void drawScaledCylinderInside(float x, float y, float z, float r, float h, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate the inside of a cylinder along the y axis
@@ -234,9 +237,10 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param r the radius of the cylinder
      * @param h the height of the cylinder
      * @param texture the texture to use
+     * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads);
+    void drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate the outside of a cylinder along the y axis
@@ -246,9 +250,10 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param z the center z-coordinate
      * @param r the radius of the cylinder
      * @param h the height of the cylinder
+     * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinderOutside(float x, float y, float z, float r, float h, int quads);
+    void drawScaledCylinderOutside(float x, float y, float z, float r, float h, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate the outside of a cylinder along the y axis
@@ -259,9 +264,10 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param r the radius of the cylinder
      * @param h the height of the cylinder
      * @param texture the texture to use
+     * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinderOutside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads);
+    void drawScaledCylinderOutside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
 
     /**
      * Translates the matrix by a vector defined by a BlockPos

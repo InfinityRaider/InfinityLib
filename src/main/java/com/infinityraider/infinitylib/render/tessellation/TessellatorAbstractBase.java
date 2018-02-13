@@ -394,19 +394,19 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
-    public void drawScaledCylinder(float x, float y, float z, float r, float h,int quads) {
-        this.drawScaledCylinderOutside(x, y, z, r, h, quads);
-        this.drawScaledCylinderInside(x, y, z, r, h, quads);
+    public void drawScaledCylinder(float x, float y, float z, float r, float h, float vMax,int quads) {
+        this.drawScaledCylinderOutside(x, y, z, r, h, vMax, quads);
+        this.drawScaledCylinderInside(x, y, z, r, h, vMax, quads);
     }
 
     @Override
-    public void drawScaledCylinder(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads) {
-        this.drawScaledCylinderOutside(x, y, z, r, h, texture, quads);
-        this.drawScaledCylinderInside(x, y, z, r, h, texture, quads);
+    public void drawScaledCylinder(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads) {
+        this.drawScaledCylinderOutside(x, y, z, r, h, texture, vMax, quads);
+        this.drawScaledCylinderInside(x, y, z, r, h, texture, vMax, quads);
     }
 
     @Override
-    public void drawScaledCylinderOutside(float x, float y, float z, float r, float h, int quads) {
+    public void drawScaledCylinderOutside(float x, float y, float z, float r, float h, float vMax, int quads) {
         float prevX = x + r;
         float prevZ = z;
         float prevU = 0;
@@ -415,10 +415,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             float newX = (float) (r*Math.cos(angle)) + x;
             float newZ = (float) (r*Math.sin(angle)) + z;
             float newU = Constants.WHOLE*((float) (i+1))/quads;
-            this.addScaledVertexWithUV(prevX, 0, prevZ, prevU, 16);
-            this.addScaledVertexWithUV(prevX, h, prevZ, prevU, 0);
-            this.addScaledVertexWithUV(newX, h, newZ, newU, 0);
-            this.addScaledVertexWithUV(newX, 0, newZ, newU, 16);
+            this.addScaledVertexWithUV(prevX, y, prevZ, prevU, vMax);
+            this.addScaledVertexWithUV(prevX, y + h, prevZ, prevU, 0);
+            this.addScaledVertexWithUV(newX, y + h, newZ, newU, 0);
+            this.addScaledVertexWithUV(newX, y, newZ, newU, vMax);
             prevX = newX;
             prevZ = newZ;
             prevU = newU;
@@ -426,7 +426,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
-    public void drawScaledCylinderOutside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads) {
+    public void drawScaledCylinderOutside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads) {
         float prevX = x + r;
         float prevZ = z;
         float prevU = 0;
@@ -435,10 +435,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             float newX = (float) (r*Math.cos(angle)) + x;
             float newZ = (float) (r*Math.sin(angle)) + z;
             float newU = Constants.WHOLE*((float) (i+1))/quads;
-            this.addScaledVertexWithUV(prevX, 0, prevZ, texture, prevU, 16);
-            this.addScaledVertexWithUV(prevX, h, prevZ, texture, prevU, 0);
-            this.addScaledVertexWithUV(newX, h, newZ, texture, newU, 0);
-            this.addScaledVertexWithUV(newX, 0, newZ, texture, newU, 16);
+            this.addScaledVertexWithUV(prevX, y, prevZ, texture, prevU, vMax);
+            this.addScaledVertexWithUV(prevX, y + h, prevZ, texture, prevU, 0);
+            this.addScaledVertexWithUV(newX, y + h, newZ, texture, newU, 0);
+            this.addScaledVertexWithUV(newX, y, newZ, texture, newU, vMax);
             prevX = newX;
             prevZ = newZ;
             prevU = newU;
@@ -446,7 +446,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
-    public void drawScaledCylinderInside(float x, float y, float z, float r, float h, int quads) {
+    public void drawScaledCylinderInside(float x, float y, float z, float r, float h, float vMax, int quads) {
         float prevX = x + r;
         float prevZ = z;
         float prevU = 0;
@@ -455,10 +455,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             float newX = (float) (r*Math.cos(angle)) + x;
             float newZ = (float) (r*Math.sin(angle)) + z;
             float newU = Constants.WHOLE*((float) (i+1))/quads;
-            this.addScaledVertexWithUV(prevX, 0, prevZ, prevU, 16);
-            this.addScaledVertexWithUV(newX, 0, newZ, newU, 16);
-            this.addScaledVertexWithUV(newX, h, newZ, newU, 0);
-            this.addScaledVertexWithUV(prevX, h, prevZ, prevU, 0);
+            this.addScaledVertexWithUV(prevX, y, prevZ, prevU, vMax);
+            this.addScaledVertexWithUV(newX, y, newZ, newU, vMax);
+            this.addScaledVertexWithUV(newX, y + h, newZ, newU, 0);
+            this.addScaledVertexWithUV(prevX, y + h, prevZ, prevU, 0);
             prevX = newX;
             prevZ = newZ;
             prevU = newU;
@@ -466,7 +466,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
-    public void drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, int quads) {
+    public void drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads) {
         float prevX = x + r;
         float prevZ = z;
         float prevU = 0;
@@ -475,10 +475,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             float newX = (float) (r*Math.cos(angle)) + x;
             float newZ = (float) (r*Math.sin(angle)) + z;
             float newU = Constants.WHOLE*((float) (i+1))/quads;
-            this.addScaledVertexWithUV(prevX, 0, prevZ, texture, prevU, 16);
-            this.addScaledVertexWithUV(newX, 0, newZ, texture, newU, 16);
-            this.addScaledVertexWithUV(newX, h, newZ, texture, newU, 0);
-            this.addScaledVertexWithUV(prevX, h, prevZ, texture, prevU, 0);
+            this.addScaledVertexWithUV(prevX, y, prevZ, texture, prevU, vMax);
+            this.addScaledVertexWithUV(newX, y, newZ, texture, newU, vMax);
+            this.addScaledVertexWithUV(newX, y + h, newZ, texture, newU, 0);
+            this.addScaledVertexWithUV(prevX, y + h, prevZ, texture, prevU, 0);
             prevX = newX;
             prevZ = newZ;
             prevU = newU;
