@@ -30,65 +30,65 @@ import org.apache.commons.lang3.tuple.Pair;
 @SideOnly(Side.CLIENT)
 public class BakedInfItemModel implements IBakedModel {
 
-	private final BakedInfItemSuperModel parent;
-	private final ItemStack stack;
-	private final World world;
-	private final EntityLivingBase entity;
+    private final BakedInfItemSuperModel parent;
+    private final ItemStack stack;
+    private final World world;
+    private final EntityLivingBase entity;
 
-	public BakedInfItemModel(BakedInfItemSuperModel parent, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> textures, World world, ItemStack stack, EntityLivingBase entity, IItemRenderingHandler renderer) {
-		this.parent = parent;
-		this.world = world;
-		this.stack = stack;
-		this.entity = entity;
-	}
+    public BakedInfItemModel(BakedInfItemSuperModel parent, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> textures, World world, ItemStack stack, EntityLivingBase entity, IItemRenderingHandler renderer) {
+        this.parent = parent;
+        this.world = world;
+        this.stack = stack;
+        this.entity = entity;
+    }
 
-	@Override
-	public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-		List<BakedQuad> list;
+    @Override
+    public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
+        List<BakedQuad> list;
 
-		final TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance();
-		tessellator.setCurrentFace(side);
-		tessellator.setTextureFunction(this.parent.textures);
-		tessellator.startDrawingQuads(this.parent.format);
-		this.parent.renderer.renderItem(tessellator, world, stack, entity);
-		list = tessellator.getQuads();
-		tessellator.draw();
+        final TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance();
+        tessellator.setCurrentFace(side);
+        tessellator.setTextureFunction(this.parent.textures);
+        tessellator.startDrawingQuads(this.parent.format);
+        this.parent.renderer.renderItem(tessellator, world, stack, entity);
+        list = tessellator.getQuads();
+        tessellator.draw();
 
-		return list;
-	}
+        return list;
+    }
 
-	@Override
-	public boolean isAmbientOcclusion() {
-		return false;
-	}
+    @Override
+    public boolean isAmbientOcclusion() {
+        return false;
+    }
 
-	@Override
-	public boolean isGui3d() {
-		return true;
-	}
+    @Override
+    public boolean isGui3d() {
+        return true;
+    }
 
-	@Override
-	public boolean isBuiltInRenderer() {
-		return false;
-	}
+    @Override
+    public boolean isBuiltInRenderer() {
+        return false;
+    }
 
-	@Override
-	public TextureAtlasSprite getParticleTexture() {
-		return null;
-	}
+    @Override
+    public TextureAtlasSprite getParticleTexture() {
+        return null;
+    }
 
-	@Override
-	public ItemCameraTransforms getItemCameraTransforms() {
-		return ItemCameraTransforms.DEFAULT;
-	}
+    @Override
+    public ItemCameraTransforms getItemCameraTransforms() {
+        return ItemCameraTransforms.DEFAULT;
+    }
 
-	@Override
-	public ItemOverrideList getOverrides() {
-		return null;
-	}
+    @Override
+    public ItemOverrideList getOverrides() {
+        return null;
+    }
 
-	@Override
-	public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType type) {
-		return this.parent.handlePerspective(type);
-	}
+    @Override
+    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType transform) {
+        return Pair.of(this, this.parent.transformer.apply(transform));
+    }
 }

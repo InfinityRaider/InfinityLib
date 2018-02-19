@@ -32,12 +32,14 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
     protected final T renderer;
     protected final Function<ResourceLocation, TextureAtlasSprite> textures;
     protected final DefaultTransforms.Transformer transformer;
+    protected final ItemOverrideList overrides;
 
     public BakedInfItemSuperModel(VertexFormat format, T renderer, Function<ResourceLocation, TextureAtlasSprite> textures) {
         this.format = format;
         this.renderer = renderer;
         this.textures = textures;
         this.transformer = this.renderer.getPerspectiveTransformer();
+        this.overrides = new IItemOverriden.Wrapper(this);
     }
 
     public BakedInfItemSuperModel(VertexFormat format, T renderer, Function<ResourceLocation, TextureAtlasSprite> textures, DefaultTransforms.Transformer transformer) {
@@ -45,6 +47,7 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
         this.renderer = renderer;
         this.textures = textures;
         this.transformer = transformer;
+        this.overrides = new IItemOverriden.Wrapper(this);
     }
 
     @Override
@@ -73,10 +76,6 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
     }
 
     @Override
-    public ItemCameraTransforms getItemCameraTransforms() {
-        return ItemCameraTransforms.DEFAULT;
-    }
-
     public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType transform) {
         return Pair.of(this, this.transformer.apply(transform));
     }
@@ -88,7 +87,7 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
 
     @Override
     public final ItemOverrideList getOverrides() {
-        return new IItemOverriden.Wrapper(this);
+        return this.overrides;
     }
 
 }

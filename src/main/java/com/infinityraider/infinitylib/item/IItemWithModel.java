@@ -18,7 +18,7 @@ public interface IItemWithModel extends IInfinityItem {
     @SideOnly(Side.CLIENT)
     default List<Tuple<Integer, ModelResourceLocation>> getModelDefinitions() {
         return ImmutableList.of(
-                new Tuple<>(0, new ModelResourceLocation(this.getRegistryName() + ""))
+                new Tuple<>(0, new ModelResourceLocation(this.getRegistryName().toString()))
         );
     }
 }
