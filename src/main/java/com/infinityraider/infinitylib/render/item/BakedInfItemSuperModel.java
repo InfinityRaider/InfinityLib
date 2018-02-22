@@ -9,6 +9,8 @@ import java.util.function.Function;
 import javax.vecmath.Matrix4f;
 
 import com.infinityraider.infinitylib.render.DefaultTransforms;
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -33,6 +35,8 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
     protected final Function<ResourceLocation, TextureAtlasSprite> textures;
     protected final DefaultTransforms.Transformer transformer;
     protected final ItemOverrideList overrides;
+    
+    private final Map<Object, BakedInfItemModel> cache;
 
     public BakedInfItemSuperModel(VertexFormat format, T renderer, Function<ResourceLocation, TextureAtlasSprite> textures) {
         this.format = format;
@@ -40,6 +44,7 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
         this.textures = textures;
         this.transformer = this.renderer.getPerspectiveTransformer();
         this.overrides = new IItemOverriden.Wrapper(this);
+        this.cache = new HashMap<>();
     }
 
     public BakedInfItemSuperModel(VertexFormat format, T renderer, Function<ResourceLocation, TextureAtlasSprite> textures, DefaultTransforms.Transformer transformer) {
@@ -48,6 +53,7 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
         this.textures = textures;
         this.transformer = transformer;
         this.overrides = new IItemOverriden.Wrapper(this);
+        this.cache = new HashMap<>();
     }
 
     @Override
@@ -82,7 +88,7 @@ public class BakedInfItemSuperModel<T extends IItemRenderingHandler> implements 
 
     @Override
     public final BakedInfItemModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity) {
-        return new BakedInfItemModel(this, format, textures, world, stack, entity, renderer);
+        return this.cache.computeIfAbsent(this.renderer.getItemQuadsCacheKey(world, stack, entity), k -> new BakedInfItemModel(this, world, stack, entity, renderer));
     }
 
     @Override

@@ -34,6 +34,18 @@ public interface IItemRenderingHandler {
      */
     @SideOnly(Side.CLIENT)
     void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity);
+    
+    /**
+     * Called to determine the cache key for this specific render.
+     * 
+     * @param world
+     * @param stack
+     * @param entity
+     * @return 
+     */
+    default Object getItemQuadsCacheKey(World world, ItemStack stack, EntityLivingBase entity) {
+        return stack.getMetadata();
+    }
 
     @SideOnly(Side.CLIENT)
     default DefaultTransforms.Transformer getPerspectiveTransformer() {

@@ -55,4 +55,9 @@ public class RenderItemAuto<T extends Item & IAutoRenderedItem> implements IItem
         tessellator.addQuads(model);
     }
 
+    @Override
+    public Object getItemQuadsCacheKey(World world, ItemStack stack, EntityLivingBase entity) {
+        return item.getModelId(stack);
+    }
+
 }

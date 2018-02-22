@@ -4,6 +4,7 @@ import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.render.item.IItemRenderingHandler;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
+import com.infinityraider.infinitylib.utility.HashableBlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -16,7 +17,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
-import net.minecraftforge.common.property.ExtendedBlockState;
 
 @SideOnly(Side.CLIENT)
 public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlock> extends IItemRenderingHandler {
