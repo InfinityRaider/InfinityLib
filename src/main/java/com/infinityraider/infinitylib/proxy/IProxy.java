@@ -29,6 +29,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 public interface IProxy extends IProxyBase {
+
     default void registerBlocks(InfinityMod mod, IForgeRegistry<Block> registry) {
         //blocks
         ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
@@ -54,6 +55,18 @@ public interface IProxy extends IProxyBase {
     }
 
     default void registerItems(InfinityMod mod, IForgeRegistry<Item> registry) {
+        // Blocks
+        ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
+            if (block.isEnabled()) {
+                block.getItemBlock().ifPresent(item -> {
+                    mod.getLogger().debug("Registering ItemBlock: " + block.getInternalName());
+                    final String unlocalized = mod.getModId().toLowerCase() + ":" + block.getInternalName();
+                    ((Item) item).setUnlocalizedName(unlocalized);
+                    register(mod, registry, (Item) item, block.getInternalName());
+                });
+            }
+        });
+
         //items
         ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
             if ((item instanceof Item) && item.isEnabled()) {
@@ -116,6 +129,7 @@ public interface IProxy extends IProxyBase {
     default void initEnd(FMLInitializationEvent event) {
         Module.getActiveModules().forEach(Module::init);
     }
+
     @Override
     default void postInitEnd(FMLPostInitializationEvent event) {
         Module.getActiveModules().forEach(Module::postInit);
@@ -128,18 +142,19 @@ public interface IProxy extends IProxyBase {
 
     @Override
     default void registerEventHandlers() {
-        for(Module module : Module.getActiveModules()) {
+        for (Module module : Module.getActiveModules()) {
             module.getCommonEventHandlers().forEach(this::registerEventHandler);
         }
     }
 
     @Override
     default void registerCapabilities() {
-        for(Module module : Module.getActiveModules()) {
+        for (Module module : Module.getActiveModules()) {
             module.getCapabilities().forEach(this::registerCapability);
         }
     }
 
     @Override
-    default void activateRequiredModules() {}
+    default void activateRequiredModules() {
+    }
 }

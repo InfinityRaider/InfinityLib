@@ -30,11 +30,13 @@ import net.minecraftforge.registries.IForgeRegistry;
 @SuppressWarnings("unused")
 @SideOnly(Side.CLIENT)
 public class ClientProxy implements IProxy, IClientProxyBase {
+
     @Override
     public void initEnd(FMLInitializationEvent event) {
         IProxy.super.initEnd(event);
         Module.getActiveModules().forEach(Module::initClient);
     }
+
     @Override
     public void postInitEnd(FMLPostInitializationEvent event) {
         IProxy.super.postInitEnd(event);
@@ -81,12 +83,30 @@ public class ClientProxy implements IProxy, IClientProxyBase {
                 }
             }
         });
+        // ItemBlock Renderers
+        ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
+            if (block.isEnabled()) {
+                block.getItemBlock().ifPresent(item -> {
+                    if (item instanceof IItemWithModel) {
+                        for (Tuple<Integer, ModelResourceLocation> entry : ((IItemWithModel) item).getModelDefinitions()) {
+                            mod.getLogger().debug("Registering model for ItemBlock: {0} meta: {1} location: {2}", ((IInfinityItem)item).getInternalName(), entry.getFirst(), entry.getSecond());
+                            ModelLoader.setCustomModelResourceLocation((Item) item, entry.getFirst(), entry.getSecond());
+                        }
+                    }
+                    if (item instanceof IAutoRenderedItem) {
+                        ItemRendererRegistry.getInstance().registerCustomItemRendererAuto((Item & IAutoRenderedItem) item);
+                    } else if (item instanceof ICustomRenderedItem) {
+                        ItemRendererRegistry.getInstance().registerCustomItemRenderer((Item) item, ((ICustomRenderedItem) item).getRenderer());
+                    }
+                });
+            }
+        });
     }
 
     @Override
     public void registerEntities(InfinityMod mod, IForgeRegistry<EntityEntry> registry) {
         ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
-            if(entry.isEnabled()) {
+            if (entry.isEnabled()) {
                 entry.registerClient(mod, registry);
             }
         });
@@ -95,7 +115,7 @@ public class ClientProxy implements IProxy, IClientProxyBase {
     @Override
     public void registerEventHandlers() {
         IProxy.super.registerEventHandlers();
-        for(Module module : Module.getActiveModules()) {
+        for (Module module : Module.getActiveModules()) {
             module.getClientEventHandlers().forEach(this::registerEventHandler);
         }
     }

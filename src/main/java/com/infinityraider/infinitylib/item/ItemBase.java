@@ -25,4 +25,5 @@ public abstract class ItemBase extends Item implements IInfinityItem {
 	public List<String> getIgnoredNBT() {
 		return Collections.emptyList();
 	}
+    
 }
