@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.render.block;
 
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
+import com.infinityraider.infinitylib.render.DefaultTransforms;
 import com.infinityraider.infinitylib.render.item.IItemRenderingHandler;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.utility.HashableBlockState;
@@ -97,5 +98,10 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @return true to have 3D inventory rendering
      */
     boolean doInventoryRendering();
+
+    @Override
+    public default DefaultTransforms.Transformer getPerspectiveTransformer() {
+        return DefaultTransforms::getBlockMatrix;
+    }
 
 }

@@ -1,5 +1,15 @@
 Changelog
 ---------
+0.15.0
+- FIXED: Fixed memory churn associated with item models rendered using InfinityLib's rendering pipeline.
+- TWEAK: Cleaned up rendering pipeline in the hopes of improving overall performance and extensibility.
+- FIXED: ItemBlock registration method, so that blocks with items now actually work in 1.12.
+- FIXED: Items that were automatically rendered using InfinityLib now actually render once again.
+- TWEAK: Deprecated IRecipeRegister interface given that the recipe system changed in 1.12.
+
+0.14.0
+- CHANGE: UNKNOWN.
+
 0.13.0
 - CHANGE: ported to 1.12.1
 

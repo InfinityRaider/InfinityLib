@@ -71,18 +71,18 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     }
 
     /**
-     * Method to get all quads constructed
+     * Method to get all quads constructed.
      *
      * @return emtpy list, no quads are constructed here
      */
     @Override
-    public List<BakedQuad> getQuads() {
+    public ImmutableList<BakedQuad> getQuads() {
         return ImmutableList.of();
     }
 
     /**
      * Sub delegated method call of the draw() method to ensure correct call
-     * chain
+     * chain.
      */
     @Override
     protected void onDrawCall() {

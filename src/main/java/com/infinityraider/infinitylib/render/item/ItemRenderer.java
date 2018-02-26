@@ -32,8 +32,8 @@ public class ItemRenderer implements IModel {
     }
 
     @Override
-    public BakedInfItemSuperModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-        return new BakedInfItemSuperModel(format, renderer, bakedTextureGetter);
+    public BakedInfItemModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+        return new BakedInfItemModel(format, renderer, bakedTextureGetter);
     }
 
     @Override

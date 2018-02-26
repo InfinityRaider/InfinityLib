@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 @FunctionalInterface
 public interface IItemOverriden {
 
-	BakedInfItemModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity);
+	BakedInfItemSubModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity);
 
 	final class Wrapper extends ItemOverrideList {
 
