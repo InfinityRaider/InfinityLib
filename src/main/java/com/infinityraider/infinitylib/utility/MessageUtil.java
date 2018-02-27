@@ -27,13 +27,20 @@ public class MessageUtil {
 
         // Format the message.
         try {
-            message = MessageFormat.format(format, args).replace(COLOR_CODE_ESCAPE, COLOR_CODE_REPLACEMENT);
+            message = MessageFormat.format(format, args);
         } catch (IllegalArgumentException ex) {
-            message = "Message Formatting Error: \"" + format + "\"!";
+            message = "`4Message Formatting Error: \"" + format + "\"!`r";
         }
+        
+        // Colorize the message.
+        message = colorize(message);
 
         // Send the message.
         player.sendMessage(new TextComponentString(message));
+    }
+    
+    public static final String colorize(@Nonnull String message) {
+        return message.replace(COLOR_CODE_ESCAPE, COLOR_CODE_REPLACEMENT);
     }
 
 }
