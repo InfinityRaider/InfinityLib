@@ -88,12 +88,12 @@ public abstract class RenderUtilBase {
                 break;
             case DOWN:
                 tess.translate(0, 0.5f, 0.5f);
-                tess.rotate(270, 1, 0, 0);
+                tess.rotate(90, 1, 0, 0);
                 tess.translate(0, -0.5f, -0.5f);
                 break;
             case UP:
                 tess.translate(0, 0.5f, 0.5f);
-                tess.rotate(90, 1, 0, 0);
+                tess.rotate(270, 1, 0, 0);
                 tess.translate(0, -0.5f, -0.5f);
                 break;
         }
