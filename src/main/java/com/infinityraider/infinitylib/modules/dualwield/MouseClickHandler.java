@@ -35,7 +35,7 @@ public class MouseClickHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onLeftClick(MouseEvent event) {
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
         ItemStack stack = player.getHeldItemOffhand();
         if(event.getButton() != LMB) {
             return;
@@ -52,7 +52,7 @@ public class MouseClickHandler {
                 attackEntity(weapon, player, stack, true, shift, ctrl, EnumHand.OFF_HAND);
                 weapon.onItemUsed(stack, player, shift, ctrl, EnumHand.OFF_HAND);
                 new MessageMouseButtonPressed(true, shift, ctrl).sendToServer();
-                Minecraft.getMinecraft().thePlayer.swingArm(EnumHand.OFF_HAND);
+                Minecraft.getMinecraft().player.swingArm(EnumHand.OFF_HAND);
             }
             event.setResult(Event.Result.DENY);
             event.setCanceled(true);
@@ -62,7 +62,7 @@ public class MouseClickHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onRightClick(MouseEvent event) {
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
         ItemStack stack = player.getHeldItemMainhand();
         if(event.getButton() != RMB) {
             return;
@@ -79,7 +79,7 @@ public class MouseClickHandler {
                 attackEntity(weapon, player, stack, false, shift, ctrl, EnumHand.MAIN_HAND);
                 weapon.onItemUsed(stack, player, shift, ctrl, EnumHand.MAIN_HAND);
                 new MessageMouseButtonPressed(false, shift, ctrl).sendToServer();
-                Minecraft.getMinecraft().thePlayer.swingArm(EnumHand.MAIN_HAND);
+                Minecraft.getMinecraft().player.swingArm(EnumHand.MAIN_HAND);
             }
             event.setResult(Event.Result.DENY);
             event.setCanceled(true);

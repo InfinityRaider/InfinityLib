@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
+import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -30,7 +31,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      *
      * @return list of quads, may be emtpy but never null
      */
-    List<BakedQuad> getQuads();
+    ImmutableList<BakedQuad> getQuads();
 
     /**
      * Method to finalize drawing

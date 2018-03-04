@@ -1,33 +1,46 @@
 package com.infinityraider.infinitylib.block;
 
+import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.utility.IToggleable;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nonnull;
 
 public interface IInfinityBlock extends IToggleable {
+
     String getInternalName();
 
     /**
-     * Retrieves the block's ItemBlock class, as a generic class bounded by the
-     * ItemBlock class.
+     * Method should be implemented by default in any class extending Block.
      *
-     * @return the block's class, may be null if no specific ItemBlock class is
-     * desired.
+     * @return the registry name of the given block.
      */
-    default Class<? extends ItemBlock> getItemBlockClass() {
-        return null;
-    }
+    @Nonnull
+    ResourceLocation getRegistryName();
 
+    /**
+     * Retrieves a list of all the OreDictionary tags attributed to this block by default.
+     *
+     * @return a list of tags, or an empty list.
+     */
+    @Nonnull
     default List<String> getOreTags() {
         return Collections.emptyList();
     }
 
     /**
-     * Method should be implemented by default in any class extending Block
+     * Retrieves the block's item form, if the block has one.
+     *
+     * @param <T>
+     * @return an optional containing the block's item form, or the empty optional.
      */
-    ResourceLocation getRegistryName();
-}
+    @Nonnull
+    default <T extends ItemBlock & IInfinityItem> Optional<T> getItemBlock() {
+        return Optional.empty();
+    }
 
+}

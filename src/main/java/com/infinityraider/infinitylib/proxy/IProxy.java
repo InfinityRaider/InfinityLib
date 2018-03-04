@@ -59,6 +59,18 @@ public interface IProxy extends IProxyBase {
     }
 
     default void registerItems(InfinityMod mod, IForgeRegistry<Item> registry) {
+        // Blocks
+        ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
+            if (block.isEnabled()) {
+                block.getItemBlock().ifPresent(item -> {
+                    mod.getLogger().debug("Registering ItemBlock: " + block.getInternalName());
+                    final String unlocalized = mod.getModId().toLowerCase() + ":" + block.getInternalName();
+                    ((Item) item).setUnlocalizedName(unlocalized);
+                    register(mod, registry, (Item) item, block.getInternalName());
+                });
+            }
+        });
+
         //items
         ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
             if ((item instanceof Item) && item.isEnabled()) {

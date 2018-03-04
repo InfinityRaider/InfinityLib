@@ -90,7 +90,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    public final void moveEntity(double x, double y, double z) {}
+    public final void move(double x, double y, double z) {}
 
     @Override
     protected final void doBlockCollisions() {}

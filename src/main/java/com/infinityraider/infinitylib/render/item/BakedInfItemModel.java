@@ -3,10 +3,16 @@
 package com.infinityraider.infinitylib.render.item;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 import javax.vecmath.Matrix4f;
 
-import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
+import com.infinityraider.infinitylib.render.DefaultTransforms;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nonnull;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -24,73 +30,90 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.tuple.Pair;
 
-/**
- *
- * @author RlonRyan
- */
 @SideOnly(Side.CLIENT)
-public class BakedInfItemModel implements IPerspectiveAwareModel {
+public class BakedInfItemModel implements IBakedModel, IItemOverriden, IPerspectiveAwareModel {
 
-	private final BakedInfItemSuperModel parent;
-	private final ItemStack stack;
-	private final World world;
-	private final EntityLivingBase entity;
+    @Nonnull
+    protected final VertexFormat format;
+    @Nonnull
+    protected final IItemRenderingHandler renderer;
+    @Nonnull
+    protected final Function<ResourceLocation, TextureAtlasSprite> textureFunction;
 
-	public BakedInfItemModel(BakedInfItemSuperModel parent, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> textures, World world, ItemStack stack, EntityLivingBase entity, IItemRenderingHandler renderer) {
-		this.parent = parent;
-		this.world = world;
-		this.stack = stack;
-		this.entity = entity;
-	}
+    @Nonnull
+    protected final DefaultTransforms.Transformer transformer;
 
-	@Override
-	public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-		List<BakedQuad> list;
+    @Nonnull
+    private final ItemOverrideList overrides;
+    @Nonnull
+    private final Map<Object, BakedInfItemSubModel> cache;
 
-		final TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance();
-		tessellator.setCurrentFace(side);
-		tessellator.setTextureFunction(this.parent.textures);
-		tessellator.startDrawingQuads(this.parent.format);
-		this.parent.renderer.renderItem(tessellator, world, stack, entity);
-		list = tessellator.getQuads();
-		tessellator.draw();
+    public BakedInfItemModel(
+            @Nonnull VertexFormat format,
+            @Nonnull IItemRenderingHandler renderer,
+            @Nonnull Function<ResourceLocation, TextureAtlasSprite> textures
+    ) {
+        // Validate and save parameters.
+        this.format = Preconditions.checkNotNull(format);
+        this.renderer = Preconditions.checkNotNull(renderer);
+        this.textureFunction = Preconditions.checkNotNull(textures);
 
-		return list;
-	}
+        // Save the transformer.
+        this.transformer = Preconditions.checkNotNull(renderer.getPerspectiveTransformer());
 
-	@Override
-	public boolean isAmbientOcclusion() {
-		return false;
-	}
+        // Create cache and override wrapper instance.
+        this.overrides = new IItemOverriden.Wrapper(this);
+        this.cache = new HashMap<>();
+    }
 
-	@Override
-	public boolean isGui3d() {
-		return true;
-	}
+    @Override
+    public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
+        return ImmutableList.of();
+    }
 
-	@Override
-	public boolean isBuiltInRenderer() {
-		return false;
-	}
+    @Override
+    public boolean isAmbientOcclusion() {
+        return false;
+    }
 
-	@Override
-	public TextureAtlasSprite getParticleTexture() {
-		return null;
-	}
+    @Override
+    public boolean isGui3d() {
+        return true;
+    }
 
-	@Override
-	public ItemCameraTransforms getItemCameraTransforms() {
-		return ItemCameraTransforms.DEFAULT;
-	}
+    @Override
+    public boolean isBuiltInRenderer() {
+        return false;
+    }
 
-	@Override
-	public ItemOverrideList getOverrides() {
-		return null;
-	}
+    @Override
+    public TextureAtlasSprite getParticleTexture() {
+        return null;
+    }
 
-	@Override
-	public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType type) {
-		return Pair.of(this, this.parent.handlePerspective(type));
-	}
+    @Override
+    public ItemCameraTransforms getItemCameraTransforms() {
+        return ItemCameraTransforms.DEFAULT;
+    }
+    
+    @Override
+    public final ItemOverrideList getOverrides() {
+        return this.overrides;
+    }
+
+    @Override
+    public final Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType transform) {
+        return Pair.of(this, this.transformer.apply(transform));
+    }
+
+    @Override
+    public final BakedInfItemSubModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity) {
+        return this.cache.computeIfAbsent(
+                // Get the respective cache key for the item model.
+                this.renderer.getItemQuadsCacheKey(world, stack, entity),
+                // Compute a new submodel, if one does not already exist for the given cache key.
+                k -> new BakedInfItemSubModel(this, stack, world, entity)
+        );
+    }
 
 }

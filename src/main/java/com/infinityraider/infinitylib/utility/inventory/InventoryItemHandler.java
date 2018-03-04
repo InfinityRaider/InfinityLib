@@ -99,7 +99,7 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     public void markDirty() {}
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer player) {
+    public boolean isUsableByPlayer(EntityPlayer player) {
         return true;
     }
 

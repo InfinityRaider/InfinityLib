@@ -80,6 +80,24 @@ public class ClientProxy implements IProxy, IClientProxyBase {
                 }
             }
         });
+        // ItemBlock Renderers
+        ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
+            if (block.isEnabled()) {
+                block.getItemBlock().ifPresent(item -> {
+                    if (item instanceof IItemWithModel) {
+                        for (Tuple<Integer, ModelResourceLocation> entry : ((IItemWithModel) item).getModelDefinitions()) {
+                            mod.getLogger().debug("Registering model for ItemBlock: {0} meta: {1} location: {2}", ((IInfinityItem)item).getInternalName(), entry.getFirst(), entry.getSecond());
+                            ModelLoader.setCustomModelResourceLocation((Item) item, entry.getFirst(), entry.getSecond());
+                        }
+                    }
+                    if (item instanceof IAutoRenderedItem) {
+                        ItemRendererRegistry.getInstance().registerCustomItemRendererAuto((Item & IAutoRenderedItem) item);
+                    } else if (item instanceof ICustomRenderedItem) {
+                        ItemRendererRegistry.getInstance().registerCustomItemRenderer((Item) item, ((ICustomRenderedItem) item).getRenderer());
+                    }
+                });
+            }
+        });
     }
 
     @Override
