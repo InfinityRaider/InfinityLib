@@ -54,11 +54,13 @@ public class ClientProxy implements IProxy, IClientProxyBase {
         //blocks
         IProxy.super.registerBlocks(mod, registry);
         //renderers
-        ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
-            if (block.isEnabled() && (block instanceof ICustomRenderedBlock)) {
-                BlockRendererRegistry.getInstance().registerCustomBlockRenderer((ICustomRenderedBlock) block);
-            }
-        });
+        if (mod.getModBlockRegistry() != null) {
+            ReflectionHelper.forEachValueIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
+                if (block.isEnabled() && (block instanceof ICustomRenderedBlock)) {
+                    BlockRendererRegistry.getInstance().registerCustomBlockRenderer((ICustomRenderedBlock) block);
+                }
+            });
+        }
         for (ICustomRenderedBlock block : BlockRendererRegistry.getInstance().getRegisteredBlocks()) {
             mod.getLogger().debug("registered custom renderer for " + block.getBlockModelResourceLocation());
         }
@@ -69,27 +71,11 @@ public class ClientProxy implements IProxy, IClientProxyBase {
         //items
         IProxy.super.registerItems(mod, registry);
         //renderers
-        ReflectionHelper.forEachIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
-            if ((item instanceof Item) && item.isEnabled()) {
-                if (item instanceof IItemWithModel) {
-                    for (Tuple<Integer, ModelResourceLocation> entry : ((IItemWithModel) item).getModelDefinitions()) {
-                        ModelLoader.setCustomModelResourceLocation((Item) item, entry.getFirst(), entry.getSecond());
-                    }
-                }
-                if (item instanceof IAutoRenderedItem) {
-                    ItemRendererRegistry.getInstance().registerCustomItemRendererAuto((Item & IAutoRenderedItem) item);
-                } else if (item instanceof ICustomRenderedItem) {
-                    ItemRendererRegistry.getInstance().registerCustomItemRenderer((Item) item, ((ICustomRenderedItem) item).getRenderer());
-                }
-            }
-        });
-        // ItemBlock Renderers
-        ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
-            if (block.isEnabled()) {
-                block.getItemBlock().ifPresent(item -> {
+        if (mod.getModItemRegistry() != null) {
+            ReflectionHelper.forEachValueIn(mod.getModItemRegistry(), IInfinityItem.class, (IInfinityItem item) -> {
+                if ((item instanceof Item) && item.isEnabled()) {
                     if (item instanceof IItemWithModel) {
                         for (Tuple<Integer, ModelResourceLocation> entry : ((IItemWithModel) item).getModelDefinitions()) {
-                            mod.getLogger().debug("Registering model for ItemBlock: {0} meta: {1} location: {2}", ((IInfinityItem)item).getInternalName(), entry.getFirst(), entry.getSecond());
                             ModelLoader.setCustomModelResourceLocation((Item) item, entry.getFirst(), entry.getSecond());
                         }
                     }
@@ -98,18 +84,40 @@ public class ClientProxy implements IProxy, IClientProxyBase {
                     } else if (item instanceof ICustomRenderedItem) {
                         ItemRendererRegistry.getInstance().registerCustomItemRenderer((Item) item, ((ICustomRenderedItem) item).getRenderer());
                     }
-                });
-            }
-        });
+                }
+            });
+        }
+        // ItemBlock Renderers
+        if (mod.getModBlockRegistry() != null) {
+            ReflectionHelper.forEachValueIn(mod.getModBlockRegistry(), IInfinityBlock.class, (IInfinityBlock block) -> {
+                if (block.isEnabled()) {
+                    block.getItemBlock().ifPresent(item -> {
+                        if (item instanceof IItemWithModel) {
+                            for (Tuple<Integer, ModelResourceLocation> entry : ((IItemWithModel) item).getModelDefinitions()) {
+                                mod.getLogger().debug("Registering model for ItemBlock: {0} meta: {1} location: {2}", ((IInfinityItem) item).getInternalName(), entry.getFirst(), entry.getSecond());
+                                ModelLoader.setCustomModelResourceLocation((Item) item, entry.getFirst(), entry.getSecond());
+                            }
+                        }
+                        if (item instanceof IAutoRenderedItem) {
+                            ItemRendererRegistry.getInstance().registerCustomItemRendererAuto((Item & IAutoRenderedItem) item);
+                        } else if (item instanceof ICustomRenderedItem) {
+                            ItemRendererRegistry.getInstance().registerCustomItemRenderer((Item) item, ((ICustomRenderedItem) item).getRenderer());
+                        }
+                    });
+                }
+            });
+        }
     }
 
     @Override
     public void registerEntities(InfinityMod mod, IForgeRegistry<EntityEntry> registry) {
-        ReflectionHelper.forEachIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
-            if (entry.isEnabled()) {
-                entry.registerClient(mod, registry);
-            }
-        });
+        if (mod.getModEntityRegistry() != null) {
+            ReflectionHelper.forEachValueIn(mod.getModEntityRegistry(), EntityRegistryEntry.class, (EntityRegistryEntry entry) -> {
+                if (entry.isEnabled()) {
+                    entry.registerClient(mod, registry);
+                }
+            });
+        }
     }
 
     @Override

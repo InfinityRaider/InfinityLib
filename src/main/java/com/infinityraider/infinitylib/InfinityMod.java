@@ -11,6 +11,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionType;
 import net.minecraft.server.MinecraftServer;
@@ -146,7 +147,7 @@ public abstract class InfinityMod {
     public void registerMessages(INetworkWrapper wrapper) {}
 
 
-    /**
+    /*
      * ----------------------------
      * Registering events
      * ----------------------------
@@ -160,6 +161,11 @@ public abstract class InfinityMod {
     @SubscribeEvent
     public final void registerItems(RegistryEvent.Register<Item> event) {
         InfinityLib.proxy.registerItems(this, event.getRegistry());
+    }
+    
+    @SubscribeEvent
+    public final void registerRecipes(RegistryEvent.Register<IRecipe> event) {
+        InfinityLib.proxy.registerRecipes(this, event.getRegistry());
     }
 
     @SubscribeEvent
@@ -230,7 +236,7 @@ public abstract class InfinityMod {
     public final void postInit(FMLPostInitializationEvent event) {
         this.getLogger().debug("Starting Post-Initialization");
         proxy().postInitStart(event);
-        RecipeHelper.registerRecipes(this);
+        // Well looks like there is nothing to do here...
         proxy().postInitEnd(event);
         this.getLogger().debug("Post-Initialization Complete");
     }
