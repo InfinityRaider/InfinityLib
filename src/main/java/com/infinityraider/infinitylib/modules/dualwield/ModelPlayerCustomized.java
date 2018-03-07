@@ -113,7 +113,7 @@ public class ModelPlayerCustomized extends ModelPlayer {
                 ModelRenderer modelrenderer = this.getArmForSide(enumhandside);
                 this.getArmForSide(enumhandside.opposite());
                 float f1 = this.swingProgressLeft;
-                this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt_float(f1) * ((float) Math.PI * 2F)) * 0.2F;
+                this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f1) * ((float) Math.PI * 2F)) * 0.2F;
                 this.bipedBody.rotateAngleY *= -1.0F;
                 this.bipedRightArm.rotationPointZ = MathHelper.sin(this.bipedBody.rotateAngleY) * 5.0F;
                 this.bipedRightArm.rotationPointX = -MathHelper.cos(this.bipedBody.rotateAngleY) * 5.0F;
@@ -136,7 +136,7 @@ public class ModelPlayerCustomized extends ModelPlayer {
                 ModelRenderer modelrenderer = this.getArmForSide(enumhandside);
                 this.getArmForSide(enumhandside.opposite());
                 float f1 = this.swingProgressRight;
-                this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt_float(f1) * ((float) Math.PI * 2F)) * 0.2F;
+                this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f1) * ((float) Math.PI * 2F)) * 0.2F;
                 this.bipedRightArm.rotationPointZ = MathHelper.sin(this.bipedBody.rotateAngleY) * 5.0F;
                 this.bipedRightArm.rotationPointX = -MathHelper.cos(this.bipedBody.rotateAngleY) * 5.0F;
                 this.bipedLeftArm.rotationPointZ = -MathHelper.sin(this.bipedBody.rotateAngleY) * 5.0F;
@@ -160,7 +160,7 @@ public class ModelPlayerCustomized extends ModelPlayer {
             ModelRenderer modelrenderer = this.getArmForSide(enumhandside);
             this.getArmForSide(enumhandside.opposite());
             float f1 = this.swingProgress;
-            this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt_float(f1) * ((float)Math.PI * 2F)) * 0.2F;
+            this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f1) * ((float)Math.PI * 2F)) * 0.2F;
             if (enumhandside == EnumHandSide.LEFT) {
                 this.bipedBody.rotateAngleY *= -1.0F;
             }

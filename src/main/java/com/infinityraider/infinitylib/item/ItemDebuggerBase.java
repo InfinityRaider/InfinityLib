@@ -45,7 +45,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
         if (player.isSneaking()) {
             if (!world.isRemote) {
                 DebugMode mode = this.changeDebugMode(stack);
-                player.addChatComponentMessage(new TextComponentString("Set debug mode to " + mode.debugName()));
+                player.sendMessage(new TextComponentString("Set debug mode to " + mode.debugName()));
             }
         } else {
             this.getDebugMode(stack).debugActionClicked(stack, world, player, hand);

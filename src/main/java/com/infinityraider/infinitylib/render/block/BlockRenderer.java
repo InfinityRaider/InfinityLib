@@ -44,7 +44,7 @@ public class BlockRenderer<B extends BlockBase & ICustomRenderedBlock> implement
 
     @Override
     public BakedInfBlockModel<B> bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-        return new BakedInfBlockModel<>(block, format, renderer, bakedTextureGetter, renderer.doInventoryRendering());
+        return new BakedInfBlockModel<>(block, format, renderer, bakedTextureGetter);
     }
 
     @Override

@@ -60,8 +60,8 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
     }
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer player) {
-        return this.getInventory().isUseableByPlayer(player);
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        return this.getInventory().isUsableByPlayer(player);
     }
 
     @Override

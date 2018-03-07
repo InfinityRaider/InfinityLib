@@ -110,7 +110,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
      * @return list of quads, may be empty but never null
      */
     @Override
-    public List<BakedQuad> getQuads() {
+    public ImmutableList<BakedQuad> getQuads() {
         return ImmutableList.copyOf(this.quads);
     }
 

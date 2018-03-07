@@ -30,7 +30,7 @@ public class InfinityProperty<T extends Comparable<T>> {
     }
 
     public T getValue(IBlockState state) {
-        if (state.getPropertyNames().contains(this.getProperty())) {
+        if (state.getPropertyKeys().contains(this.getProperty())) {
             return state.getValue(getProperty());
         } else {
             return this.defaultValue;
