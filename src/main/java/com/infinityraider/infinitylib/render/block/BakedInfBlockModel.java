@@ -43,14 +43,6 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     private final Map<HashableBlockState, ImmutableList<BakedQuad>> cachedQuads;
 
     @SuppressWarnings("unchecked")
-<<<<<<< HEAD
-    BakedInfBlockModel(B block, VertexFormat format, IBlockRenderingHandler<B> renderer, Function<ResourceLocation, TextureAtlasSprite> textures) {
-        this.block = Objects.requireNonNull(block, "The block for a BakedInfBlockModel must not be null!");
-        this.format = Objects.requireNonNull(format, "The vertex format for a BakedInfBlockModel must not be null!");
-        this.renderer = Objects.requireNonNull(renderer, "The renderer for a BakedInfBlockModel must not be null!");
-        this.textures = Objects.requireNonNull(textures, "The texture provider for a BakedInfBlockModel must not be null!");
-        this.itemRenderer = new BakedInfItemSuperModel(format, this.renderer, textures, DefaultTransforms::getBlockMatrix);
-=======
     BakedInfBlockModel(
             @Nonnull B block,
             @Nonnull VertexFormat format,
@@ -72,7 +64,6 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
         }
 
         // Create the quad cache map.
->>>>>>> 1.10.2
         this.cachedQuads = new HashMap<>();
     }
 
