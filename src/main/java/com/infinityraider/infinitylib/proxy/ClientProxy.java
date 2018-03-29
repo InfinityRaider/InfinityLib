@@ -21,7 +21,6 @@ import net.minecraft.util.Tuple;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -29,6 +28,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SuppressWarnings("unused")
 @SideOnly(Side.CLIENT)
 public class ClientProxy implements IProxy, IClientProxyBase {
+    public ClientProxy() {
+        boolean test = true;
+    }
+
     @Override
     public void initEnd(FMLInitializationEvent event) {
         IProxy.super.initEnd(event);
@@ -41,9 +44,9 @@ public class ClientProxy implements IProxy, IClientProxyBase {
     }
 
     @Override
-    public void initModConfiguration(InfinityConfigurationHandler handler, FMLPreInitializationEvent event) {
-        IProxy.super.initModConfiguration(handler, event);
-        handler.initializeConfigurationClient(event);
+    public void initModConfiguration(InfinityConfigurationHandler handler) {
+        IProxy.super.initModConfiguration(handler);
+        handler.initializeConfigurationClient();
     }
 
     @Override

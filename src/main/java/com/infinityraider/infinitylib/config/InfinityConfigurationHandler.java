@@ -1,13 +1,15 @@
 package com.infinityraider.infinitylib.config;
 
 import com.infinityraider.infinitylib.InfinityMod;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.config.IConfigElement;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,7 @@ public class InfinityConfigurationHandler {
     public InfinityConfigurationHandler(InfinityMod mod) {
         this.mod = mod;
         this.entries = new HashMap<>();
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     public InfinityMod getMod() {
@@ -46,20 +49,24 @@ public class InfinityConfigurationHandler {
         return this;
     }
 
-    public InfinityConfigurationHandler initializeConfiguration(FMLPreInitializationEvent event) {
+    public InfinityConfigurationHandler initializeConfiguration() {
         if(this.config == null) {
-            this.config = new Configuration(event.getSuggestedConfigurationFile());
+            this.config = new Configuration(this.getSuggestedConfigurationFile());
         }
         this.getMod().getConfiguration().initializeConfiguration(this);
         return this.updateEntries();
     }
 
-    public InfinityConfigurationHandler initializeConfigurationClient(FMLPreInitializationEvent event) {
+    public InfinityConfigurationHandler initializeConfigurationClient() {
         if(this.config == null) {
-            this.config = new Configuration(event.getSuggestedConfigurationFile());
+            this.config = new Configuration(this.getSuggestedConfigurationFile());
         }
         this.getMod().getConfiguration().initializeConfigurationClient(this);
         return this.updateEntries();
+    }
+
+    public File getSuggestedConfigurationFile() {
+        return new File(Loader.instance().getConfigDir(), this.getMod().getModId().toLowerCase() + ".cfg");
     }
 
     @SubscribeEvent

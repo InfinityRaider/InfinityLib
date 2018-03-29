@@ -19,9 +19,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
@@ -33,6 +33,8 @@ public interface IProxy extends IProxyBase {
         object.setRegistryName(new ResourceLocation(mod.getModId().toLowerCase(), name.toLowerCase()));
         registry.register(object);
     }
+
+    default void registerRegistries(InfinityMod mod, RegistryEvent.NewRegistry registrar) {}
 
     default void registerBlocks(InfinityMod mod, IForgeRegistry<Block> registry) {
         //blocks
@@ -140,9 +142,8 @@ public interface IProxy extends IProxyBase {
         Module.getActiveModules().forEach(Module::postInit);
     }
 
-    default void initModConfiguration(InfinityConfigurationHandler handler, FMLPreInitializationEvent event) {
-        handler.initializeConfiguration(event);
-        this.registerEventHandler(handler);
+    default void initModConfiguration(InfinityConfigurationHandler handler) {
+        handler.initializeConfiguration();
     }
 
     @Override

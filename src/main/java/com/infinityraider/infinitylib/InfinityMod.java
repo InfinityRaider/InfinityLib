@@ -168,6 +168,13 @@ public abstract class InfinityMod {
      */
 
     @SubscribeEvent
+    public final void initConfig(RegistryEvent.NewRegistry event) {
+        //use this to initialize the config because it is the first method called right after mod construction
+        InfinityLib.proxy.initModConfiguration(this.getConfigurationHandler());
+        InfinityLib.proxy.registerRegistries(this, event);
+    }
+
+    @SubscribeEvent
     public final void registerBlocks(RegistryEvent.Register<Block> event) {
         InfinityLib.proxy.registerBlocks(this, event.getRegistry());
     }
@@ -223,7 +230,6 @@ public abstract class InfinityMod {
     @Mod.EventHandler
     public final void preInit(FMLPreInitializationEvent event) {
         this.getLogger().debug("Starting Pre-Initialization");
-        InfinityLib.proxy.initModConfiguration(this.getConfigurationHandler(), event);
         proxy().preInitStart(event);
         proxy().activateRequiredModules();
         InfinityLib.proxy.registerEntities(this);
@@ -274,6 +280,11 @@ public abstract class InfinityMod {
     @Mod.EventHandler
     public final void onServerStopped(FMLServerStoppedEvent event) {
         proxy().onServerStopped(event);
+    }
+
+    @Mod.EventHandler
+    public final void onMissingMapping(FMLMissingMappingsEvent event) {
+        event.get().forEach(FMLMissingMappingsEvent.MissingMapping::ignore);
     }
 
 
