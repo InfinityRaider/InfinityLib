@@ -8,6 +8,8 @@ import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
+import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
+import com.infinityraider.infinitylib.sound.SoundDelegateServer;
 import com.infinityraider.infinitylib.utility.IRecipeRegister;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.block.Block;
@@ -131,6 +133,10 @@ public interface IProxy extends IProxyBase {
         ReflectionHelper.forEachIn(mod.getModBlockRegistry(), IRecipeRegister.class, IRecipeRegister::registerRecipes);
         //items
         ReflectionHelper.forEachIn(mod.getModItemRegistry(), IRecipeRegister.class, IRecipeRegister::registerRecipes);
+    }
+
+    default SidedSoundDelegate getSoundDelegate() {
+        return new SoundDelegateServer();
     }
 
     @Override

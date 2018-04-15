@@ -13,8 +13,12 @@ import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
 import com.infinityraider.infinitylib.render.item.ItemRendererRegistry;
+import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
+import com.infinityraider.infinitylib.sound.SoundDelegateClient;
+import com.infinityraider.infinitylib.sound.SoundDelegateServer;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.util.Tuple;
@@ -110,6 +114,11 @@ public class ClientProxy implements IProxy, IClientProxyBase {
                 entry.registerClient(mod);
             }
         });
+    }
+
+    @Override
+    public SoundDelegateClient getSoundDelegate() {
+        return new SoundDelegateClient(Minecraft.getMinecraft().getSoundHandler());
     }
 
     @Override

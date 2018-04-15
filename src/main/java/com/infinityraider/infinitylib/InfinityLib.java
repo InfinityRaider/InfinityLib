@@ -5,9 +5,11 @@ import com.infinityraider.infinitylib.config.ModConfiguration;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.MessageSetEntityDead;
+import com.infinityraider.infinitylib.sound.MessagePlaySound;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
 import com.infinityraider.infinitylib.proxy.IProxy;
 import com.infinityraider.infinitylib.reference.Reference;
+import com.infinityraider.infinitylib.sound.MessageStopSound;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 
@@ -39,6 +41,8 @@ public class InfinityLib extends InfinityMod {
     public void registerMessages(INetworkWrapper wrapper) {
         wrapper.registerMessage(MessageSetEntityDead.class);
         wrapper.registerMessage(MessageSyncTile.class);
+        wrapper.registerMessage(MessagePlaySound.class);
+        wrapper.registerMessage(MessageStopSound.class);
         Module.getActiveModules().stream().sorted().forEach(m -> m.registerMessages(wrapper));
     }
 }
