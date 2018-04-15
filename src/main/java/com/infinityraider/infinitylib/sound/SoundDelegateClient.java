@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -41,9 +42,25 @@ public class SoundDelegateClient extends SidedSoundDelegate implements ISoundEve
     }
 
     @Override
+    public SoundTask playSoundAtPositionOnce(Vec3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+        SoundTaskClient soundTask = new SoundTaskClient(MathHelper.getRandomUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(false);
+        ModSoundAtPosition soundImpl = new ModSoundAtPosition(this, position, soundTask);
+        this.handleSoundPlay(soundTask, soundImpl);
+        return soundTask;
+    }
+
+    @Override
     public SoundTaskClient playSoundAtEntityOnce(Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
         SoundTaskClient soundTask = new SoundTaskClient(MathHelper.getRandomUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(false);
-        ModSoundFollowEntity soundImpl = new ModSoundFollowEntity(this, entity, soundTask);
+        ModSoundAtEntity soundImpl = new ModSoundAtEntity(this, entity, soundTask);
+        this.handleSoundPlay(soundTask, soundImpl);
+        return soundTask;
+    }
+
+    @Override
+    public SoundTask playSoundAtPositionContinuous(Vec3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+        SoundTaskClient soundTask = new SoundTaskClient(MathHelper.getRandomUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
+        ModSoundAtPosition soundImpl = new ModSoundAtPosition(this, position, soundTask);
         this.handleSoundPlay(soundTask, soundImpl);
         return soundTask;
     }
@@ -51,7 +68,7 @@ public class SoundDelegateClient extends SidedSoundDelegate implements ISoundEve
     @Override
     public SoundTaskClient playSoundAtEntityContinuous(Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
         SoundTaskClient soundTask = new SoundTaskClient(MathHelper.getRandomUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
-        ModSoundFollowEntity soundImpl = new ModSoundFollowEntity(this, entity, soundTask);
+        ModSoundAtEntity soundImpl = new ModSoundAtEntity(this, entity, soundTask);
         this.handleSoundPlay(soundTask, soundImpl);
         return soundTask;
     }
@@ -69,8 +86,14 @@ public class SoundDelegateClient extends SidedSoundDelegate implements ISoundEve
     @Override
     void onSoundMessage(MessagePlaySound message) {
         SoundTaskClient soundTask = message.getModSound();
-        ModSoundFollowEntity soundImpl = new ModSoundFollowEntity(this, message.getEntity(), soundTask);
-        this.handleSoundPlay(soundTask, soundImpl);
+        switch (message.getType()) {
+            case ENTITY:
+                this.handleSoundPlay(soundTask, new ModSoundAtEntity(this, message.getEntity(), soundTask));
+                break;
+            case POSITION:
+                this.handleSoundPlay(soundTask, new ModSoundAtPosition(this, message.getPosition(), soundTask));
+                break;
+        }
     }
 
     @Override

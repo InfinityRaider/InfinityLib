@@ -1,20 +1,17 @@
 package com.infinityraider.infinitylib.sound;
 
 import net.minecraft.client.audio.MovingSound;
-import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class ModSoundFollowEntity extends MovingSound implements IModSound {
+public abstract class ModSound extends MovingSound implements IModSound {
     private final SoundDelegateClient delegate;
-    private final Entity entity;
     private final String uuid;
 
-    public ModSoundFollowEntity(SoundDelegateClient delegate, Entity entity, SoundTaskClient task) {
+    protected ModSound(SoundDelegateClient delegate, SoundTaskClient task) {
         super(task.getSound(), task.getCategory());
         this.delegate = delegate;
-        this.entity = entity;
         this.uuid = task.getUUID();
         this.setVolume(task.getVolume());
         this.setPitch(task.getPitch());
@@ -23,57 +20,54 @@ public class ModSoundFollowEntity extends MovingSound implements IModSound {
     }
 
     @Override
-    public boolean repeat() {
+    public final boolean repeat() {
         return this.repeat;
     }
 
     @Override
-    public int repeatDelay() {
+    public final int repeatDelay() {
         return this.repeatDelay;
     }
 
     @Override
-    public IModSound setVolume(float volume) {
+    public final ModSound setVolume(float volume) {
         this.volume = volume;
         return this;
     }
 
     @Override
-    public IModSound setPitch(float pitch) {
+    public final ModSound setPitch(float pitch) {
         this.pitch = pitch;
         return this;
     }
 
     @Override
-    public ModSoundFollowEntity setRepeat(boolean repeat) {
+    public final ModSound setRepeat(boolean repeat) {
         this.repeat = repeat;
         return this;
     }
 
     @Override
-    public ModSoundFollowEntity setRepeatDelay(int ticks) {
+    public final ModSound setRepeatDelay(int ticks) {
         this.repeatDelay = ticks;
         return this;
     }
 
-    public void stop() {
+    @Override
+    public final String getUUID() {
+        return this.uuid;
+    }
+
+    @Override
+    public final void stop() {
         this.donePlaying = true;
     }
 
     @Override
-    public void update() {
-        if(this.entity.isEntityAlive()) {
-            this.xPosF = (float) this.entity.posX;
-            this.yPosF = (float) this.entity.posY;
-            this.zPosF = (float) this.entity.posZ;
-            this.delegate.onSoundTick(this);
-        } else {
-            this.donePlaying = true;
-        }
+    public final void update() {
+        this.delegate.onSoundTick(this);
+        this.updateSound();
     }
 
-    @Override
-    public String getUUID() {
-        return this.uuid;
-    }
+    protected abstract void updateSound();
 }

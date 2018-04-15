@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
@@ -18,7 +19,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.List;
 
 public class MessagePlaySound extends MessageBase<IMessage> {
+    private Type type;
     private Entity entity;
+    private Vec3d position;
     private String uuid;
     private SoundEvent sound;
     private SoundCategory category;
@@ -33,7 +36,21 @@ public class MessagePlaySound extends MessageBase<IMessage> {
 
     public MessagePlaySound(Entity entity, SoundTaskServer task) {
         this();
+        this.type = Type.ENTITY;
         this.entity = entity;
+        this.uuid = task.getUUID();
+        this.sound = task.getSound();
+        this.category = task.getCategory();
+        this.volume = task.getVolume();
+        this.pitch = task.getPitch();
+        this.repeat = task.repeat();
+        this.repeatDelay = task.repeatDelay();
+    }
+
+    public MessagePlaySound(Vec3d position, SoundTaskServer task) {
+        this();
+        this.type = Type.POSITION;
+        this.position = position;
         this.uuid = task.getUUID();
         this.sound = task.getSound();
         this.category = task.getCategory();
@@ -50,13 +67,33 @@ public class MessagePlaySound extends MessageBase<IMessage> {
 
     @Override
     protected void processMessage(MessageContext ctx) {
-        if(this.entity != null && this.sound != null && this.category != null && ctx.side == Side.CLIENT) {
+        if(this.checkData() && this.sound != null && this.category != null && ctx.side == Side.CLIENT) {
             ModSoundHandler.getInstance().onSoundMessage(this);
         }
     }
 
+    protected boolean checkData() {
+        if(this.type != null) {
+            switch (this.type) {
+                case ENTITY:
+                    return this.entity != null;
+                case POSITION:
+                    return this.position != null;
+            }
+        }
+        return false;
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
     public Entity getEntity() {
         return this.entity;
+    }
+
+    public Vec3d getPosition() {
+        return this.position;
     }
 
     @SideOnly(Side.CLIENT)
@@ -92,5 +129,10 @@ public class MessagePlaySound extends MessageBase<IMessage> {
                         return (data) -> (SoundEvent.REGISTRY.getObject(new ResourceLocation(ByteBufUtil.readString(data))));
                     }
                 });
+    }
+
+    public enum Type {
+        ENTITY,
+        POSITION
     }
 }
