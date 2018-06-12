@@ -138,7 +138,7 @@ public interface IProxy extends IProxyBase {
     }
 
     default void registerPotionTypes(InfinityMod mod, IForgeRegistry<PotionType> registry) {
-        if (mod.getModPotionRegistry() != null) {
+        if (mod.getModPotionTypeRegistry() != null) {
             ReflectionHelper.forEachValueIn(mod.getModPotionTypeRegistry(), PotionType.class,
                     type -> register(mod, registry, type, type.getNamePrefixed("type")));
         }

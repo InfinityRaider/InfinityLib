@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.entity;
 
-import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.modules.entitytargeting.ModuleEntityTargeting;
 import com.infinityraider.infinitylib.utility.IToggleable;
@@ -18,6 +17,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class EntityRegistryEntry<E extends Entity> extends EntityEntry implements IToggleable {
+    private static int lastId = 0;
     private boolean enabled;
 
     /** general entity data */
@@ -131,13 +131,14 @@ public class EntityRegistryEntry<E extends Entity> extends EntityEntry implement
     @SuppressWarnings("unchecked")
     public void register(InfinityMod mod, IForgeRegistry<EntityEntry> registry) {
         ResourceLocation registryName = new ResourceLocation(mod.getModId(), this.getName());
+        EntityRegistry.registerModEntity(registryName, this.getEntityClass(), this.getName(), lastId, mod, trackingDistance, updateFrequency, velocityUpdates);
         if(hasEgg) {
             this.setEgg(new EntityList.EntityEggInfo(registryName, primaryColor, secondaryColor));
         }
         if(doSpawn && EntityLiving.class.isAssignableFrom(this.getEntityClass())) {
             EntityRegistry.addSpawn((Class<? extends EntityLiving>) this.getEntityClass(), weight, min, max, type, biomes);
         }
-        InfinityLib.proxy.register(mod, registry, this, this.getName());
+        lastId = lastId + 1;
         this.callback.run();
     }
 

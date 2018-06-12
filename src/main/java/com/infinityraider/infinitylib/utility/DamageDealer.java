@@ -220,7 +220,7 @@ public class DamageDealer {
         @Override
         @Nullable
         public Entity getTrueSource() {
-            return this.cause == null ? super.getImmediateSource() : this.cause;
+            return this.cause == null ? super.getTrueSource() : this.cause;
         }
 
         @Override

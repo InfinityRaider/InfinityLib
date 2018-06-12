@@ -170,7 +170,7 @@ public abstract class InfinityMod {
      */
 
     @SubscribeEvent
-    public final void initConfig(RegistryEvent.NewRegistry event) {
+    public final void initRegistries(RegistryEvent.NewRegistry event) {
         InfinityLib.proxy.registerRegistries(this, event);
     }
 
