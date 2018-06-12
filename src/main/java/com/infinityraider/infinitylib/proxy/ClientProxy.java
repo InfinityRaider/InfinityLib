@@ -13,9 +13,7 @@ import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
 import com.infinityraider.infinitylib.render.block.BlockRendererRegistry;
 import com.infinityraider.infinitylib.render.item.ItemRendererRegistry;
-import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
-import com.infinityraider.infinitylib.sound.SoundDelegateServer;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -25,7 +23,7 @@ import net.minecraft.util.Tuple;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
+import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -72,6 +70,8 @@ public class ClientProxy implements IProxy, IClientProxyBase {
     @Override
     public SoundDelegateClient getSoundDelegate() {
         return new SoundDelegateClient(Minecraft.getMinecraft().getSoundHandler());
+    }
+
     public void registerItems(InfinityMod mod, IForgeRegistry<Item> registry) {
         //items
         IProxy.super.registerItems(mod, registry);
@@ -99,14 +99,14 @@ public class ClientProxy implements IProxy, IClientProxyBase {
                     block.getItemBlock().ifPresent(item -> {
                         if (item instanceof IItemWithModel) {
                             for (Tuple<Integer, ModelResourceLocation> entry : ((IItemWithModel) item).getModelDefinitions()) {
-                                mod.getLogger().debug("Registering model for ItemBlock: {0} meta: {1} location: {2}", ((IInfinityItem) item).getInternalName(), entry.getFirst(), entry.getSecond());
-                                ModelLoader.setCustomModelResourceLocation((Item) item, entry.getFirst(), entry.getSecond());
+                                mod.getLogger().debug("Registering model for ItemBlock: {0} meta: {1} location: {2}", item.getInternalName(), entry.getFirst(), entry.getSecond());
+                                ModelLoader.setCustomModelResourceLocation(item, entry.getFirst(), entry.getSecond());
                             }
                         }
                         if (item instanceof IAutoRenderedItem) {
                             ItemRendererRegistry.getInstance().registerCustomItemRendererAuto((Item & IAutoRenderedItem) item);
                         } else if (item instanceof ICustomRenderedItem) {
-                            ItemRendererRegistry.getInstance().registerCustomItemRenderer((Item) item, ((ICustomRenderedItem) item).getRenderer());
+                            ItemRendererRegistry.getInstance().registerCustomItemRenderer(item, ((ICustomRenderedItem) item).getRenderer());
                         }
                     });
                 }

@@ -15,8 +15,8 @@ public class ModSoundAtPosition extends ModSound {
 
     @Override
     protected void updateSound() {
-        this.xPosF = (float) this.position.xCoord;
-        this.yPosF = (float) this.position.yCoord;
-        this.zPosF = (float) this.position.zCoord;
+        this.xPosF = (float) this.position.x;
+        this.yPosF = (float) this.position.y;
+        this.zPosF = (float) this.position.z;
     }
 }

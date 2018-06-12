@@ -1,16 +1,20 @@
 package com.infinityraider.infinitylib.proxy;
 
 import com.infinityraider.infinitylib.InfinityMod;
-import com.infinityraider.infinitylib.handler.ConfigurationHandler;
+import com.infinityraider.infinitylib.block.IInfinityBlock;
+import com.infinityraider.infinitylib.block.IInfinityBlockWithTile;
+import com.infinityraider.infinitylib.config.InfinityConfigurationHandler;
+import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
+import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateServer;
-import com.infinityraider.infinitylib.utility.IRecipeRegister;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionType;
 import net.minecraft.tileentity.TileEntity;
@@ -20,7 +24,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.VillagerRegistry;
@@ -30,6 +33,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import com.infinityraider.infinitylib.utility.IRecipeRegisterer;
 
 public interface IProxy extends IProxyBase {
+    default void registerRegistries(InfinityMod mod, RegistryEvent.NewRegistry registrar) {}
 
     default void registerBlocks(InfinityMod mod, IForgeRegistry<Block> registry) {
         // If the mod block registry is missing, skip.
@@ -58,9 +62,6 @@ public interface IProxy extends IProxyBase {
         }
     }
 
-    default SidedSoundDelegate getSoundDelegate() {
-        return new SoundDelegateServer();
-    }
     default void registerItems(InfinityMod mod, IForgeRegistry<Item> registry) {
         // Blocks
         if (mod.getModBlockRegistry() != null) {
@@ -69,8 +70,8 @@ public interface IProxy extends IProxyBase {
                     block.getItemBlock().ifPresent(item -> {
                         mod.getLogger().debug("Registering ItemBlock: " + block.getInternalName());
                         final String unlocalized = mod.getModId().toLowerCase() + ":" + block.getInternalName();
-                        ((Item) item).setUnlocalizedName(unlocalized);
-                        register(mod, registry, (Item) item, block.getInternalName());
+                        item.setUnlocalizedName(unlocalized);
+                        register(mod, registry, item, block.getInternalName());
                     });
                 }
             });
@@ -174,6 +175,10 @@ public interface IProxy extends IProxyBase {
 
     default void initModConfiguration(InfinityConfigurationHandler handler) {
         handler.initializeConfiguration();
+    }
+
+    default SidedSoundDelegate getSoundDelegate() {
+        return new SoundDelegateServer();
     }
 
     @Override

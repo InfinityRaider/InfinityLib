@@ -219,14 +219,14 @@ public class DamageDealer {
 
         @Override
         @Nullable
-        public Entity getSourceOfDamage() {
-            return this.source == null ? super.getSourceOfDamage() : this.source;
+        public Entity getTrueSource() {
+            return this.cause == null ? super.getImmediateSource() : this.cause;
         }
 
         @Override
         @Nullable
-        public Entity getEntity() {
-            return this.cause == null ? super.getEntity() : this.cause;
+        public Entity getImmediateSource() {
+            return this.source == null ? super.getTrueSource() : this.source;
         }
 
         public Vec3d getDirection() {

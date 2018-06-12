@@ -170,6 +170,11 @@ public abstract class InfinityMod {
      */
 
     @SubscribeEvent
+    public final void initConfig(RegistryEvent.NewRegistry event) {
+        InfinityLib.proxy.registerRegistries(this, event);
+    }
+
+    @SubscribeEvent
     public final void registerBlocks(RegistryEvent.Register<Block> event) {
         InfinityLib.proxy.registerBlocks(this, event.getRegistry());
     }
@@ -222,66 +227,6 @@ public abstract class InfinityMod {
 
     /**
      * ----------------------------
-     * Registering events
-     * ----------------------------
-     */
-
-    @SubscribeEvent
-    public final void initConfig(RegistryEvent.NewRegistry event) {
-        //use this to initialize the config because it is the first method called right after mod construction
-        InfinityLib.proxy.initModConfiguration(this.getConfigurationHandler());
-        InfinityLib.proxy.registerRegistries(this, event);
-    }
-
-    @SubscribeEvent
-    public final void registerBlocks(RegistryEvent.Register<Block> event) {
-        InfinityLib.proxy.registerBlocks(this, event.getRegistry());
-    }
-
-    @SubscribeEvent
-    public final void registerItems(RegistryEvent.Register<Item> event) {
-        InfinityLib.proxy.registerItems(this, event.getRegistry());
-    }
-
-    @SubscribeEvent
-    public final void registerBiomes(RegistryEvent.Register<Biome> event) {
-        InfinityLib.proxy.registerBiomes(this, event.getRegistry());
-    }
-
-    @SubscribeEvent
-    public final void registerEnchantments(RegistryEvent.Register<Enchantment> event) {
-        InfinityLib.proxy.registerEnchantments(this, event.getRegistry());
-    }
-
-    /*
-    @SubscribeEvent
-    public final void registerEntities(RegistryEvent.Register<EntityEntry> event) {
-        InfinityLib.proxy.registerEntities(this, event.getRegistry());
-    }
-    */
-
-    @SubscribeEvent
-    public final void registerPotions(RegistryEvent.Register<Potion> event) {
-        InfinityLib.proxy.registerPotions(this, event.getRegistry());
-    }
-
-    @SubscribeEvent
-    public final void registerPotionTypes(RegistryEvent.Register<PotionType> event) {
-        InfinityLib.proxy.registerPotionTypes(this, event.getRegistry());
-    }
-
-    @SubscribeEvent
-    public final void registerSounds(RegistryEvent.Register<SoundEvent> event) {
-        InfinityLib.proxy.registerSounds(this, event.getRegistry());
-    }
-
-    @SubscribeEvent
-    public final void registerVillagerProfessions(RegistryEvent.Register<VillagerRegistry.VillagerProfession> event) {
-        InfinityLib.proxy.registerVillagerProfessions(this, event.getRegistry());
-    }
-
-    /**
-     * ----------------------------
      * FML Mod loading cycle events
      * ----------------------------
      */
@@ -290,7 +235,7 @@ public abstract class InfinityMod {
     public final void preInit(FMLPreInitializationEvent event) {
         this.getLogger().debug("Starting Pre-Initialization");
         this.proxy().registerEventHandler(this);
-        proxy().initConfiguration(event);
+        InfinityLib.proxy.initModConfiguration(this.getConfigurationHandler());
         proxy().preInitStart(event);
         proxy().activateRequiredModules();
         proxy().preInitEnd(event);
@@ -340,11 +285,6 @@ public abstract class InfinityMod {
     @Mod.EventHandler
     public final void onServerStopped(FMLServerStoppedEvent event) {
         proxy().onServerStopped(event);
-    }
-
-    @Mod.EventHandler
-    public final void onMissingMapping(FMLMissingMappingsEvent event) {
-        event.get().forEach(FMLMissingMappingsEvent.MissingMapping::ignore);
     }
 
 
