@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.render.block;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 @SideOnly(Side.CLIENT)
 public class BlockRendererRegistry implements ICustomModelLoader {
@@ -118,11 +120,22 @@ public class BlockRendererRegistry implements ICustomModelLoader {
         }
     }
 
-    private void registerInventoryRendering(IBlockRenderingHandler renderer, ModelResourceLocation loc, IModel model) {
+    private void registerInventoryRendering(@Nonnull IBlockRenderingHandler renderer, @Nonnull ModelResourceLocation loc, @Nonnull IModel model) {
+        // Validate.
+        Preconditions.checkNotNull(renderer);
+        Preconditions.checkNotNull(loc);
+        Preconditions.checkNotNull(model);
+
+        // Do the thing.
         if (renderer.doInventoryRendering()) {
             ModelResourceLocation itemModel = new ModelResourceLocation(loc.getResourceDomain() + ":" + loc.getResourcePath(), "inventory");
             renderers.put(itemModel, model);
-            ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(renderer.getBlock()), stack -> itemModel);
+            // Get the item.
+            final Item item = Item.getItemFromBlock(renderer.getBlock());
+            // Check that Item exists.
+            if (item != null) { // HACK because something, I don't know what, but something changed.
+                ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(renderer.getBlock()), stack -> itemModel);
+            }
         }
     }
 }

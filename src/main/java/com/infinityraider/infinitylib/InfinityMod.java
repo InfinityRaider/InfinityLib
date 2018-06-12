@@ -1,5 +1,7 @@
 package com.infinityraider.infinitylib;
 
+import com.infinityraider.infinitylib.config.IModConfiguration;
+import com.infinityraider.infinitylib.config.InfinityConfigurationHandler;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
@@ -17,6 +19,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.*;
@@ -33,11 +36,15 @@ import net.minecraftforge.fml.relauncher.Side;
 public abstract class InfinityMod {
     private final InfinityLogger logger;
     private final INetworkWrapper networkWrapper;
+    private final InfinityConfigurationHandler configurationHandler;
 
     public InfinityMod() {
         this.logger = new InfinityLogger(this);
         this.networkWrapper = new NetworkWrapper(this);
+        this.configurationHandler = new InfinityConfigurationHandler(this);
+        MinecraftForge.EVENT_BUS.register(this);
         ModEventHandlerHack.doHack(this);   //you ain't seen nothing
+        this.initializeAPI();
     }
 
     public final InfinityLogger getLogger() {
@@ -46,6 +53,10 @@ public abstract class InfinityMod {
 
     public final INetworkWrapper getNetworkWrapper() {
         return this.networkWrapper;
+    }
+
+    public final InfinityConfigurationHandler getConfigurationHandler() {
+        return this.configurationHandler;
     }
 
     /**
@@ -57,6 +68,8 @@ public abstract class InfinityMod {
      * @return The mod ID of the mod
      */
     public abstract String getModId();
+
+    public abstract IModConfiguration getConfiguration();
 
     /**
      * Used to register the Blocks, recipes, renderers, TileEntities, etc. for all the mod's blocks.
@@ -145,6 +158,10 @@ public abstract class InfinityMod {
      */
     public void registerMessages(INetworkWrapper wrapper) {}
 
+    /**
+     * Use to initialize the mod API
+     */
+    public void initializeAPI() {}
 
     /*
      * ----------------------------
@@ -202,6 +219,66 @@ public abstract class InfinityMod {
         InfinityLib.proxy.registerVillagerProfessions(this, event.getRegistry());
     }
 
+
+    /**
+     * ----------------------------
+     * Registering events
+     * ----------------------------
+     */
+
+    @SubscribeEvent
+    public final void initConfig(RegistryEvent.NewRegistry event) {
+        //use this to initialize the config because it is the first method called right after mod construction
+        InfinityLib.proxy.initModConfiguration(this.getConfigurationHandler());
+        InfinityLib.proxy.registerRegistries(this, event);
+    }
+
+    @SubscribeEvent
+    public final void registerBlocks(RegistryEvent.Register<Block> event) {
+        InfinityLib.proxy.registerBlocks(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerItems(RegistryEvent.Register<Item> event) {
+        InfinityLib.proxy.registerItems(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerBiomes(RegistryEvent.Register<Biome> event) {
+        InfinityLib.proxy.registerBiomes(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerEnchantments(RegistryEvent.Register<Enchantment> event) {
+        InfinityLib.proxy.registerEnchantments(this, event.getRegistry());
+    }
+
+    /*
+    @SubscribeEvent
+    public final void registerEntities(RegistryEvent.Register<EntityEntry> event) {
+        InfinityLib.proxy.registerEntities(this, event.getRegistry());
+    }
+    */
+
+    @SubscribeEvent
+    public final void registerPotions(RegistryEvent.Register<Potion> event) {
+        InfinityLib.proxy.registerPotions(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerPotionTypes(RegistryEvent.Register<PotionType> event) {
+        InfinityLib.proxy.registerPotionTypes(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerSounds(RegistryEvent.Register<SoundEvent> event) {
+        InfinityLib.proxy.registerSounds(this, event.getRegistry());
+    }
+
+    @SubscribeEvent
+    public final void registerVillagerProfessions(RegistryEvent.Register<VillagerRegistry.VillagerProfession> event) {
+        InfinityLib.proxy.registerVillagerProfessions(this, event.getRegistry());
+    }
 
     /**
      * ----------------------------
@@ -263,6 +340,11 @@ public abstract class InfinityMod {
     @Mod.EventHandler
     public final void onServerStopped(FMLServerStoppedEvent event) {
         proxy().onServerStopped(event);
+    }
+
+    @Mod.EventHandler
+    public final void onMissingMapping(FMLMissingMappingsEvent event) {
+        event.get().forEach(FMLMissingMappingsEvent.MissingMapping::ignore);
     }
 
 

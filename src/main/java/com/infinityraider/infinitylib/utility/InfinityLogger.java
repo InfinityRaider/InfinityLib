@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.utility;
 
 import com.infinityraider.infinitylib.InfinityMod;
-import com.infinityraider.infinitylib.handler.ConfigurationHandler;
+import com.infinityraider.infinitylib.config.ModConfiguration;
 import java.text.MessageFormat;
 import net.minecraftforge.fml.common.FMLLog;
 import org.apache.logging.log4j.Level;
@@ -46,7 +46,7 @@ public class InfinityLogger {
      * @param objects the objects to be logged (interpreted into a string).
      */
     public void debug(String format, Object... objects) {
-        if(ConfigurationHandler.getInstance().debug) {
+        if(ModConfiguration.getInstance().debug()) {
             log(Level.INFO, "[DEBUG]: " + format, objects);
         }
     }
@@ -111,7 +111,7 @@ public class InfinityLogger {
      * @param e an exception to log.
      */
     public void printStackTrace(Exception e) {
-        if(ConfigurationHandler.getInstance().debug) {
+        if(ModConfiguration.getInstance().debug()) {
             e.printStackTrace();
         }
     }

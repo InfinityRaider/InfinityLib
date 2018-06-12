@@ -8,6 +8,7 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.Random;
 
@@ -35,6 +36,10 @@ public abstract class TileEntityBase extends TileEntity {
 
     public boolean isRemote() {
         return this.getWorld().isRemote;
+    }
+
+    public Chunk getChunk() {
+        return this.getWorld().getChunkFromBlockCoords(this.getPos());
     }
 
     @Override

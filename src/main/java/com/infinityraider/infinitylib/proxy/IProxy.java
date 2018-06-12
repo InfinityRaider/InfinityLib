@@ -1,24 +1,23 @@
 package com.infinityraider.infinitylib.proxy;
 
 import com.infinityraider.infinitylib.InfinityMod;
-import com.infinityraider.infinitylib.block.IInfinityBlock;
-import com.infinityraider.infinitylib.block.IInfinityBlockWithTile;
-import com.infinityraider.infinitylib.entity.EntityRegistryEntry;
 import com.infinityraider.infinitylib.handler.ConfigurationHandler;
-import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
+import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
+import com.infinityraider.infinitylib.sound.SoundDelegateServer;
+import com.infinityraider.infinitylib.utility.IRecipeRegister;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
-import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionType;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -59,6 +58,9 @@ public interface IProxy extends IProxyBase {
         }
     }
 
+    default SidedSoundDelegate getSoundDelegate() {
+        return new SoundDelegateServer();
+    }
     default void registerItems(InfinityMod mod, IForgeRegistry<Item> registry) {
         // Blocks
         if (mod.getModBlockRegistry() != null) {
@@ -170,9 +172,8 @@ public interface IProxy extends IProxyBase {
         Module.getActiveModules().forEach(Module::postInit);
     }
 
-    @Override
-    default void initConfiguration(FMLPreInitializationEvent event) {
-        ConfigurationHandler.getInstance().init(event);
+    default void initModConfiguration(InfinityConfigurationHandler handler) {
+        handler.initializeConfiguration();
     }
 
     @Override
@@ -190,6 +191,5 @@ public interface IProxy extends IProxyBase {
     }
 
     @Override
-    default void activateRequiredModules() {
-    }
+    default void activateRequiredModules() {}
 }
