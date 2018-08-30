@@ -50,12 +50,12 @@ public class BakedInfItemModel implements IBakedModel, IItemOverriden {
     public BakedInfItemModel(
             @Nonnull VertexFormat format,
             @Nonnull IItemRenderingHandler renderer,
-            @Nonnull Function<ResourceLocation, TextureAtlasSprite> textures
+            @Nonnull Function<ResourceLocation, TextureAtlasSprite> texturizer
     ) {
         // Validate and save parameters.
         this.format = Preconditions.checkNotNull(format);
         this.renderer = Preconditions.checkNotNull(renderer);
-        this.textureFunction = Preconditions.checkNotNull(textures);
+        this.textureFunction = Preconditions.checkNotNull(texturizer);
 
         // Save the transformer.
         this.transformer = Preconditions.checkNotNull(renderer.getPerspectiveTransformer());

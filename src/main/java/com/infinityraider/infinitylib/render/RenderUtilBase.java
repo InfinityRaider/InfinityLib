@@ -165,6 +165,7 @@ public abstract class RenderUtilBase {
         if(ModConfiguration.getInstance().debug()) {
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder buffer = tessellator.getBuffer();
+            GlStateManager.pushAttrib();
             GlStateManager.disableTexture2D();
             GlStateManager.disableLighting();
 
@@ -186,8 +187,7 @@ public abstract class RenderUtilBase {
             }
             tessellator.draw();
 
-            GlStateManager.enableLighting();
-            GlStateManager.enableTexture2D();
+            GlStateManager.popAttrib();
         }
     }
 

@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
+import com.github.quikmod.quikutil.exception.ExceptionContext;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -20,7 +21,7 @@ import org.joml.Vector4f;
 @SuppressWarnings("unused")
 public class TessellatorVertexBuffer extends TessellatorAbstractBase {
 
-    private static final Map<BufferBuilder, ThreadLocal<TessellatorVertexBuffer>> instances = new HashMap<>();
+    private static final Map<BufferBuilder, ThreadLocal<TessellatorVertexBuffer>> INSTANCES = new HashMap<>();
 
     private final Tessellator tessellator;
     private final BufferBuilder buffer;
@@ -43,16 +44,22 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     }
 
     private static TessellatorVertexBuffer getInstance(BufferBuilder buffer, Tessellator tessellator) {
-        if (!instances.containsKey(buffer)) {
-            instances.put(buffer, new ThreadLocal<>());
+        if (!INSTANCES.containsKey(buffer)) {
+            INSTANCES.put(buffer, new ThreadLocal<>());
         }
-        ThreadLocal<TessellatorVertexBuffer> threadLocal = instances.get(buffer);
+        ThreadLocal<TessellatorVertexBuffer> threadLocal = INSTANCES.get(buffer);
         TessellatorVertexBuffer tess = threadLocal.get();
         if (tess == null) {
             tess = new TessellatorVertexBuffer(buffer, tessellator);
             threadLocal.set(tess);
         }
         return tess;
+    }
+
+    @Override
+    protected void addExtendedContextInformation(ExceptionContext context) {
+        context.withEntry("Tessalator Instance", this.tessellator);
+        context.withEntry("Vertex Buffer", this.buffer);
     }
 
     /**

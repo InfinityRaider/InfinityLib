@@ -27,16 +27,21 @@ minecraft {
 }
 
 repositories {
+    mavenLocal()
+    mavenCentral()
     maven {
         name "JEI"
         url "http://dvs1.progwml6.com/files/maven"
+    }
+    maven {
+        name "JitPack"
+        url "https://jitpack.io"
     }
 }
 
 dependencies {
     shade "org.joml:joml:1.9.2"
-    compile "org.joml:joml:1.9.2:javadoc"
-    compile "org.joml:joml:1.9.2:sources"
+    shade "com.github.QuikMod:QuikUtil:45ceaa0978"
 }
 
 // Jar Task

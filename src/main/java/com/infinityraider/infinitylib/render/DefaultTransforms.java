@@ -18,7 +18,7 @@ import javax.vecmath.Vector3f;
 @SuppressWarnings("unused")
 public class DefaultTransforms {
     // Must go first, for proper classloading.
-    private static final TRSRTransformation flipX = new TRSRTransformation(null, null, new Vector3f(-1, 1, 1), null);
+    private static final TRSRTransformation FLIP_X = new TRSRTransformation(null, null, new Vector3f(-1, 1, 1), null);
 
     public static final ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> BLOCK = generateBlockTransform();
     public static final ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> ITEM = generateItemTransform();
@@ -60,7 +60,7 @@ public class DefaultTransforms {
 
     private static TRSRTransformation leftify(TRSRTransformation transform) {
         return TRSRTransformation.blockCenterToCorner(
-                flipX.compose(TRSRTransformation.blockCornerToCenter(transform)).compose(flipX)
+                FLIP_X.compose(TRSRTransformation.blockCornerToCenter(transform)).compose(FLIP_X)
         );
     }
 

@@ -18,6 +18,13 @@ import org.joml.Vector4f;
 @SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
 public interface ITessellator extends Function<ResourceLocation, TextureAtlasSprite> {
+    
+    /**
+     * Returns the id of the thread that this tesselator instance is associated with.
+     * 
+     * @return the owner's thread id.
+     */
+    long getOwnerId();
 
     /**
      * Method to start constructing quads

@@ -1,6 +1,9 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
+import com.github.quikmod.quikutil.exception.ContextedRuntimeException;
+import com.github.quikmod.quikutil.exception.ExceptionContext;
 import com.infinityraider.infinitylib.reference.Constants;
+import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -37,6 +40,11 @@ public abstract class TessellatorAbstractBase implements ITessellator {
      * Default normal (up)
      */
     public static final Vector3f STANDARD_NORMAL = new Vector3f(0, 1, 0);
+    
+    /**
+     * The thread id of the owner of this tessellation instance.
+     */
+    public final long ownerId;
 
     /**
      * Current transformation matrix
@@ -74,6 +82,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     protected boolean applyDiffuseLighting;
 
     protected TessellatorAbstractBase() {
+        this.ownerId = Thread.currentThread().getId();
         this.matrices = new MatrixStackf(64);
         this.normal = new Vector3f(STANDARD_NORMAL);
         this.tintIndex = -1;
@@ -85,7 +94,30 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
+    public final long getOwnerId() {
+        return this.ownerId;
+    }
+    
+    public final void checkThreadAccess() {
+        final long threadId = Thread.currentThread().getId();
+        if (this.ownerId != threadId) {
+            final ContextedRuntimeException e = new ContextedRuntimeException("Illegal access of tessallator from non-owner thread.");
+            this.addContextInformation(e.getContext());
+            throw e;
+        }
+    }
+    
+    public final void addContextInformation(@Nonnull ExceptionContext context) {
+        context.withEntry("ThreadId", Thread.currentThread().getId());
+        context.withEntry("OwnerId", this.ownerId);
+        context.withEntry("Vertex Format", this.format);
+    }
+    
+    protected abstract void addExtendedContextInformation(@Nonnull ExceptionContext context);
+
+    @Override
     public final void startDrawingQuads(VertexFormat vertexFormat) {
+        this.checkThreadAccess();
         this.format = vertexFormat;
         this.onStartDrawingQuadsCall();
     }
@@ -98,6 +130,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public final void draw() {
+        this.checkThreadAccess();
         this.onDrawCall();
         this.format = null;
         this.normal.set(STANDARD_NORMAL);
