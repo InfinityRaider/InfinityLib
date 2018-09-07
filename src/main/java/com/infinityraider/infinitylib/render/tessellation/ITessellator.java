@@ -20,7 +20,7 @@ import org.joml.Vector4f;
 public interface ITessellator extends Function<ResourceLocation, TextureAtlasSprite> {
     
     /**
-     * Returns the id of the thread that this tesselator instance is associated with.
+     * Returns the id of the thread that this tessellator instance is associated with.
      * 
      * @return the owner's thread id.
      */
@@ -36,7 +36,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     /**
      * Method to get all quads constructed
      *
-     * @return list of quads, may be emtpy but never null
+     * @return list of quads, may be empty but never null
      */
     ImmutableList<BakedQuad> getQuads();
 
