@@ -67,14 +67,14 @@ public abstract class TileEntityBase extends TileEntity {
     }
 
     @Override
-    public final NBTTagCompound writeToNBT(NBTTagCompound tag) {
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         this.writeTileNBT(tag);
         return tag;
     }
 
     @Override
-    public final void readFromNBT(NBTTagCompound tag) {
+    public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         this.readTileNBT(tag);
     }
