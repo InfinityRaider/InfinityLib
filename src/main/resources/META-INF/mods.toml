@@ -1,0 +1,23 @@
+modLoader="javafml"
+loaderVersion="[35,)"
+license="license.txt"
+issueTrackerURL="https://github.com/InfinityRaider/InfinityLib/issues/"
+
+[[mods]] #mandatory
+modId="infinitylib"
+version="1.16.4-2.0.0"
+displayName="InfinityLib"
+updateJSONURL="https://www.curseforge.com/minecraft/mc-mods/infinitylib/files"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/infinitylib"
+logoFile="logo.png"
+authors="InfinityRaider"
+description='''
+Library Mod.
+'''
+
+[[dependencies.examplemod]] #optional
+    modId="forge"
+    mandatory=false
+    versionRange="[35,)"
+    ordering="NONE"
+    side="BOTH"

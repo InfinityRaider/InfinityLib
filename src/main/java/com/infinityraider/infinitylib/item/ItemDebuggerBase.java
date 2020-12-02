@@ -3,20 +3,23 @@ package com.infinityraider.infinitylib.item;
 import com.infinityraider.infinitylib.reference.Names;
 import com.infinityraider.infinitylib.utility.debug.DebugMode;
 import com.infinityraider.infinitylib.utility.debug.DebugModeFeedback;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +35,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
     }
 
     public ItemDebuggerBase(boolean isVanilla) {
-        super("debugger");
+        super("debugger", new Item.Properties());
         this.DEBUG_MODES = new ArrayList<>();
         this.DEBUG_MODES.add(new DebugModeFeedback());
         this.DEBUG_MODES.addAll(getDebugModes());
@@ -41,73 +44,75 @@ public abstract class ItemDebuggerBase extends ItemBase {
     protected abstract List<DebugMode> getDebugModes();
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+    public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
         ItemStack stack = player.getHeldItem(hand);
         if (player.isSneaking()) {
             if (!world.isRemote) {
                 DebugMode mode = this.changeDebugMode(stack);
-                player.sendMessage(new TextComponentString("Set debug mode to " + mode.debugName()));
+                player.sendMessage(new StringTextComponent("Set debug mode to " + mode.debugName()), Util.DUMMY_UUID);
             }
         } else {
             this.getDebugMode(stack).debugActionClicked(stack, world, player, hand);
         }
-        return new ActionResult<>(EnumActionResult.PASS, stack);
+        return new ActionResult<>(ActionResultType.PASS, stack);
     }
 
+
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        if(!player.isSneaking()) {
-            ItemStack stack = player.getHeldItem(hand);
-            this.getDebugMode(stack).debugActionBlockClicked(stack, player, world, pos, hand, side, hitX, hitY, hitZ);
+    public ActionResultType onItemUse(ItemUseContext context) {
+        if(!context.getPlayer().isSneaking()) {
+            ItemStack stack = context.getItem();
+            this.getDebugMode(stack).debugActionBlockClicked(stack, context);
         }
-        return EnumActionResult.PASS;
+        return ActionResultType.PASS;
     }
 
     @Override
-    public boolean itemInteractionForEntity(ItemStack stack, EntityPlayer player, EntityLivingBase target, EnumHand hand) {
+    public ActionResultType itemInteractionForEntity(ItemStack stack, PlayerEntity player, LivingEntity target, Hand hand) {
         if(!player.isSneaking()) {
             this.getDebugMode(stack).debugActionEntityClicked(stack, player, target, hand);
         }
-        return false;
+        return ActionResultType.PASS;
     }
 
-    @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer playerIn, List<String> tooltip, boolean advanced) {
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flag) {
         DebugMode mode = getDebugMode(stack);
-        tooltip.add("Right Click to use the debugger in its current mode");
-        tooltip.add("Shift + Right Click to cycle debug modes");
-        tooltip.add("Current debug mode: "  + (mode == null ? "null" : mode.debugName()));
+        tooltip.add(new StringTextComponent("Right Click to use the debugger in its current mode"));
+        tooltip.add(new StringTextComponent("Shift + Right Click to cycle debug modes"));
+        tooltip.add(new StringTextComponent("Current debug mode: "  + (mode == null ? "null" : mode.debugName())));
     }
 
     private DebugMode getDebugMode(ItemStack stack) {
-        NBTTagCompound tag;
-        if(!stack.hasTagCompound()) {
-            tag = new NBTTagCompound();
-            stack.setTagCompound(tag);
+        CompoundNBT tag;
+        if(!stack.hasTag()) {
+            tag = new CompoundNBT();
+            stack.setTag(tag);
         } else {
-            tag = stack.getTagCompound();
+            tag = stack.getTag();
         }
-        if(!tag.hasKey(Names.NBT.COUNT)) {
-            tag.setInteger(Names.NBT.COUNT, 0);
+        if(!tag.contains(Names.NBT.COUNT)) {
+            tag.putInt(Names.NBT.COUNT, 0);
         }
-        return DEBUG_MODES.get(tag.getInteger(Names.NBT.COUNT) % DEBUG_MODES.size());
+        return DEBUG_MODES.get(tag.getInt(Names.NBT.COUNT) % DEBUG_MODES.size());
     }
 
     private DebugMode changeDebugMode(ItemStack stack) {
-        NBTTagCompound tag;
-        if(!stack.hasTagCompound()) {
-            tag = new NBTTagCompound();
-            stack.setTagCompound(tag);
+        CompoundNBT tag;
+        if(!stack.hasTag()) {
+            tag = new CompoundNBT();
+            stack.setTag(tag);
         } else {
-            tag = stack.getTagCompound();
+            tag = stack.getTag();
         }
         int index;
-        if(!tag.hasKey(Names.NBT.COUNT)) {
+        if(!tag.contains(Names.NBT.COUNT)) {
             index = 1;
         } else {
-            index = (tag.getInteger(Names.NBT.COUNT) + 1 ) % DEBUG_MODES.size();
+            index = (tag.getInt(Names.NBT.COUNT) + 1 ) % DEBUG_MODES.size();
         }
-        tag.setInteger(Names.NBT.COUNT, index);
+        tag.putInt(Names.NBT.COUNT, index);
         return DEBUG_MODES.get(index);
     }
 }

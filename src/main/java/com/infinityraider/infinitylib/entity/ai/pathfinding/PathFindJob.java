@@ -1,14 +1,16 @@
 package com.infinityraider.infinitylib.entity.ai.pathfinding;
 
+import com.google.common.collect.Lists;
 import com.infinityraider.infinitylib.InfinityLib;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.pathfinding.PathPoint;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -16,7 +18,7 @@ import java.util.Objects;
 public class PathFindJob extends Path {
     public static final double DEFAULT_SPEED = 1.5D;
 
-    private final EntityLiving entity;
+    private final MobEntity entity;
     private final double speed;
     private final PathCalculator.ITarget target;
     private final PathCalculator.IPathOptions options;
@@ -24,16 +26,16 @@ public class PathFindJob extends Path {
 
     private boolean cancelled;
 
-    public PathFindJob(EntityLiving entity, PathCalculator.ITarget target, PathCalculator.IPathOptions options) {
+    public PathFindJob(MobEntity entity, PathCalculator.ITarget target, PathCalculator.IPathOptions options) {
         this(entity, DEFAULT_SPEED, target, options);
     }
 
-    public PathFindJob(EntityLiving entity, double speed, PathCalculator.ITarget target, PathCalculator.IPathOptions options) {
+    public PathFindJob(MobEntity entity, double speed, PathCalculator.ITarget target, PathCalculator.IPathOptions options) {
         this(entity, speed, target, options, ICallback.none);
     }
 
-    public PathFindJob(EntityLiving entity, double speed, PathCalculator.ITarget target, PathCalculator.IPathOptions options, ICallback callback) {
-        super(new PathPoint[] {target.getTargetPoint()});
+    public PathFindJob(MobEntity entity, double speed, PathCalculator.ITarget target, PathCalculator.IPathOptions options, ICallback callback) {
+        super(Lists.newArrayList(target.getTargetPoint()), target.getTargetPoint().func_224759_a(), false);
         this.entity = Objects.requireNonNull(entity);
         this.speed = speed;
         this.target = Objects.requireNonNull(target);
@@ -46,7 +48,7 @@ public class PathFindJob extends Path {
     //Getters
     //-------
 
-    public EntityLiving entity() {
+    public MobEntity entity() {
         return this.entity;
     }
 
@@ -59,15 +61,15 @@ public class PathFindJob extends Path {
     }
 
     public PathPoint getEntityPoint() {
-        Vec3d entityPos = this.getEntityPosition();
+        Vector3d entityPos = this.getEntityPosition();
         return new PathPoint(MathHelper.floor(entityPos.x), MathHelper.floor(entityPos.y), MathHelper.floor(entityPos.z));
     }
 
-    public Vec3d getEntityPosition() {
-        return this.entity().getPositionVector().add(new Vec3d(
-                (double)((int)(this.entity().width + 1.0F)) * 0.5D,
+    public Vector3d getEntityPosition() {
+        return this.entity().getPositionVec().add(new Vector3d(
+                (double)((int)(this.entity().getWidth() + 1.0F)) * 0.5D,
                 0,
-                (double)((int)(this.entity().width + 1.0F)) * 0.5D
+                (double)((int)(this.entity().getWidth() + 1.0F)) * 0.5D
         ));
     }
 
@@ -76,19 +78,19 @@ public class PathFindJob extends Path {
     //-----------
 
     public boolean isValid() {
-        return (!this.cancelled) && this.entity().isEntityAlive() && this.target().isValid();
+        return (!this.cancelled) && this.entity().isAlive() && this.target().isValid();
     }
 
     public PathFindJob cancel() {
         this.cancelled = true;
         this.entity().getNavigator().setPath(null, this.speed());
-        InfinityLib.proxy.queueTask(this.callback::onJobCancelled);
+        InfinityLib.instance.proxy().queueTask(this.callback::onJobCancelled);
         return this;
     }
 
     public PathFindJob finish(Path path) {
         this.entity().getNavigator().setPath(path, this.speed());
-        InfinityLib.proxy.queueTask(() -> this.callback.onJobFinished(this.entity(), path));
+        InfinityLib.instance.proxy().queueTask(() -> this.callback.onJobFinished(this.entity(), path));
         this.cancelled = true;
         return this;
     }
@@ -96,14 +98,14 @@ public class PathFindJob extends Path {
     public PathFindJob fail() {
         this.cancelled = true;
         this.entity().getNavigator().setPath(null, this.speed());
-        InfinityLib.proxy.queueTask(this.callback::onJobFailed);
+        InfinityLib.instance.proxy().queueTask(this.callback::onJobFailed);
         return this;
     }
 
     public interface ICallback {
         void onJobCancelled();
 
-        void onJobFinished(EntityLiving entity, Path path);
+        void onJobFinished(MobEntity entity, Path path);
 
         void onJobFailed();
 
@@ -112,7 +114,7 @@ public class PathFindJob extends Path {
             public void onJobCancelled() {}
 
             @Override
-            public void onJobFinished(EntityLiving entity, Path path) {}
+            public void onJobFinished(MobEntity entity, Path path) {}
 
             @Override
             public void onJobFailed() {}
@@ -131,11 +133,11 @@ public class PathFindJob extends Path {
         return this.target.canTargetMove();
     }
 
-    public boolean hasTargetChanged(Vec3d previous) {
+    public boolean hasTargetChanged(Vector3d previous) {
         return this.target.hasTargetChanged(previous);
     }
 
-    public Vec3d getTargetVector() {
+    public Vector3d getTargetVector() {
         return this.target.getTarget();
     }
 
@@ -198,7 +200,7 @@ public class PathFindJob extends Path {
 
     @Override
     public int getCurrentPathLength() {
-        return MathHelper.ceil(this.entity().getPositionVector().distanceTo(this.target.getTarget()));
+        return MathHelper.ceil(this.entity().getPositionVec().distanceTo(this.target.getTarget()));
     }
 
     @Override
@@ -213,18 +215,13 @@ public class PathFindJob extends Path {
     public void setCurrentPathIndex(int currentPathIndexIn) {}
 
     @Override
-    public Vec3d getVectorFromIndex(Entity entity, int index) {
+    public Vector3d getVectorFromIndex(Entity entity, int index) {
         return this.getEntityPosition();
     }
 
     @Override
-    public Vec3d getPosition(Entity entity)  {
+    public Vector3d getPosition(Entity entity)  {
         return this.getVectorFromIndex(entity, this.getCurrentPathIndex());
-    }
-
-    @Override
-    public Vec3d getCurrentPos() {
-        return this.getEntityPosition();
     }
 
     @Override
@@ -233,20 +230,18 @@ public class PathFindJob extends Path {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public PathPoint[] getOpenSet() {
         return new PathPoint[] {};
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public PathPoint[] getClosedSet() {
         return new PathPoint[] {};
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public PathPoint getTarget()  {
-        return this.getFinalPathPoint();
+    public BlockPos getTarget()  {
+        return this.getFinalPathPoint().func_224759_a();
     }
 }

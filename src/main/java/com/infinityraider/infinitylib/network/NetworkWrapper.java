@@ -6,94 +6,110 @@ import com.infinityraider.infinitylib.network.serialization.IMessageReader;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
 import com.infinityraider.infinitylib.network.serialization.MessageSerializerStore;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
+
+import java.lang.reflect.Constructor;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class NetworkWrapper implements INetworkWrapper {
-    private final SimpleNetworkWrapper wrapper;
+    private static final String PROTOCOL_VERSION = "1";
+
+    private final SimpleChannel channel;
     private int nextId = 0;
 
     public NetworkWrapper(InfinityMod mod) {
-        String id = mod.getModId();
-        if(id.length() > 20) {
-            id = id.substring(0, 20);
-        }
-        this.wrapper = NetworkRegistry.INSTANCE.newSimpleChannel(id);
+        this.channel = NetworkRegistry.newSimpleChannel(
+                new ResourceLocation(mod.getModId(), "network_channel"),
+                () -> PROTOCOL_VERSION,
+                PROTOCOL_VERSION::equals,
+                PROTOCOL_VERSION::equals);
     }
 
     @Override
     public void sendToAll(MessageBase message) {
-        if(message.getMessageHandlerSide() == Side.CLIENT) {
-            this.wrapper.sendToAll(message);
+        if(message.getMessageDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            this.channel.send(PacketDistributor.ALL.noArg(), message);
         }
     }
 
     @Override
-    public void sendTo(MessageBase message, EntityPlayerMP player) {
-        if(message.getMessageHandlerSide() == Side.CLIENT) {
-            this.wrapper.sendTo(message, player);
+    public void sendTo(MessageBase message, ServerPlayerEntity player) {
+        if(message.getMessageDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            this.channel.send(PacketDistributor.PLAYER.with(() -> player), message);
         }
     }
 
     @Override
     public void sendToAllAround(MessageBase message, World world, double x, double y, double z, double range) {
-        if(message.getMessageHandlerSide() == Side.CLIENT) {
-            this.sendToAllAround(message, world.provider.getDimension(), x, y, z, range);
+        this.sendToAllAround(message, world.getDimensionKey(), x, y, z, range);
+    }
+
+    @Override
+    public void sendToAllAround(MessageBase message, RegistryKey<World> dimension, double x, double y, double z, double range) {
+        if(message.getMessageDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            this.sendToAllAround(message, PacketDistributor.TargetPoint.p(x, y, z, range, dimension));
         }
     }
 
     @Override
-    public void sendToAllAround(MessageBase message, int dimension, double x, double y, double z, double range) {
-        if(message.getMessageHandlerSide() == Side.CLIENT) {
-            this.sendToAllAround(message, new NetworkRegistry.TargetPoint(dimension, x, y, z, range));
-        }
-    }
-
-    @Override
-    public void sendToAllAround(MessageBase message, NetworkRegistry.TargetPoint point) {
-        if(message.getMessageHandlerSide() == Side.CLIENT) {
-            this.wrapper.sendToAllAround(message, point);
+    public void sendToAllAround(MessageBase message, Supplier<PacketDistributor.TargetPoint> point) {
+        if(message.getMessageDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            this.channel.send(PacketDistributor.NEAR.with(point), message);
         }
     }
 
     @Override
     public void sendToDimension(MessageBase message, World world) {
-        if(message.getMessageHandlerSide() == Side.CLIENT) {
-            this.sendToDimension(message, world.provider.getDimension());
-        }
+        this.sendToDimension(message, world.getDimensionKey());
     }
 
     @Override
-    public void sendToDimension(MessageBase message, int dimensionId) {
-        if(message.getMessageHandlerSide() == Side.CLIENT) {
-            this.wrapper.sendToDimension(message, dimensionId);
+    public void sendToDimension(MessageBase message, RegistryKey<World> dimension) {
+        if(message.getMessageDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            this.channel.send(PacketDistributor.DIMENSION.with(() -> dimension), message);
         }
     }
 
     @Override
     public void sendToServer(MessageBase message) {
-        if(message.getMessageHandlerSide() == Side.SERVER) {
-            this.wrapper.sendToServer(message);
+        if(message.getMessageDirection() == NetworkDirection.PLAY_TO_SERVER) {
+            this.channel.send(PacketDistributor.SERVER.noArg(), message);
         }
     }
 
     @Override
-    public <REQ extends MessageBase<REPLY>, REPLY extends IMessage> void registerMessage(Class<? extends REQ> message) {
+    public <MSG extends MessageBase> void registerMessage(Class<MSG> msgClass) {
         try {
-            REQ msg = message.getDeclaredConstructor().newInstance();
+            // Fetch constructor and create an instance
+            Constructor<MSG> msgConstructor = msgClass.getDeclaredConstructor();
+            MSG msg = msgConstructor.newInstance();
+            // Register required data serializers
             msg.getNecessarySerializers().stream().forEach(this::registerDataSerializer);
-            Side side = msg.getMessageHandlerSide();
-            wrapper.registerMessage(new MessageHandler<REQ, REPLY>(), message, nextId, side);
-            InfinityLib.instance.getLogger().debug("Registered message \"" + message.getName() + "\" with id " + nextId);
+            // Register the message
+            channel.registerMessage(nextId,
+                    msgClass,
+                    new MessageEncoder<>(),
+                    new MessageDecoder<>(msgConstructor),
+                    new MessageHandler<>(),
+                    Optional.ofNullable(msg.getMessageDirection())
+            );
+            InfinityLib.instance.getLogger().debug("Registered message \"" + msgClass.getName() + "\" with id " + nextId);
+            // Increment ID
             nextId = nextId + 1;
-            MessageBase.onMessageRegistered(message, this);
+            MessageBase.onMessageRegistered(msgClass, this);
         } catch (Exception e) {
             InfinityLib.instance.getLogger().printStackTrace(e);
         }
@@ -109,29 +125,55 @@ public class NetworkWrapper implements INetworkWrapper {
         MessageSerializerStore.registerMessageSerializer(serializer);
     }
 
-    private static final class MessageHandler<REQ extends MessageBase<REPLY>, REPLY extends IMessage> implements IMessageHandler<REQ, REPLY> {
-        protected MessageHandler() {
+    private static class MessageEncoder<MSG extends MessageBase> implements BiConsumer<MSG, PacketBuffer> {
+        private MessageEncoder() {}
+
+        @Override
+        public void accept(MSG req, PacketBuffer packetBuffer) {
+            req.toBytes(packetBuffer);
+        }
+    }
+
+    private static class MessageDecoder<MSG extends MessageBase> implements Function<PacketBuffer, MSG> {
+        private final Constructor<MSG> msgConstructor;
+
+        private MessageDecoder(Constructor<MSG> msgConstructor) {
+            this.msgConstructor = msgConstructor;
         }
 
         @Override
-        public final REPLY onMessage(REQ message, MessageContext ctx) {
-            InfinityLib.proxy.queueTask(new MessageTask(message, ctx));
-            return message.getReply(ctx);
+        public MSG apply(PacketBuffer buf) {
+            try {
+                return this.msgConstructor.newInstance().fromBytes(buf);
+            } catch (Exception e) {
+                InfinityLib.instance.getLogger().printStackTrace(e);
+            }
+            return null;
+        }
+    }
+
+    private static final class MessageHandler<MSG extends MessageBase> implements BiConsumer<MSG, Supplier<NetworkEvent.Context>> {
+        private MessageHandler() {}
+
+        @Override
+        public void accept(MSG msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+            NetworkEvent.Context ctx = ctxSupplier.get();
+            ctx.enqueueWork(new MessageTask(msg, ctx));
         }
     }
 
     private static class MessageTask implements Runnable {
         private final MessageBase message;
-        private final MessageContext ctx;
+        private final NetworkEvent.Context ctx;
 
-        private MessageTask(MessageBase message, MessageContext ctx) {
+        private MessageTask(MessageBase message, NetworkEvent.Context ctx) {
             this.message = message;
             this.ctx = ctx;
         }
 
         @Override
         public void run() {
-            if(this.message.getMessageHandlerSide() == this.ctx.side) {
+            if(this.message.getMessageDirection() == this.ctx.getDirection()) {
                 this.message.processMessage(this.ctx);
             }
         }

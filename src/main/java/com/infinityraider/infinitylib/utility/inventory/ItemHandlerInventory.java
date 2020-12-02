@@ -1,10 +1,10 @@
 package com.infinityraider.infinitylib.utility.inventory;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -37,6 +37,11 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
         return this.getInventory().getInventoryStackLimit();
     }
 
+    @Override
+    public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        return this.getInventory().isItemValidForSlot(slot, stack);
+    }
+
     @Nullable
     @Override
     public ItemStack decrStackSize(int index, int count) {
@@ -65,17 +70,17 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
     }
 
     @Override
-    public boolean isUsableByPlayer(EntityPlayer player) {
+    public boolean isUsableByPlayer(PlayerEntity player) {
         return this.getInventory().isUsableByPlayer(player);
     }
 
     @Override
-    public void openInventory(EntityPlayer player) {
+    public void openInventory(PlayerEntity player) {
         this.getInventory().openInventory(player);
     }
 
     @Override
-    public void closeInventory(EntityPlayer player) {
+    public void closeInventory(PlayerEntity player) {
         this.getInventory().closeInventory(player);
     }
 
@@ -85,37 +90,7 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
     }
 
     @Override
-    public int getField(int id) {
-        return this.getInventory().getField(id);
-    }
-
-    @Override
-    public void setField(int id, int value) {
-        this.getInventory().setField(id, value);
-    }
-
-    @Override
-    public int getFieldCount() {
-        return this.getInventory().getFieldCount();
-    }
-
-    @Override
     public void clear() {
         this.getInventory().clear();
-    }
-
-    @Override
-    public String getName() {
-        return this.getInventory().getName();
-    }
-
-    @Override
-    public boolean hasCustomName() {
-        return this.getInventory().hasCustomName();
-    }
-
-    @Override
-    public ITextComponent getDisplayName() {
-        return this.getInventory().getDisplayName();
     }
 }

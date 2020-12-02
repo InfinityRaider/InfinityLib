@@ -1,4 +1,4 @@
-package com.infinityraider.infinitylib.modules.specialpotioneffect;
+package com.infinityraider.infinitylib.modules.synchronizedeffects;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
@@ -7,19 +7,19 @@ import com.infinityraider.infinitylib.network.INetworkWrapper;
 
 import java.util.List;
 
-public class ModuleSpecialPotion extends Module {
-    private static final ModuleSpecialPotion INSTANCE = new ModuleSpecialPotion();
+public class ModuleSynchronizedEffects extends Module {
+    private static final ModuleSynchronizedEffects INSTANCE = new ModuleSynchronizedEffects();
 
-    public static final CapabilityPotionTracker CAPABILITY = CapabilityPotionTracker.getInstance();
-    public static final PotionEffectHandler HANDLER = PotionEffectHandler.getInstance();
+    public static final CapabilityEffectTracker CAPABILITY = CapabilityEffectTracker.getInstance();
+    public static final EffectHandler HANDLER = EffectHandler.getInstance();
 
-    public static ModuleSpecialPotion getInstance() {
+    public static ModuleSynchronizedEffects getInstance() {
         return INSTANCE;
     }
 
     @Override
     public void registerMessages(INetworkWrapper wrapper) {
-        wrapper.registerMessage(MessageSyncPotions.class);
+        wrapper.registerMessage(MessageSyncEffects.class);
     }
 
     @Override

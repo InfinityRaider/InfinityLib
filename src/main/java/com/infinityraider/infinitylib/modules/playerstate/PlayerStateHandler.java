@@ -1,17 +1,19 @@
 package com.infinityraider.infinitylib.modules.playerstate;
 
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.event.entity.ThrowableImpactEvent;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -29,7 +31,7 @@ public class PlayerStateHandler {
         this.states = new HashMap<>();
     }
 
-    State getState(EntityPlayer player) {
+    State getState(PlayerEntity player) {
         if(!states.containsKey(player.getUniqueID())) {
             states.put(player.getUniqueID(), new State(player));
         }
@@ -38,12 +40,15 @@ public class PlayerStateHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     @SuppressWarnings("unused")
-    public void onEntityImpactEvent(ThrowableImpactEvent event) {
-        if(event.getRayTraceResult().entityHit instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) event.getRayTraceResult().entityHit;
-            if(getState(player).isEthereal()) {
-                event.setCanceled(true);
-                event.setResult(Event.Result.DENY);
+    public void onProjectileImpactEvent(ProjectileImpactEvent event) {
+        if(event.getRayTraceResult().getType() == RayTraceResult.Type.ENTITY) {
+            Entity hit = ((EntityRayTraceResult) event.getRayTraceResult()).getEntity();
+            if(hit instanceof PlayerEntity) {
+                PlayerEntity player = (PlayerEntity) hit;
+                if (getState(player).isEthereal()) {
+                    event.setCanceled(true);
+                    event.setResult(Event.Result.DENY);
+                }
             }
         }
     }
@@ -51,8 +56,8 @@ public class PlayerStateHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     @SuppressWarnings("unused")
     public void onEntityHurtEvent(LivingHurtEvent event) {
-        if(event.getEntityLiving() instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) event.getEntityLiving();
+        if(event.getEntityLiving() instanceof PlayerEntity) {
+            PlayerEntity player = (PlayerEntity) event.getEntityLiving();
             if(getState(player).isInvulnerable()) {
                 event.setCanceled(true);
                 event.setResult(Event.Result.DENY);
@@ -61,36 +66,22 @@ public class PlayerStateHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SuppressWarnings("unused")
     public void onPlayerRenderPreEvent(RenderPlayerEvent.Pre event) {
         this.cancelRenderEvent(event);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SuppressWarnings("unused")
     public void onPlayerRenderPostEvent(RenderPlayerEvent.Post event) {
         this.cancelRenderEvent(event);
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    @SideOnly(Side.CLIENT)
-    @SuppressWarnings("unused")
-    public void onPlayerRenderEvent(RenderPlayerEvent.Specials.Pre event) {
-        this.cancelRenderEvent(event);
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    @SideOnly(Side.CLIENT)
-    @SuppressWarnings("unused")
-    public void onPlayerRenderEvent(RenderPlayerEvent.Specials.Post event) {
-        this.cancelRenderEvent(event);
-    }
-
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private void cancelRenderEvent(RenderPlayerEvent event) {
-        if(getState(event.getEntityPlayer()).isInvisible()) {
+        if(getState(event.getPlayer()).isInvisible()) {
             if(event.isCancelable()) {
                 event.setCanceled(true);
             }
@@ -101,13 +92,13 @@ public class PlayerStateHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onEntityTargetingEvent(LivingSetAttackTargetEvent event) {
-        EntityLivingBase target = event.getTarget();
-        EntityLivingBase attacker = event.getEntityLiving();
-        if(target == null || attacker == null || !(target instanceof EntityPlayer) || !(attacker instanceof EntityLiving)) {
+        LivingEntity target = event.getTarget();
+        LivingEntity attacker = event.getEntityLiving();
+        if(target == null || attacker == null || !(target instanceof PlayerEntity) || !(attacker instanceof LivingEntity)) {
             return;
         }
-        if(getState((EntityPlayer) target).isUndetectable()) {
-            ((EntityLiving) attacker).setAttackTarget(null);
+        if(getState((PlayerEntity) target).isUndetectable()) {
+            attacker.setRevengeTarget(null);
         }
     }
 

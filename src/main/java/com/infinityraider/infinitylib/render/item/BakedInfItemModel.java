@@ -1,35 +1,29 @@
-/*
- */
 package com.infinityraider.infinitylib.render.item;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
+import java.util.Random;
 import java.util.function.Function;
-import javax.vecmath.Matrix4f;
 
 import com.infinityraider.infinitylib.render.DefaultTransforms;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraft.util.Direction;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class BakedInfItemModel implements IBakedModel, IItemOverriden {
 
     @Nonnull
@@ -37,7 +31,7 @@ public class BakedInfItemModel implements IBakedModel, IItemOverriden {
     @Nonnull
     protected final IItemRenderingHandler renderer;
     @Nonnull
-    protected final Function<ResourceLocation, TextureAtlasSprite> textureFunction;
+    protected final Function<RenderMaterial, TextureAtlasSprite> textureFunction;
 
     @Nonnull
     protected final DefaultTransforms.Transformer transformer;
@@ -50,7 +44,7 @@ public class BakedInfItemModel implements IBakedModel, IItemOverriden {
     public BakedInfItemModel(
             @Nonnull VertexFormat format,
             @Nonnull IItemRenderingHandler renderer,
-            @Nonnull Function<ResourceLocation, TextureAtlasSprite> textures
+            @Nonnull Function<RenderMaterial, TextureAtlasSprite> textures
     ) {
         // Validate and save parameters.
         this.format = Preconditions.checkNotNull(format);
@@ -66,7 +60,7 @@ public class BakedInfItemModel implements IBakedModel, IItemOverriden {
     }
 
     @Override
-    public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
+    public List<BakedQuad> getQuads(BlockState state, Direction side, Random rand) {
         return ImmutableList.of();
     }
 
@@ -81,6 +75,11 @@ public class BakedInfItemModel implements IBakedModel, IItemOverriden {
     }
 
     @Override
+    public boolean isSideLit() {
+        return false;
+    }
+
+    @Override
     public boolean isBuiltInRenderer() {
         return false;
     }
@@ -91,12 +90,7 @@ public class BakedInfItemModel implements IBakedModel, IItemOverriden {
     }
 
     @Override
-    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType transform) {
-        return Pair.of(this, this.transformer.apply(transform));
-    }
-
-    @Override
-    public final BakedInfItemSubModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity) {
+    public final BakedInfItemSubModel handleItemState(IBakedModel originalModel, ItemStack stack, ClientWorld world, LivingEntity entity) {
         return this.cache.computeIfAbsent(
                 // Get the respective cache key for the item model.
                 this.renderer.getItemQuadsCacheKey(world, stack, entity),

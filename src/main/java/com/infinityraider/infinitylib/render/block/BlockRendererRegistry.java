@@ -2,25 +2,16 @@ package com.infinityraider.infinitylib.render.block;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlockWithTile;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
-import com.infinityraider.infinitylib.render.tile.TesrWrapper;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.block.statemap.StateMapperBase;
-import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.renderer.model.ModelResourceLocation;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.ICustomModelLoader;
-import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 
-@SideOnly(Side.CLIENT)
-public class BlockRendererRegistry implements ICustomModelLoader {
+@OnlyIn(Dist.CLIENT)
+public class BlockRendererRegistry {
 
     private static final BlockRendererRegistry INSTANCE = new BlockRendererRegistry();
 
@@ -37,52 +28,21 @@ public class BlockRendererRegistry implements ICustomModelLoader {
         return INSTANCE;
     }
 
-    private final Map<ResourceLocation, IModel> renderers;
+    private final Map<ResourceLocation, BlockRenderer>renderers;
     private final List<ICustomRenderedBlock> blocks;
 
     private BlockRendererRegistry() {
         this.renderers = new HashMap<>();
         this.blocks = new ArrayList<>();
-        ModelLoaderRegistry.registerLoader(this);
-    }
-
-    @Override
-    public boolean accepts(ResourceLocation loc) {
-        return renderers.containsKey(loc);
-    }
-
-    @Override
-    public IModel loadModel(ResourceLocation loc) throws Exception {
-        return renderers.get(loc);
-    }
-
-    @Override
-    public void onResourceManagerReload(IResourceManager resourceManager) {
+        //ModelLoaderRegistry.registerLoader(new ResourceLocation(InfinityLib.instance.getModId(),"blocks"),this); //TODO
     }
 
     public List<ICustomRenderedBlock> getRegisteredBlocks() {
         return ImmutableList.copyOf(blocks);
     }
 
-    @SideOnly(Side.CLIENT)
-    public void registerCustomBlockRenderer(ICustomRenderedBlock customRenderedBlock) {
-        if (customRenderedBlock == null || !(customRenderedBlock instanceof BlockBase)) {
-            return;
-        }
-        //set custom state mapper
-        StateMapperBase stateMapper = new StateMapperBase() {
-            @Override
-            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-                return customRenderedBlock.getBlockModelResourceLocation();
-            }
-        };
-        ModelLoader.setCustomStateMapper((BlockBase) customRenderedBlock, stateMapper);
-        //register renderers
-        if (customRenderedBlock instanceof ICustomRenderedBlockWithTile) {
-            registerTileRenderer((ICustomRenderedBlockWithTile) customRenderedBlock);
-        } else {
-            registerBlockRenderer(customRenderedBlock);
-        }
+    public void registerCustomBlockRenderer(TileEntityRendererDispatcher dispatcher, ICustomRenderedBlock customRenderedBlock) {
+        //TODO
     }
 
     @SuppressWarnings("unchecked")
@@ -100,7 +60,7 @@ public class BlockRendererRegistry implements ICustomModelLoader {
     }
 
     @SuppressWarnings("unchecked")
-    private void registerTileRenderer(ICustomRenderedBlockWithTile<? extends TileEntityBase> customRenderedBlock) {
+    private void registerTileRenderer(TileEntityRendererDispatcher dispatcher, ICustomRenderedBlockWithTile<? extends TileEntityBase> customRenderedBlock) {
         ITileRenderingHandler renderer = customRenderedBlock.getRenderer();
         if (renderer != null) {
             BlockWithTileRenderer instance = new BlockWithTileRenderer(renderer);
@@ -112,7 +72,8 @@ public class BlockRendererRegistry implements ICustomModelLoader {
             //dynamic rendering
             TileEntity tile = renderer.getTileEntity();
             if (renderer.hasDynamicRendering() && tile != null) {
-                ClientRegistry.bindTileEntitySpecialRenderer(tile.getClass(), new TesrWrapper<>(instance));
+                //ClientRegistry.bindTileEntitySpecialRenderer(tile.getClass(), new TesrWrapper<>(dispatcher, instance));
+                //TODO: bind TESR
             }
             //inventory rendering
             registerInventoryRendering(renderer, blockModel, instance);
@@ -120,7 +81,7 @@ public class BlockRendererRegistry implements ICustomModelLoader {
         }
     }
 
-    private void registerInventoryRendering(@Nonnull IBlockRenderingHandler renderer, @Nonnull ModelResourceLocation loc, @Nonnull IModel model) {
+    private void registerInventoryRendering(@Nonnull IBlockRenderingHandler renderer, @Nonnull ModelResourceLocation loc, BlockRenderer model) {
         // Validate.
         Preconditions.checkNotNull(renderer);
         Preconditions.checkNotNull(loc);
@@ -128,13 +89,14 @@ public class BlockRendererRegistry implements ICustomModelLoader {
 
         // Do the thing.
         if (renderer.doInventoryRendering()) {
-            ModelResourceLocation itemModel = new ModelResourceLocation(loc.getResourceDomain() + ":" + loc.getResourcePath(), "inventory");
+            ModelResourceLocation itemModel = new ModelResourceLocation(loc.getNamespace() + ":" + loc.getPath(), "inventory");
             renderers.put(itemModel, model);
             // Get the item.
             final Item item = Item.getItemFromBlock(renderer.getBlock());
             // Check that Item exists.
             if (item != null) { // HACK because something, I don't know what, but something changed.
-                ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(renderer.getBlock()), stack -> itemModel);
+                //ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(renderer.getBlock()), stack -> itemModel);
+                //TODO: register inv rendering
             }
         }
     }

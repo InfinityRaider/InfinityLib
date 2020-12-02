@@ -1,11 +1,11 @@
 package com.infinityraider.infinitylib.sound;
 
-import net.minecraft.client.audio.MovingSound;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.client.audio.TickableSound;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
-public abstract class ModSound extends MovingSound implements IModSound {
+@OnlyIn(Dist.CLIENT)
+public abstract class ModSound extends TickableSound implements IModSound {
     private final SoundDelegateClient delegate;
     private final String uuid;
 
@@ -60,11 +60,11 @@ public abstract class ModSound extends MovingSound implements IModSound {
 
     @Override
     public final void stop() {
-        this.donePlaying = true;
+        this.finishPlaying();
     }
 
     @Override
-    public final void update() {
+    public final void tick() {
         this.delegate.onSoundTick(this);
         this.updateSound();
     }

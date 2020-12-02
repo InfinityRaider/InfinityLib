@@ -1,46 +1,50 @@
 package com.infinityraider.infinitylib.capability;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.LazyOptional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class CapabilityProvider<C> implements ICapabilitySerializable<NBTTagCompound> {
+public final class CapabilityProvider<C> implements ICapabilitySerializable<CompoundNBT> {
     private final Capability<C> capability;
     private final C value;
+    private final LazyOptional<C> valueHolder;
 
     public CapabilityProvider(Capability<C> capability, C value) {
         this.capability = capability;
         this.value = value;
+        this.valueHolder = LazyOptional.of(this::getCapabilityValue);
     }
 
     public Capability<C> getCapability() {
         return this.capability;
     }
 
+    @Nonnull
     public C getCapabilityValue() {
         return value;
     }
 
     @Override
-    public NBTTagCompound serializeNBT() {
-        return (NBTTagCompound) this.getCapability().getStorage().writeNBT(this.getCapability(), this.getCapabilityValue(), null);
+    public CompoundNBT serializeNBT() {
+        return (CompoundNBT) this.getCapability().getStorage().writeNBT(this.getCapability(), this.getCapabilityValue(), null);
     }
 
     @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
+    public void deserializeNBT(CompoundNBT nbt) {
         this.getCapability().getStorage().readNBT(this.getCapability(), this.getCapabilityValue(), null, nbt);
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return this.getCapability() != null && capability == this.getCapability();
-    }
-
-    @Override
-    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        return this.hasCapability(capability, facing) ? this.getCapability().cast(this.value) : null;
+    @Nonnull
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
+        if (capability == this.capability) {
+            return valueHolder.cast();
+        }
+        return LazyOptional.empty();
     }
 }

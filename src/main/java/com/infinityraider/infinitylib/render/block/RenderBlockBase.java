@@ -2,12 +2,11 @@ package com.infinityraider.infinitylib.render.block;
 
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
-import com.infinityraider.infinitylib.render.RenderUtilBase;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
-public abstract class RenderBlockBase<B extends BlockBase & ICustomRenderedBlock> extends RenderUtilBase implements IBlockRenderingHandler<B> {
+@OnlyIn(Dist.CLIENT)
+public abstract class RenderBlockBase<B extends BlockBase & ICustomRenderedBlock> implements IBlockRenderingHandler<B> {
     private final B block;
     private final boolean inv;
 

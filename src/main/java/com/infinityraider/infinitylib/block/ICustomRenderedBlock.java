@@ -1,9 +1,9 @@
 package com.infinityraider.infinitylib.block;
 
 import com.infinityraider.infinitylib.render.block.IBlockRenderingHandler;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.client.renderer.model.ModelResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * Implemented in a Block class to have special rendering handling for the block
@@ -15,7 +15,7 @@ public interface ICustomRenderedBlock extends IInfinityBlock {
      *
      * @return a new IBlockRenderingHandler object for this block
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     IBlockRenderingHandler getRenderer();
 
     /**
@@ -24,7 +24,7 @@ public interface ICustomRenderedBlock extends IInfinityBlock {
      *
      * @return a unique ModelResourceLocation for this block
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     default ModelResourceLocation getBlockModelResourceLocation() {
         return new ModelResourceLocation(this.getRegistryName() + "");
     }

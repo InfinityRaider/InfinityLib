@@ -4,17 +4,20 @@ import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlockWithTile;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 
+@OnlyIn(Dist.CLIENT)
 public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBlockWithTile<T>, T extends TileEntityBase> extends IBlockRenderingHandler<B> {
     /**
      * Gets the TileEntity for this renderer (this should be a new TileEntity which is not physically in a World),
@@ -33,7 +36,7 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
      *
      * @return a list of ResourceLocations
      */
-    List<ResourceLocation> getAllTextures();
+    List<RenderMaterial> getAllTextures();
 
     /**
      * Called to render the block at a specific place in the world,
@@ -42,17 +45,12 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
      * @param tessellator   tessellator object to draw quads
      * @param world         the world for the block
      * @param pos           the position for the block
-     * @param x             the precise x-position of the block (only relevant for TESR calls)
-     * @param y             the precise y-position of the block (only relevant for TESR calls)
-     * @param z             the precise z-position of the block (only relevant for TESR calls)
      * @param block         the block
      * @param tile          the tile entity (can be null if there is no tile entity)
      * @param partialTick   partial tick, only useful for dynamic rendering
-     * @param destroyStage  destroy stage, only useful for dynamic rendering
-     * @param alpha         alhpa value to render the block with
      */
-    void renderWorldBlockDynamic(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
-                                 B block, T tile, float partialTick, int destroyStage, float alpha);
+    void renderWorldBlockDynamic(ITessellator tessellator, World world, BlockPos pos,
+                                 B block, T tile, float partialTick);
 
     /**
      * This method is to used by ITileRenderingHandlers.
@@ -60,8 +58,8 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
      * This method is the preferred method of inventory rendering.
      */
     @Override
-    default void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
-                                      ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type) {
+    default void renderInventoryBlock(ITessellator tessellator, World world, BlockState state, B block,
+                                      ItemStack stack, LivingEntity entity, ItemCameraTransforms.TransformType type) {
         renderInventoryBlock(tessellator, world, state, block, getTileEntity(), stack, entity, type);
     }
 
@@ -78,8 +76,8 @@ public interface ITileRenderingHandler<B extends BlockBase & ICustomRenderedBloc
      * @param entity      entity holding the stack
      * @param type        camera transform type
      */
-    void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
-                              T tile, ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type);
+    void renderInventoryBlock(ITessellator tessellator, World world, BlockState state, B block,
+                              T tile, ItemStack stack, LivingEntity entity, ItemCameraTransforms.TransformType type);
 
     /**
      * Gets the main icon used for this renderer, used for the particle

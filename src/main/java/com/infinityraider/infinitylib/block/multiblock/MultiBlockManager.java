@@ -3,7 +3,7 @@ package com.infinityraider.infinitylib.block.multiblock;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.utility.CoordinateIterator;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -14,7 +14,7 @@ public class MultiBlockManager implements IMultiBlockManager<MultiBlockPartData>
     @Override
     public void onBlockPlaced(World world, BlockPos pos, IMultiBlockComponent component) {
         boolean flag = false;
-        for (EnumFacing dir : EnumFacing.values()) {
+        for (Direction dir : Direction.values()) {
             TileEntity te = world.getTileEntity(pos.offset(dir));
             if (te != null && te instanceof IMultiBlockComponent && component.isValidComponent((IMultiBlockComponent) te)) {
                 IMultiBlockComponent componentAt = (IMultiBlockComponent) te;
@@ -57,10 +57,6 @@ public class MultiBlockManager implements IMultiBlockManager<MultiBlockPartData>
                     component.setMultiBlockPartData(new MultiBlockPartData(x, y, z, sizeX, sizeY, sizeZ));
                 }
             }
-        }
-		
-        if (world.isRemote) {
-            world.markBlockRangeForRenderUpdate(pos, pos.add(sizeX, sizeY, sizeZ));
         }
 		
 		component = (IMultiBlockComponent) world.getTileEntity(pos);

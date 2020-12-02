@@ -5,14 +5,15 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.Vector;
 
 @SuppressWarnings("unchecked")
 public final class MessageSerializerStore {
@@ -36,32 +37,32 @@ public final class MessageSerializerStore {
     }
 
     static {
-        registerMessageSerializer(boolean.class, ByteBufUtil::writeBoolean, ByteBufUtil::readBoolean);
-        registerMessageSerializer(Boolean.class, ByteBufUtil::writeBoolean, ByteBufUtil::readBoolean);
-        registerMessageSerializer(byte.class, ByteBufUtil::writeByte, ByteBufUtil::readByte);
-        registerMessageSerializer(Byte.class, ByteBufUtil::writeByte, ByteBufUtil::readByte);
-        registerMessageSerializer(short.class, ByteBufUtil::writeShort, ByteBufUtil::readShort);
-        registerMessageSerializer(Short.class, ByteBufUtil::writeShort, ByteBufUtil::readShort);
-        registerMessageSerializer(int.class, ByteBufUtil::writeInt, ByteBufUtil::readInt);
-        registerMessageSerializer(Integer.class, ByteBufUtil::writeInt, ByteBufUtil::readInt);
-        registerMessageSerializer(long.class, ByteBufUtil::writeLong, ByteBufUtil::readLong);
-        registerMessageSerializer(Long.class, ByteBufUtil::writeLong, ByteBufUtil::readLong);
-        registerMessageSerializer(float.class, ByteBufUtil::writeFloat, ByteBufUtil::readFloat);
-        registerMessageSerializer(Float.class, ByteBufUtil::writeFloat, ByteBufUtil::readFloat);
-        registerMessageSerializer(double.class, ByteBufUtil::writeDouble, ByteBufUtil::readDouble);
-        registerMessageSerializer(Double.class, ByteBufUtil::writeDouble, ByteBufUtil::readDouble);
-        registerMessageSerializer(char.class, ByteBufUtil::writeChar, ByteBufUtil::readChar);
-        registerMessageSerializer(Character.class, ByteBufUtil::writeChar, ByteBufUtil::readChar);
-        registerMessageSerializer(String.class, ByteBufUtil::writeString, ByteBufUtil::readString);
-        registerMessageSerializer(Entity.class, ByteBufUtil::writeEntity, ByteBufUtil::readEntity);
-        registerMessageSerializer(TileEntity.class, ByteBufUtil::writeTileEntity, ByteBufUtil::readTileEntity);
-        registerMessageSerializer(BlockPos.class, ByteBufUtil::writeBlockPos, ByteBufUtil::readBlockPos);
-        registerMessageSerializer(Block.class, ByteBufUtil::writeBlock, ByteBufUtil::readBlock);
-        registerMessageSerializer(Item.class, ByteBufUtil::writeItem, ByteBufUtil::readItem);
-        registerMessageSerializer(ItemStack.class, ByteBufUtil::writeItemStack, ByteBufUtil::readItemStack);
-        registerMessageSerializer(NBTTagCompound.class, ByteBufUtil::writeNBT, ByteBufUtil::readNBT);
-        registerMessageSerializer(Vec3d.class, ByteBufUtil::writeVec3d, ByteBufUtil::readVec3d);
-        registerMessageSerializer(ITextComponent.class, ByteBufUtil::writeTextComponent, ByteBufUtil::readTextComponent);
+        registerMessageSerializer(boolean.class, PacketBufferUtil::writeBoolean, PacketBufferUtil::readBoolean);
+        registerMessageSerializer(Boolean.class, PacketBufferUtil::writeBoolean, PacketBufferUtil::readBoolean);
+        registerMessageSerializer(byte.class, PacketBufferUtil::writeByte, PacketBufferUtil::readByte);
+        registerMessageSerializer(Byte.class, PacketBufferUtil::writeByte, PacketBufferUtil::readByte);
+        registerMessageSerializer(short.class, PacketBufferUtil::writeShort, PacketBufferUtil::readShort);
+        registerMessageSerializer(Short.class, PacketBufferUtil::writeShort, PacketBufferUtil::readShort);
+        registerMessageSerializer(int.class, PacketBufferUtil::writeInt, PacketBufferUtil::readInt);
+        registerMessageSerializer(Integer.class, PacketBufferUtil::writeInt, PacketBufferUtil::readInt);
+        registerMessageSerializer(long.class, PacketBufferUtil::writeLong, PacketBufferUtil::readLong);
+        registerMessageSerializer(Long.class, PacketBufferUtil::writeLong, PacketBufferUtil::readLong);
+        registerMessageSerializer(float.class, PacketBufferUtil::writeFloat, PacketBufferUtil::readFloat);
+        registerMessageSerializer(Float.class, PacketBufferUtil::writeFloat, PacketBufferUtil::readFloat);
+        registerMessageSerializer(double.class, PacketBufferUtil::writeDouble, PacketBufferUtil::readDouble);
+        registerMessageSerializer(Double.class, PacketBufferUtil::writeDouble, PacketBufferUtil::readDouble);
+        registerMessageSerializer(char.class, PacketBufferUtil::writeChar, PacketBufferUtil::readChar);
+        registerMessageSerializer(Character.class, PacketBufferUtil::writeChar, PacketBufferUtil::readChar);
+        registerMessageSerializer(String.class, PacketBufferUtil::writeString, PacketBufferUtil::readString);
+        registerMessageSerializer(Entity.class, PacketBufferUtil::writeEntity, PacketBufferUtil::readEntity);
+        registerMessageSerializer(TileEntity.class, PacketBufferUtil::writeTileEntity, PacketBufferUtil::readTileEntity);
+        registerMessageSerializer(BlockPos.class, PacketBufferUtil::writeBlockPos, PacketBufferUtil::readBlockPos);
+        registerMessageSerializer(Block.class, PacketBufferUtil::writeBlock, PacketBufferUtil::readBlock);
+        registerMessageSerializer(Item.class, PacketBufferUtil::writeItem, PacketBufferUtil::readItem);
+        registerMessageSerializer(ItemStack.class, PacketBufferUtil::writeItemStack, PacketBufferUtil::readItemStack);
+        registerMessageSerializer(CompoundNBT.class, PacketBufferUtil::writeNBT, PacketBufferUtil::readNBT);
+        registerMessageSerializer(Vector3d.class, PacketBufferUtil::writeVec3d, PacketBufferUtil::readVec3d);
+        registerMessageSerializer(ITextComponent.class, PacketBufferUtil::writeTextComponent, PacketBufferUtil::readTextComponent);
         registerMessageSerializer(MessageSerializerEnum.INSTANCE);
         registerMessageSerializer(MessageSerializerSubClass.TILE_ENTITY);
         registerMessageSerializer(MessageSerializerSubClass.ENTITY);

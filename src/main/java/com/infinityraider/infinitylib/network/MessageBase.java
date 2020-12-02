@@ -6,13 +6,13 @@ import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.MessageElement;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Base message class implementation for IMessage.
@@ -63,10 +64,9 @@ import java.util.Optional;
  *      If your message class contains fields with a type not listed above, you have to register a new serializer for this class using INetworkWrapper.registerDataSerializer(),
  *      this method will register serializers for this type as well as an array of this type *
  *
- * @param <REPLY> the generic type of the reply sent by this message, can be IMessage if no reply is expected
  */
 @SuppressWarnings("unused")
-public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
+public abstract class MessageBase {
     private static final Map<Class<? extends MessageBase>, List<MessageElement>> ELEMENT_MAP = Maps.newIdentityHashMap();
     private static final Map<Class<? extends MessageBase>, INetworkWrapper> WRAPPER_MAP = Maps.newIdentityHashMap();
 
@@ -93,22 +93,14 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
     /**
      * @return the returning side for this message
      */
-    public abstract Side getMessageHandlerSide();
+    public abstract NetworkDirection getMessageDirection();
 
     /**
      * Called to process this message, only called on the receiving side (returned by getMessageHandlerSide() )
      *
      * @param ctx the message context
      */
-    protected abstract void processMessage(MessageContext ctx);
-
-    /**
-     * Called to get a reply message to be sent back to the original sender automatically
-     *
-     * @param ctx the message context
-     * @return a new message, or null if nothing has to be sent back
-     */
-    protected abstract REPLY getReply(MessageContext ctx);
+    protected abstract void processMessage(NetworkEvent.Context ctx);
 
     /**
      * Called to register required missing serializers for this class,
@@ -119,19 +111,18 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
         return Collections.emptyList();
     }
 
-    @Override
-    public final void fromBytes(ByteBuf buf) {
+    public final <REQ extends MessageBase> REQ fromBytes(PacketBuffer buf) {
         Map<Class<? extends MessageBase>, List<MessageElement>> map = ELEMENT_MAP;
         if (ELEMENT_MAP.containsKey(this.getClass())) {
             for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
                 element.readFromByteBuf(buf, this);
             }
         }
+        return (REQ) this;
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public final void toBytes(ByteBuf buf) {
+    public final void toBytes(PacketBuffer buf) {
         Map<Class<? extends MessageBase>, List<MessageElement>> map = ELEMENT_MAP;
         if (ELEMENT_MAP.containsKey(this.getClass())) {
             for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
@@ -144,7 +135,7 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to all connected clients,
      * only valid if this message is handled on the client
      */
-    public final MessageBase<REPLY> sendToAll() {
+    public final MessageBase sendToAll() {
         this.getNetworkWrapper().sendToAll(this);
         return this;
     }
@@ -153,7 +144,7 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to one particular connected client
      * only valid if this message is handled on the client
      */
-    public final MessageBase<REPLY> sendTo(EntityPlayerMP player) {
+    public final MessageBase sendTo(ServerPlayerEntity player) {
         this.getNetworkWrapper().sendTo(this, player);
         return this;
     }
@@ -162,8 +153,8 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to all connected clients near a certain point,
      * only valid if this message is handled on the client
      */
-    public final MessageBase<REPLY> sendToAllAround(World world, double x, double y, double z, double range) {
-        this.getNetworkWrapper().sendToAllAround(this, world.provider.getDimension(), x, y, z, range);
+    public final MessageBase sendToAllAround(World world, double x, double y, double z, double range) {
+        this.getNetworkWrapper().sendToAllAround(this, world, x, y, z, range);
         return this;
     }
 
@@ -171,8 +162,8 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to all connected clients near a certain point,
      * only valid if this message is handled on the client
      */
-    public final MessageBase<REPLY> sendToAllAround(int dimension, double x, double y, double z, double range) {
-        this.getNetworkWrapper().sendToAllAround(this, new NetworkRegistry.TargetPoint(dimension, x, y, z, range));
+    public final MessageBase sendToAllAround(RegistryKey<World> dimension, double x, double y, double z, double range) {
+        this.getNetworkWrapper().sendToAllAround(this, dimension, x, y, z, range);
         return this;
     }
 
@@ -180,7 +171,7 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to all connected clients near a certain point,
      * only valid if this message is handled on the client
      */
-    public final MessageBase<REPLY> sendToAllAround(NetworkRegistry.TargetPoint point) {
+    public final MessageBase sendToAllAround(Supplier<PacketDistributor.TargetPoint> point) {
         this.getNetworkWrapper().sendToAllAround(this, point);
         return this;
     }
@@ -189,8 +180,8 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to all connected clients in a certain dimension,
      * only valid if this message is handled on the client
      */
-    public final MessageBase<REPLY> sendToDimension(World world) {
-        this.getNetworkWrapper().sendToDimension(this, world.provider.getDimension());
+    public final MessageBase sendToDimension(World world) {
+        this.getNetworkWrapper().sendToDimension(this, world);
         return this;
     }
 
@@ -198,8 +189,8 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to all connected clients in a certain dimension,
      * only valid if this message is handled on the client
      */
-    public final MessageBase<REPLY> sendToDimension(int dimensionId) {
-        this.getNetworkWrapper().sendToDimension(this, dimensionId);
+    public final MessageBase sendToDimension(RegistryKey<World> dimension) {
+        this.getNetworkWrapper().sendToDimension(this, dimension);
         return this;
     }
 
@@ -207,7 +198,7 @@ public abstract class MessageBase<REPLY extends IMessage> implements IMessage {
      * Sends this message to the server,
      * only valid if this message is handled on the server
      */
-    public final MessageBase<REPLY> sendToServer() {
+    public final MessageBase sendToServer() {
         this.getNetworkWrapper().sendToServer(this);
         return this;
     }

@@ -1,24 +1,27 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
+import com.infinityraider.infinitylib.modules.keyboard.ModuleKeyboard;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.multiplayer.PlayerController;
 import net.minecraft.entity.*;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.GameType;
-import net.minecraftforge.client.event.MouseEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.input.Keyboard;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.lwjgl.glfw.GLFW;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class MouseClickHandler {
     private static final MouseClickHandler INSTANCE = new MouseClickHandler();
 
-    private PlayerControllerMP playerController;
+    private PlayerController playerController;
 
     private boolean leftButtonPressed = false;
     private boolean rightButtonPressed = false;
@@ -34,8 +37,8 @@ public class MouseClickHandler {
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public void onLeftClick(MouseEvent event) {
-        EntityPlayerSP player = Minecraft.getMinecraft().player;
+    public void onLeftClick(InputEvent.MouseInputEvent event) {
+        ClientPlayerEntity player = Minecraft.getInstance().player;
         ItemStack stack = player.getHeldItemOffhand();
         if(event.getButton() != LMB) {
             return;
@@ -46,13 +49,13 @@ public class MouseClickHandler {
         }
         if(stack.getItem() instanceof IDualWieldedWeapon) {
             if(leftButtonPressed) {
-                boolean shift = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
-                boolean ctrl = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL);
+                boolean shift = ModuleKeyboard.getInstance().isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT);
+                boolean ctrl = ModuleKeyboard.getInstance().isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL);
                 IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-                attackEntity(weapon, player, stack, true, shift, ctrl, EnumHand.OFF_HAND);
-                weapon.onItemUsed(stack, player, shift, ctrl, EnumHand.OFF_HAND);
+                attackEntity(weapon, player, stack, true, shift, ctrl, Hand.OFF_HAND);
+                weapon.onItemUsed(stack, player, shift, ctrl, Hand.OFF_HAND);
                 new MessageMouseButtonPressed(true, shift, ctrl).sendToServer();
-                Minecraft.getMinecraft().player.swingArm(EnumHand.OFF_HAND);
+                Minecraft.getInstance().player.swingArm(Hand.OFF_HAND);
             }
             event.setResult(Event.Result.DENY);
             event.setCanceled(true);
@@ -61,8 +64,8 @@ public class MouseClickHandler {
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public void onRightClick(MouseEvent event) {
-        EntityPlayerSP player = Minecraft.getMinecraft().player;
+    public void onRightClick(InputEvent.MouseInputEvent event) {
+        ClientPlayerEntity player = Minecraft.getInstance().player;
         ItemStack stack = player.getHeldItemMainhand();
         if(event.getButton() != RMB) {
             return;
@@ -73,28 +76,32 @@ public class MouseClickHandler {
         }
         if(stack.getItem() instanceof IDualWieldedWeapon) {
             if(rightButtonPressed) {
-                boolean shift = Minecraft.getMinecraft().gameSettings.keyBindSneak.isKeyDown();
-                boolean ctrl = Minecraft.getMinecraft().gameSettings.keyBindSprint.isKeyDown();
+                boolean shift = Minecraft.getInstance().gameSettings.keyBindSneak.isKeyDown();
+                boolean ctrl = Minecraft.getInstance().gameSettings.keyBindSprint.isKeyDown();
                 IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-                attackEntity(weapon, player, stack, false, shift, ctrl, EnumHand.MAIN_HAND);
-                weapon.onItemUsed(stack, player, shift, ctrl, EnumHand.MAIN_HAND);
+                attackEntity(weapon, player, stack, false, shift, ctrl, Hand.MAIN_HAND);
+                weapon.onItemUsed(stack, player, shift, ctrl, Hand.MAIN_HAND);
                 new MessageMouseButtonPressed(false, shift, ctrl).sendToServer();
-                Minecraft.getMinecraft().player.swingArm(EnumHand.MAIN_HAND);
+                Minecraft.getInstance().player.swingArm(Hand.MAIN_HAND);
             }
             event.setResult(Event.Result.DENY);
             event.setCanceled(true);
         }
     }
 
-    private void attackEntity(IDualWieldedWeapon weapon, EntityPlayerSP player, ItemStack stack, boolean left, boolean shift, boolean ctrl, EnumHand hand) {
-        if(Minecraft.getMinecraft().objectMouseOver == null) {
+    private void attackEntity(IDualWieldedWeapon weapon, ClientPlayerEntity player, ItemStack stack, boolean left, boolean shift, boolean ctrl, Hand hand) {
+        if(Minecraft.getInstance().objectMouseOver == null) {
             return;
         }
-        Entity target =  Minecraft.getMinecraft().objectMouseOver.entityHit;
+        Entity target = null;
+        RayTraceResult mouseOverObj = Minecraft.getInstance().objectMouseOver;
+        if(mouseOverObj instanceof EntityRayTraceResult) {
+            target = ((EntityRayTraceResult) mouseOverObj).getEntity();
+        }
         if(target != null) {
-            if(!weapon.onItemAttack(stack, player, target, shift, ctrl, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND)) {
+            if(!weapon.onItemAttack(stack, player, target, shift, ctrl, left ? Hand.OFF_HAND : Hand.MAIN_HAND)) {
                 if(this.playerController == null) {
-                    this.playerController = Minecraft.getMinecraft().playerController;
+                    this.playerController = Minecraft.getInstance().playerController;
                 }
                 if(this.playerController != null) {
                     new MessageAttackDualWielded(target, left, shift, ctrl).sendToServer();

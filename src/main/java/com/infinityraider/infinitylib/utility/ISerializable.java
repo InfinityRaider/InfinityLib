@@ -1,9 +1,9 @@
 package com.infinityraider.infinitylib.utility;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public interface ISerializable {
-    void readFromNBT(NBTTagCompound tag);
+    void readFromNBT(CompoundNBT tag);
 
-    NBTTagCompound writeToNBT();
+    CompoundNBT writeToNBT();
 }

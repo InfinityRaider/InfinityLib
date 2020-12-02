@@ -3,8 +3,8 @@ package com.infinityraider.infinitylib.modules;
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,10 +17,22 @@ public abstract class Module implements Comparable<Module> {
         return ImmutableList.copyOf(activeModules);
     }
 
-    protected Module() {}
+    private boolean active;
+
+    protected Module() {
+        this.active = false;
+    }
 
     public final void activate() {
-        activeModules.add(this);
+        if(!this.active) {
+            this.active = true;
+            activeModules.add(this);
+            this.requiredModules().forEach(Module::activate);
+        }
+    }
+
+    public List<Module> requiredModules() {
+        return ImmutableList.of();
     }
 
     public void registerMessages(INetworkWrapper wrapper) {}
@@ -29,7 +41,7 @@ public abstract class Module implements Comparable<Module> {
         return Collections.emptyList();
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public List<Object> getClientEventHandlers() {
         return Collections.emptyList();
     }
@@ -40,12 +52,12 @@ public abstract class Module implements Comparable<Module> {
 
     public void init() {}
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void initClient() {}
 
     public void postInit() {}
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void postInitClient() {}
 
     @Override

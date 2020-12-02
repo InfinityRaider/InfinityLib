@@ -1,49 +1,54 @@
 package com.infinityraider.infinitylib.proxy.base;
 
+import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
+import com.infinityraider.infinitylib.sound.SoundDelegateClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public interface IClientProxyBase extends IProxyBase {
+
+    //TODO: registration of renderers
+
     @Override
-    default EntityPlayer getClientPlayer() {
-        return Minecraft.getMinecraft().player;
+    default PlayerEntity getClientPlayer() {
+        return Minecraft.getInstance().player;
     }
 
     @Override
     default World getClientWorld() {
-        return Minecraft.getMinecraft().world;
+        return Minecraft.getInstance().world;
     }
 
     @Override
-    default World getWorldByDimensionId(int dimension) {
-        Side effectiveSide = FMLCommonHandler.instance().getEffectiveSide();
-        if(effectiveSide == Side.SERVER) {
-            return FMLClientHandler.instance().getServer().getWorld(dimension);
+    default World getWorldFromDimension(RegistryKey<World> dimension) {
+        LogicalSide effectiveSide = this.getEffectiveSide();
+        if(effectiveSide == LogicalSide.SERVER) {
+            return ServerLifecycleHooks.getCurrentServer().getWorld(dimension);
         } else {
             return getClientWorld();
         }
     }
 
     @Override
-    default Side getPhysicalSide() {
-        return Side.CLIENT;
-    }
-
-    @Override
-    default Side getEffectiveSide() {
-        return FMLCommonHandler.instance().getEffectiveSide();
+    default LogicalSide getPhysicalSide() {
+        return LogicalSide.CLIENT;
     }
 
     @Override
     default void queueTask(Runnable task) {
-        if(getEffectiveSide() == Side.CLIENT) {
-            Minecraft.getMinecraft().addScheduledTask(task);
+        if(getEffectiveSide() == LogicalSide.CLIENT) {
+            Minecraft.getInstance().execute(task);
         } else {
-            FMLClientHandler.instance().getServer().addScheduledTask(task);
+            this.getMinecraftServer().execute(task);
         }
+    }
+
+    @Override
+    default SidedSoundDelegate getSoundDelegate() {
+        return new SoundDelegateClient(Minecraft.getInstance().getSoundHandler());
     }
 }

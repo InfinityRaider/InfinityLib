@@ -1,25 +1,27 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.infinityraider.infinitylib.reference.Constants;
+import com.infinityraider.infinitylib.render.RenderUtil;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.*;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.pipeline.LightUtil;
-import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.client.model.QuadTransformer;
 
-import org.joml.MatrixStackf;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+import java.util.List;
+import java.util.function.Consumer;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
 public abstract class TessellatorAbstractBase implements ITessellator {
 
@@ -41,47 +43,76 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     /**
      * Current transformation matrix
      */
-    protected final MatrixStackf matrices;
+    private final MatrixStack matrices;
 
     /**
      * Current vertex format
      */
-    protected VertexFormat format;
+    private VertexFormat format;
 
     /**
      * Current normal
      */
-    protected final Vector3f normal;
+    private Vector3f normal;
 
     /**
      * Current color
      */
-    protected float r, g, b, a;
+    private float r, g, b, a;
 
     /**
      * Current brightness value
      */
-    protected int l;
+    private int l;
 
     /**
      * Current tint index for the quad
      */
-    protected int tintIndex;
+    private int tintIndex;
 
     /**
      * Current diffuse lighting setting for the quad
      */
-    protected boolean applyDiffuseLighting;
+    private boolean applyDiffuseLighting;
+
+    /**
+     * Cached transformer, constructed when necessary, deconstructed when transformation state changes
+     */
+    private QuadTransformer cachedTransformer;
 
     protected TessellatorAbstractBase() {
-        this.matrices = new MatrixStackf(64);
-        this.normal = new Vector3f(STANDARD_NORMAL);
+        this.matrices = new MatrixStack();
+        this.normal = STANDARD_NORMAL;
         this.tintIndex = -1;
         this.r = STANDARD_COLOR;
         this.g = STANDARD_COLOR;
         this.b = STANDARD_COLOR;
         this.a = STANDARD_COLOR;
         this.applyDiffuseLighting = false;
+    }
+
+    private void manipulateMatrixStack(Consumer<MatrixStack> operator) {
+        this.cachedTransformer = null;
+        operator.accept(this.matrices);
+    }
+
+    private MatrixStack getMatrixStack() {
+        return this.matrices;
+    }
+
+    protected MatrixStack.Entry getMatrixStackEntry() {
+        return this.getMatrixStack().getLast();
+    }
+
+    protected Matrix4f getCurrentMatrix() {
+        return this.getMatrixStackEntry().getMatrix();
+    }
+
+    protected QuadTransformer getCachedQuadTransformer() {
+        if (this.cachedTransformer == null) {
+            this.cachedTransformer = new QuadTransformer(new TransformationMatrix(this.getCurrentMatrix()));
+        }
+        return this.cachedTransformer;
     }
 
     @Override
@@ -100,12 +131,12 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     public final void draw() {
         this.onDrawCall();
         this.format = null;
-        this.normal.set(STANDARD_NORMAL);
+        this.normal = STANDARD_NORMAL;
         this.setColorRGBA(STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR, STANDARD_COLOR);
         this.setBrightness(STANDARD_BRIGHTNESS);
         this.tintIndex = -1;
         this.applyDiffuseLighting = false;
-        this.matrices.clear();
+        this.manipulateMatrixStack(MatrixStack::clear);
     }
 
     /**
@@ -121,20 +152,20 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public void pushMatrix() {
-        this.matrices.pushMatrix();
+        this.manipulateMatrixStack(MatrixStack::push);
     }
 
     @Override
     public void popMatrix() {
-        this.matrices.popMatrix();
+        this.manipulateMatrixStack(MatrixStack::pop);
     }
 
     @Override
-    public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v) {
-        if (icon == null) {
-            icon = Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
+    public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite sprite, float u, float v) {
+        if (sprite == null) {
+            sprite = RenderUtil.getMissingSprite();
         }
-        this.addVertexWithUV(x, y, z, icon.getInterpolatedU(u), icon.getInterpolatedV(v));
+        this.addVertexWithUV(x, y, z, sprite.getInterpolatedU(u), sprite.getInterpolatedV(v));
     }
 
     @Override
@@ -148,7 +179,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
-    public void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, float offset) {
+    public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset) {
         float x1, x2, x3, x4;
         float y1, y2, y3, y4;
         float z1, z2, z3, z4;
@@ -236,7 +267,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         float bPrev = this.b;
         float aPrev = this.a;
         this.applyColorMultiplier(face);
-        this.setNormal(face.getFrontOffsetX(), face.getFrontOffsetY(), face.getFrontOffsetZ());
+        this.setNormal(face.getXOffset(), face.getYOffset(), face.getZOffset());
         addScaledVertexWithUV(x1, y1, z1, u1, v1);
         addScaledVertexWithUV(x2, y2, z2, u2, v2);
         addScaledVertexWithUV(x3, y3, z3, u3, v3);
@@ -245,7 +276,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
-    public void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
+    public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
         float x1, x2, x3, x4;
         float y1, y2, y3, y4;
         float z1, z2, z3, z4;
@@ -333,7 +364,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         float bPrev = this.b;
         float aPrev = this.a;
         this.applyColorMultiplier(face);
-        this.setNormal(face.getFrontOffsetX(), face.getFrontOffsetY(), face.getFrontOffsetZ());
+        this.setNormal(face.getXOffset(), face.getYOffset(), face.getZOffset());
         addScaledVertexWithUV(x1, y1, z1, icon, u1, v1);
         addScaledVertexWithUV(x2, y2, z2, icon, u2, v2);
         addScaledVertexWithUV(x3, y3, z3, icon, u3, v3);
@@ -342,21 +373,21 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
-    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, float offset) {
+    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, float offset) {
         if(face == null) {
             return;
         }
-        EnumFacing opposite = face.getOpposite();
+        Direction opposite = face.getOpposite();
         this.drawScaledFace(minX, minY, maxX, maxY, face, offset);
         this.drawScaledFace(minX, minY, maxX, maxY, opposite, offset);
     }
 
     @Override
-    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset) {
+    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
         if(face == null) {
             return;
         }
-        EnumFacing opposite = face.getOpposite();
+        Direction opposite = face.getOpposite();
         this.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset);
         this.drawScaledFace(minX, minY, maxX, maxY, opposite, icon, offset);
     }
@@ -364,33 +395,33 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     @Override
     public void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
         //bottom
-        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.DOWN, minY);
+        drawScaledFace(minX, minZ, maxX, maxZ, Direction.DOWN, minY);
         //top
-        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.UP, maxY);
+        drawScaledFace(minX, minZ, maxX, maxZ, Direction.UP, maxY);
         //north
-        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.NORTH, minZ);
+        drawScaledFace(minX, minY, maxX, maxY, Direction.NORTH, minZ);
         //south
-        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.SOUTH, maxZ);
+        drawScaledFace(minX, minY, maxX, maxY, Direction.SOUTH, maxZ);
         //west
-        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.WEST, minX);
+        drawScaledFace(minZ, minY, maxZ, maxY, Direction.WEST, minX);
         //east
-        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.EAST, maxX);
+        drawScaledFace(minZ, minY, maxZ, maxY, Direction.EAST, maxX);
     }
 
     @Override
     public void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon) {
         //bottom
-        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.DOWN, icon, minY);
+        drawScaledFace(minX, minZ, maxX, maxZ, Direction.DOWN, icon, minY);
         //top
-        drawScaledFace(minX, minZ, maxX, maxZ, EnumFacing.UP, icon, maxY);
+        drawScaledFace(minX, minZ, maxX, maxZ, Direction.UP, icon, maxY);
         //north
-        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.NORTH, icon, minZ);
+        drawScaledFace(minX, minY, maxX, maxY, Direction.NORTH, icon, minZ);
         //south
-        drawScaledFace(minX, minY, maxX, maxY, EnumFacing.SOUTH, icon, maxZ);
+        drawScaledFace(minX, minY, maxX, maxY, Direction.SOUTH, icon, maxZ);
         //west
-        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.WEST, icon, minX);
+        drawScaledFace(minZ, minY, maxZ, maxY, Direction.WEST, icon, minX);
         //east
-        drawScaledFace(minZ, minY, maxZ, maxY, EnumFacing.EAST, icon, maxX);
+        drawScaledFace(minZ, minY, maxZ, maxY, Direction.EAST, icon, maxX);
     }
 
     @Override
@@ -492,31 +523,31 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public void translate(float x, float y, float z) {
-        this.matrices.translate(x, y, z);
+        this.manipulateMatrixStack(stack -> stack.translate(x, y, z));
     }
 
     @Override
     public void rotate(float angle, float x, float y, float z) {
-        this.matrices.rotate((float)Math.toRadians(angle), x, y, z);
+        this.manipulateMatrixStack(stack -> stack.rotate(new Quaternion(new Vector3f(x, y, z), angle, true)));
     }
 
     @Override
     public void scale(float x, float y, float z) {
-        this.matrices.scale(x, y, z);
+        this.manipulateMatrixStack(stack -> stack.scale(x, y, z));
     }
 
     @Override
-    public TextureAtlasSprite getIcon(ResourceLocation loc) {
-        if (loc != null) {
-            return ModelLoader.defaultTextureGetter().apply(loc);
+    public TextureAtlasSprite getIcon(RenderMaterial source) {
+        if (source != null) {
+            return ModelLoader.defaultTextureGetter().apply(source);
         } else {
-            return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
+            return RenderUtil.getMissingSprite();
         }
     }
 
     @Override
     public void bindTexture(ResourceLocation loc) {
-        Minecraft.getMinecraft().renderEngine.bindTexture(loc);
+        Minecraft.getInstance().getTextureManager().bindTexture(loc);
     }
 
     @Override
@@ -526,7 +557,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public void setNormal(Vector3f vec) {
-        this.normal.set(vec);
+        this.normal = vec;
     }
 
     @Override
@@ -612,40 +643,30 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         return this.applyDiffuseLighting;
     }
 
-    protected abstract void applyColorMultiplier(EnumFacing side);
+    protected abstract void applyColorMultiplier(Direction side);
 
     @Override
     public final void transform(Vector4f pos) {
-        this.matrices.transform(pos);
+        pos.transform(this.getCurrentMatrix());
     }
 
-    public final UnpackedBakedQuad transformQuad(BakedQuad quad) {
-        // Fetch required information
-        final VertexFormat format = quad.getFormat();
-        final float[][][] vertexData = new float[4][format.getElementCount()][4];
-
-        // Objects to be reused in the loop
-        final Vector4f temp = new Vector4f();
-
-        //unpack and transform vertex data
-        for (int v = 0; v < 4; v++) {
-            for (int e = 0; e < format.getElementCount(); e++) {
-                LightUtil.unpack(quad.getVertexData(), vertexData[v][e], format, v, e);
-                transformUnpackedVertexDataElement(format.getElement(e).getUsage(), vertexData[v][e], temp);
-            }
-        }
-        //create new quad with the transformed vertex data
-        return new UnpackedBakedQuad(vertexData, quad.getTintIndex(), quad.getFace(), quad.getSprite(), quad.shouldApplyDiffuseLighting(), format);
+    public final BakedQuad transformQuads(BakedQuad quad) {
+        return this.getCachedQuadTransformer().processOne(quad);
     }
 
-    public final void transformUnpackedVertexDataElement(VertexFormatElement.EnumUsage type, float[] data, Vector4f temp) {
+    public final List<BakedQuad> transformQuads(List<BakedQuad> quad) {
+        return this.getCachedQuadTransformer().processMany(quad);
+    }
+
+    public final void transformUnpackedVertexDataElement(VertexFormatElement.Usage type, float[] data) {
         switch (type) {
             case POSITION:
             case NORMAL:
-                this.matrices.transform(data[0], data[1], data[2], 1, temp);
-                data[0] = temp.x;
-                data[1] = temp.y;
-                data[2] = temp.z;
+                Vector4f temp = new Vector4f(data[0], data[1], data[2], 1);
+                temp.transform(this.getCurrentMatrix());
+                data[0] = temp.getX();
+                data[1] = temp.getY();
+                data[2] = temp.getZ();
                 break;
             case COLOR:
                 data[0] = getRed();

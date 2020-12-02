@@ -1,12 +1,13 @@
 package com.infinityraider.infinitylib.modules.playerstate;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.LogicalSide;
 
 public class State {
     /** Player pointer */
-    private final EntityPlayer player;
+    private final PlayerEntity player;
 
     /** Invisible to everything */
     private boolean invisible;
@@ -17,11 +18,11 @@ public class State {
     /** Mobs do not target the player */
     private boolean undetectable;
 
-    State(EntityPlayer player) {
+    State(PlayerEntity player) {
         this.player = player;
     }
 
-    public EntityPlayer getPlayer() {
+    public PlayerEntity getPlayer() {
         return this.player;
     }
 
@@ -74,7 +75,7 @@ public class State {
     }
 
     private void syncToClient() {
-        if(InfinityLib.proxy.getEffectiveSide() == Side.SERVER) {
+        if(InfinityLib.instance.getEffectiveSide() == LogicalSide.SERVER) {
             new MessageSyncState(getPlayer(), this).sendToAll();
         }
     }

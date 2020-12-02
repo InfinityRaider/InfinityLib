@@ -1,5 +1,3 @@
-/*
- */
 package com.infinityraider.infinitylib.utility;
 
 import java.lang.reflect.AccessibleObject;
@@ -13,10 +11,6 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
-/**
- *
- * @author Ryan
- */
 public final class ReflectionStreams {
 
 	/**

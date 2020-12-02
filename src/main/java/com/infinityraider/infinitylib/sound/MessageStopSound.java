@@ -1,11 +1,10 @@
 package com.infinityraider.infinitylib.sound;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class MessageStopSound extends MessageBase<IMessage> {
+public class MessageStopSound extends MessageBase {
     private String uuid;
 
     public MessageStopSound() {
@@ -18,23 +17,18 @@ public class MessageStopSound extends MessageBase<IMessage> {
     }
 
     @Override
-    public Side getMessageHandlerSide() {
-        return Side.CLIENT;
+    public NetworkDirection getMessageDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
     }
 
     @Override
-    protected void processMessage(MessageContext ctx) {
-        if(this.uuid != null && ctx.side == Side.CLIENT) {
+    protected void processMessage(NetworkEvent.Context ctx) {
+        if(this.uuid != null) {
             ModSoundHandler.getInstance().onSoundMessage(this);
         }
     }
 
     public String getUUID() {
         return this.uuid;
-    }
-
-    @Override
-    protected IMessage getReply(MessageContext ctx) {
-        return null;
     }
 }

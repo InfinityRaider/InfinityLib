@@ -14,14 +14,11 @@ import javax.annotation.Nonnull;
 
 /**
  * A class to aid in the execution of reflection magic.
- *
- * @author RlonRyan
  */
 public class ReflectionHelper {
 
 	// Dummy Constructor.
-	private ReflectionHelper() {
-	}
+	private ReflectionHelper() { }
 
 	/**
 	 * Iterates over all the accessible values of type T in the class, and

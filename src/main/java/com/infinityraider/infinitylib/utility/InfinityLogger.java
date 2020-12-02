@@ -1,21 +1,23 @@
 package com.infinityraider.infinitylib.utility;
 
 import com.infinityraider.infinitylib.InfinityMod;
-import com.infinityraider.infinitylib.config.ModConfiguration;
 import java.text.MessageFormat;
-import net.minecraftforge.fml.common.FMLLog;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @SuppressWarnings("unused")
 public class InfinityLogger {
     private final InfinityMod mod;
+    private final Logger logger;
 
     public InfinityLogger(InfinityMod mod) {
         this.mod = mod;
+        this.logger = LogManager.getLogger();
     }
 
     /**
-     * Logs an object (normally a string), to the {@link FMLLog}.
+     * Logs an object (normally a string), to the log.
      *
      * Please use {@link #debug(String, Object...)} for logs of {@link Level#DEBUG}.
      *
@@ -24,15 +26,15 @@ public class InfinityLogger {
      */
 	public void log(Level logLevel, String format, Object... objects) {
 		try {
-			FMLLog.log(this.mod.getModId(), logLevel, MessageFormat.format(format, objects));
+			logger.log(logLevel, "[" + this.mod.getModId() + "]" + MessageFormat.format(format, objects));
 		} catch (IllegalArgumentException ex) {
 			// This is bad...
-			FMLLog.log(this.mod.getModId(), logLevel, format);
+            logger.log(logLevel, "[" + this.mod.getModId() + "]" + format);
 		}
 	}
 
     /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#ALL}.
+     * Logs an object to the log at the level {@link Level#ALL}.
      *
      * @param objects the object to be logged (interpreted into a string).
      */
@@ -41,18 +43,16 @@ public class InfinityLogger {
     }
 
     /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#ALL}.
+     * Logs an object to the log at the level {@link Level#ALL}.
      *
      * @param objects the objects to be logged (interpreted into a string).
      */
     public void debug(String format, Object... objects) {
-        if(ModConfiguration.getInstance().debug()) {
-            log(Level.INFO, "[DEBUG]: " + format, objects);
-        }
+        log(Level.DEBUG, "[DEBUG]: " + format, objects);
     }
 
     /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#ERROR}.
+     * Logs an object to the log at the level {@link Level#ERROR}.
      *
      * @param objects the objects to be logged (interpreted into a string).
      */
@@ -61,7 +61,7 @@ public class InfinityLogger {
     }
 
     /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#FATAL}.
+     * Logs an object to the log at the level {@link Level#FATAL}.
      *
      * @param objects the objects to be logged (interpreted into a string).
      */
@@ -70,7 +70,7 @@ public class InfinityLogger {
     }
 
     /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#INFO}.
+     * Logs an object to the log at the level {@link Level#INFO}.
      *
      * @param objects the objects to be logged (interpreted into a string).
      */
@@ -79,7 +79,7 @@ public class InfinityLogger {
     }
 
     /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#INFO}.
+     * Logs an object to the log at the level {@link Level#INFO}.
      *
      * @param objects the objects to be logged (interpreted into a string).
      */
@@ -88,7 +88,7 @@ public class InfinityLogger {
     }
 
     /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#TRACE}.
+     * Logs an object to the log at the level {@link Level#TRACE}.
      *
      * @param objects the objects to be logged (interpreted into a string).
      */
@@ -97,7 +97,7 @@ public class InfinityLogger {
     }
 
     /**
-     * Logs an object to the {@link FMLLog} at the level {@link Level#WARN}.
+     * Logs an object to the log at the level {@link Level#WARN}.
      *
      * @param objects the objects to be logged (interpreted into a string).
      */
@@ -111,8 +111,7 @@ public class InfinityLogger {
      * @param e an exception to log.
      */
     public void printStackTrace(Exception e) {
-        if(ModConfiguration.getInstance().debug()) {
-            e.printStackTrace();
-        }
+        //TODO: log correctly
+        e.printStackTrace();
     }
 }

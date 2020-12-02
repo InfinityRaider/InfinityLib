@@ -3,36 +3,36 @@ package com.infinityraider.infinitylib.utility.inventory;
 import com.infinityraider.infinitylib.reference.Names;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 
 /**
  * IInventory interface to automatically have methods implemented to read/write inventory data from/to nbt
  */
 public interface IInventorySerializable extends IInventory {
-    default NBTTagCompound writeInventoryToNBT(NBTTagCompound tag) {
-        NBTTagList list = new NBTTagList();
+    default CompoundNBT writeInventoryToNBT(CompoundNBT tag) {
+        ListNBT list = new ListNBT();
         for(int i = 0; i < this.getSizeInventory(); i++) {
-            NBTTagCompound tagAt = new NBTTagCompound();
+            CompoundNBT tagAt = new CompoundNBT();
             ItemStack stack = this.getStackInSlot(i);
             boolean flag = !stack.isEmpty() && stack.getCount() > 0;
-            tagAt.setBoolean(Names.NBT.FLAG, flag);
+            tagAt.putBoolean(Names.NBT.FLAG, flag);
             if(flag) {
-                stack.writeToNBT(tagAt);
+                stack.deserializeNBT(tagAt);
             }
-            list.appendTag(tagAt);
+            list.add(tagAt);
         }
-        tag.setTag(Names.NBT.LIST, list);
+        tag.put(Names.NBT.LIST, list);
         return tag;
     }
 
-    default NBTTagCompound readInventoryFromNBT(NBTTagCompound tag) {
-        if(tag.hasKey(Names.NBT.LIST)) {
-            NBTTagList list = tag.getTagList(Names.NBT.LIST, 10);
+    default CompoundNBT readInventoryFromNBT(CompoundNBT tag) {
+        if(tag.contains(Names.NBT.LIST)) {
+            ListNBT list = tag.getList(Names.NBT.LIST, 10);
             for(int i = 0; i < this.getSizeInventory(); i++) {
-                NBTTagCompound tagAt = list.getCompoundTagAt(i);
+                CompoundNBT tagAt = list.getCompound(i);
                 if(tagAt.getBoolean(Names.NBT.FLAG)) {
-                    ItemStack stack = new ItemStack(tagAt);
+                    ItemStack stack = ItemStack.read(tagAt);
                     this.setInventorySlotContents(i, stack);
                 } else {
                     this.setInventorySlotContents(i, ItemStack.EMPTY);

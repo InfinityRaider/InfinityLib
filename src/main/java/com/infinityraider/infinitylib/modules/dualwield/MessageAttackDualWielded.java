@@ -2,14 +2,13 @@ package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.network.MessageBase;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.util.Hand;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class MessageAttackDualWielded extends MessageBase<IMessage> {
+public class MessageAttackDualWielded extends MessageBase {
     private boolean left;
     private boolean shift;
     private boolean ctrl;
@@ -28,26 +27,21 @@ public class MessageAttackDualWielded extends MessageBase<IMessage> {
     }
 
     @Override
-    public Side getMessageHandlerSide() {
-        return Side.SERVER;
+    public NetworkDirection getMessageDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
     }
 
     @Override
-    protected void processMessage(MessageContext ctx) {
-        EntityPlayer player = ctx.getServerHandler().player;
+    protected void processMessage(NetworkEvent.Context ctx) {
+        ServerPlayerEntity player = ctx.getSender();
         if(player != null) {
-            ItemStack stack = player.getHeldItem(left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
+            ItemStack stack = player.getHeldItem(left ? Hand.OFF_HAND : Hand.MAIN_HAND);
             if(stack != null && stack.getItem() instanceof IDualWieldedWeapon) {
                 IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-                EnumHand hand = left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+                Hand hand = left ? Hand.OFF_HAND : Hand.MAIN_HAND;
                 weapon.onItemAttack(stack, player, entity, shift, ctrl, hand);
                 ModuleDualWield.getInstance().attackTargetEntityWithCurrentItem(player, entity, weapon, stack, hand);
             }
         }
-    }
-
-    @Override
-    protected IMessage getReply(MessageContext ctx) {
-        return null;
     }
 }

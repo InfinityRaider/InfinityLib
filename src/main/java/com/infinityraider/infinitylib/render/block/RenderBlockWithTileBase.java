@@ -3,7 +3,10 @@ package com.infinityraider.infinitylib.render.block;
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlockWithTile;
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
+@OnlyIn(Dist.CLIENT)
 public abstract class RenderBlockWithTileBase<B extends BlockBase & ICustomRenderedBlockWithTile<T>, T extends TileEntityBase> extends RenderBlockBase<B> implements ITileRenderingHandler<B, T> {
 
     private final T dummy;

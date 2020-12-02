@@ -2,8 +2,8 @@ package com.infinityraider.infinitylib.block;
 
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.render.block.ITileRenderingHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * Implemented in a Block class to have special rendering handling for the block
@@ -15,6 +15,6 @@ public interface ICustomRenderedBlockWithTile<T extends TileEntityBase> extends 
      * @return a new IBlockRenderingHandler object for this block
      */
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     ITileRenderingHandler<? extends BlockBase, T> getRenderer();
 }

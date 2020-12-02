@@ -3,7 +3,7 @@ package com.infinityraider.infinitylib.modules.playerstate;
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public class ModulePlayerState extends Module {
         return INSTANCE;
     }
 
-    public State getState(EntityPlayer player) {
+    public State getState(PlayerEntity player) {
         return STATE_HANDLER.getState(player);
     }
 

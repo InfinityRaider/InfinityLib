@@ -4,7 +4,7 @@ import com.infinityraider.infinitylib.InfinityLib;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 @SuppressWarnings("unused")
 public class ModSoundHandler {
@@ -17,22 +17,22 @@ public class ModSoundHandler {
     private final SidedSoundDelegate delegate;
 
     private ModSoundHandler() {
-        this.delegate = InfinityLib.proxy.getSoundDelegate();
+        this.delegate = InfinityLib.instance.proxy().getSoundDelegate();
     }
 
     public SoundTask playSoundAtPositionOnce(double x, double y, double z, SoundEvent sound, SoundCategory category) {
-        return this.playSoundAtPositionOnce(new Vec3d(x, y, z), sound, category);
+        return this.playSoundAtPositionOnce(new Vector3d(x, y, z), sound, category);
     }
 
     public SoundTask playSoundAtPositionOnce(double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        return this.playSoundAtPositionOnce(new Vec3d(x, y, z), sound, category, volume, pitch);
+        return this.playSoundAtPositionOnce(new Vector3d(x, y, z), sound, category, volume, pitch);
     }
 
-    public SoundTask playSoundAtPositionOnce(Vec3d position, SoundEvent sound, SoundCategory category) {
+    public SoundTask playSoundAtPositionOnce(Vector3d position, SoundEvent sound, SoundCategory category) {
         return this.delegate.playSoundAtPositionOnce(position, sound, category, 1, 1);
     }
 
-    public SoundTask playSoundAtPositionOnce(Vec3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    public SoundTask playSoundAtPositionOnce(Vector3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
         return this.delegate.playSoundAtPositionOnce(position, sound, category, volume, pitch);
     }
 
@@ -45,18 +45,18 @@ public class ModSoundHandler {
     }
 
     public SoundTask playSoundAtPositionContinuous(double x, double y, double z, SoundEvent sound, SoundCategory category) {
-        return this.playSoundAtPositionContinuous(new Vec3d(x, y, z), sound, category);
+        return this.playSoundAtPositionContinuous(new Vector3d(x, y, z), sound, category);
     }
 
     public SoundTask playSoundAtPositionContinuous(double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        return this.playSoundAtPositionContinuous(new Vec3d(x, y, z), sound, category, volume, pitch);
+        return this.playSoundAtPositionContinuous(new Vector3d(x, y, z), sound, category, volume, pitch);
     }
 
-    public SoundTask playSoundAtPositionContinuous(Vec3d position, SoundEvent sound, SoundCategory category) {
+    public SoundTask playSoundAtPositionContinuous(Vector3d position, SoundEvent sound, SoundCategory category) {
         return this.delegate.playSoundAtPositionContinuous(position, sound, category, 1, 1);
     }
 
-    public SoundTask playSoundAtPositionContinuous(Vec3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    public SoundTask playSoundAtPositionContinuous(Vector3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
         return this.delegate.playSoundAtPositionContinuous(position, sound, category, volume, pitch);
     }
 

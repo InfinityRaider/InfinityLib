@@ -1,21 +1,21 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
-import net.minecraft.client.model.ModelPlayer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.MobEffects;
+import net.minecraft.client.renderer.entity.model.PlayerModel;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
+import net.minecraft.potion.Effects;
+import net.minecraft.util.Hand;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class ArmSwingHandler {
     private static final ArmSwingHandler INSTANCE = new ArmSwingHandler();
 
@@ -23,29 +23,29 @@ public class ArmSwingHandler {
         return INSTANCE;
     }
 
-    private final Map<UUID, Map<EnumHand, SwingProgress>> swingHandlers;
+    private final Map<UUID, Map<Hand, SwingProgress>> swingHandlers;
 
     private ArmSwingHandler() {
         this.swingHandlers = new HashMap<>();
     }
 
-    public void swingArm(EntityPlayer player, EnumHand hand) {
+    public void swingArm(PlayerEntity player, Hand hand) {
         this.getSwingProgressForPlayerAndHand(player, hand).swingArm();
     }
 
-    public float getSwingProgress(EntityPlayer player, EnumHand hand, float partialTick) {
+    public float getSwingProgress(PlayerEntity player, Hand hand, float partialTick) {
         return this.getSwingProgressForPlayerAndHand(player, hand).getSwingProgress(partialTick);
     }
 
-    public SwingProgress getSwingProgressForPlayerAndHand(EntityPlayer player, EnumHand hand) {
+    public SwingProgress getSwingProgressForPlayerAndHand(PlayerEntity player, Hand hand) {
         if(!swingHandlers.containsKey(player.getUniqueID())) {
             SwingProgress progress = new SwingProgress(player, hand);
-            Map<EnumHand, SwingProgress> subMap = new HashMap<>();
+            Map<Hand, SwingProgress> subMap = new HashMap<>();
             subMap.put(hand, progress);
             swingHandlers.put(player.getUniqueID(), subMap);
             return progress;
         }
-        Map<EnumHand, SwingProgress> subMap = swingHandlers.get(player.getUniqueID());
+        Map<Hand, SwingProgress> subMap = swingHandlers.get(player.getUniqueID());
         if(!subMap.containsKey(hand)) {
             SwingProgress progress = new SwingProgress(player, hand);
             subMap.put(hand, progress);
@@ -58,7 +58,7 @@ public class ArmSwingHandler {
     @SuppressWarnings("unused")
     public void onUpdateTick(TickEvent.ClientTickEvent event) {
         if(event.phase == TickEvent.Phase.END) {
-            for(Map<EnumHand, SwingProgress> subMap : this.swingHandlers.values()) {
+            for(Map<Hand, SwingProgress> subMap : this.swingHandlers.values()) {
                 subMap.values().forEach(SwingProgress::onUpdate);
             }
         }
@@ -67,33 +67,33 @@ public class ArmSwingHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onPlayerRenderCall(RenderPlayerEvent.Pre event) {
-        ModelPlayer model = event.getRenderer().getMainModel();
+        PlayerModel model = event.getRenderer().getEntityModel();
         if(model instanceof ModelPlayerCustomized) {
-            float left = this.getSwingProgress(event.getEntityPlayer(), EnumHand.OFF_HAND, event.getPartialRenderTick());
-            float right = this.getSwingProgress(event.getEntityPlayer(), EnumHand.MAIN_HAND, event.getPartialRenderTick());
+            float left = this.getSwingProgress(event.getPlayer(), Hand.OFF_HAND, event.getPartialRenderTick());
+            float right = this.getSwingProgress(event.getPlayer(), Hand.MAIN_HAND, event.getPartialRenderTick());
             ((ModelPlayerCustomized) model).setSwingProgress(left, right);
         }
     }
 
     private static class SwingProgress {
-        private final EntityPlayer player;
-        private final EnumHand hand;
+        private final PlayerEntity player;
+        private final Hand hand;
 
         private float swingProgress;
         private float swingProgressPrev;
         private int swingProgressInt;
         private boolean isSwingInProgress;
 
-        private SwingProgress(EntityPlayer player, EnumHand hand) {
+        private SwingProgress(PlayerEntity player, Hand hand) {
             this.player = player;
             this.hand = hand;
         }
 
-        public EntityPlayer getPlayer() {
+        public PlayerEntity getPlayer() {
             return this.player;
         }
 
-        public EnumHand getHand() {
+        public Hand getHand() {
             return this.hand;
         }
 
@@ -126,7 +126,7 @@ public class ArmSwingHandler {
 
         public void swingArm() {
             ItemStack stack = this.getPlayer().getHeldItem(getHand());
-            if (stack != null && stack.getItem().onEntitySwing(this.getPlayer(), stack)) {
+            if (stack != null && stack.getItem().onEntitySwing(stack, this.getPlayer())) {
                 return;
             }
             if (!this.isSwingInProgress || this.swingProgressInt >= this.getArmSwingAnimationEnd() / 2 || this.swingProgressInt < 0) {
@@ -136,10 +136,10 @@ public class ArmSwingHandler {
         }
 
         private int getArmSwingAnimationEnd() {
-            return this.getPlayer().isPotionActive(MobEffects.HASTE)
-                    ? 6 - (1 + this.getPlayer().getActivePotionEffect(MobEffects.HASTE).getAmplifier())
-                    : (this.getPlayer().isPotionActive(MobEffects.MINING_FATIGUE)
-                    ? 6 + (1 + this.getPlayer().getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) * 2 : 6);
+            return this.getPlayer().isPotionActive(Effects.HASTE)
+                    ? 6 - (1 + this.getPlayer().getActivePotionEffect(Effects.HASTE).getAmplifier())
+                    : (this.getPlayer().isPotionActive(Effects.MINING_FATIGUE)
+                    ? 6 + (1 + this.getPlayer().getActivePotionEffect(Effects.MINING_FATIGUE).getAmplifier()) * 2 : 6);
         }
     }
 }

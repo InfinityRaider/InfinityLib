@@ -2,12 +2,12 @@ package com.infinityraider.infinitylib.capability;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.utility.ISerializable;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.*;
 
@@ -22,7 +22,7 @@ public class CapabilityHandler {
 
     private CapabilityHandler() {
         this.map = new HashMap<>();
-        InfinityLib.proxy.registerEventHandler(this);
+        InfinityLib.instance.registerEventHandler(this);
     }
 
     @SuppressWarnings("unchecked")
@@ -63,22 +63,21 @@ public class CapabilityHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onPlayerClone(PlayerEvent.Clone event) {
-        EntityPlayer oldPlayer = event.getOriginal();
-        EntityPlayer newPlayer = event.getEntityPlayer();
+        PlayerEntity oldPlayer = event.getOriginal();
+        PlayerEntity newPlayer = event.getPlayer();
         if(oldPlayer != null && newPlayer != null && !oldPlayer.getEntityWorld().isRemote) {
             List<ICapabilityImplementation<ICapabilityProvider, ? extends ISerializable>> list = this.map.get(oldPlayer.getClass());
             if(list == null) {
                 return;
             }
             list.stream()
-                    .filter(impl -> EntityPlayer.class.isAssignableFrom(impl.getCarrierClass()))
-                    .filter(impl -> oldPlayer.hasCapability(impl.getCapability(), null))
+                    .filter(impl -> PlayerEntity.class.isAssignableFrom(impl.getCarrierClass()))
                     .forEach(impl -> {
-                        ISerializable oldProps = oldPlayer.getCapability(impl.getCapability(), null);
-                        ISerializable newProps = oldPlayer.getCapability(impl.getCapability(), null);
-                        if(newProps != null && oldProps != null) {
-                            newProps.readFromNBT(oldProps.writeToNBT());
-                        }
+                        oldPlayer.getCapability(impl.getCapability(), null).ifPresent(oldProps -> {
+                            newPlayer.getCapability(impl.getCapability(), null).ifPresent(newProps -> {
+                                newProps.readFromNBT(oldProps.writeToNBT());
+                            });
+                        });
                     });
         }
     }

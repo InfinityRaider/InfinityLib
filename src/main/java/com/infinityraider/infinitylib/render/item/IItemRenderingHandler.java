@@ -2,16 +2,19 @@ package com.infinityraider.infinitylib.render.item;
 
 import com.infinityraider.infinitylib.render.DefaultTransforms;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.client.renderer.model.RenderMaterial;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public interface IItemRenderingHandler {
 
     /**
@@ -19,8 +22,7 @@ public interface IItemRenderingHandler {
      * Passed textures are stitched to the Minecraft texture map and icons can be retrieved from them.
      * @return a list of ResourceLocations
      */
-    @SideOnly(Side.CLIENT)
-    List<ResourceLocation> getAllTextures();
+    List<RenderMaterial> getAllTextures();
 
     /**
      * Called to render the item
@@ -31,8 +33,7 @@ public interface IItemRenderingHandler {
      * @param stack stack containing this block as an item
      * @param entity entity holding the stack
      */
-    @SideOnly(Side.CLIENT)
-    void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity);
+    void renderItem(ITessellator tessellator, World world, ItemStack stack, LivingEntity entity);
     
     /**
      * Called to determine the cache key for this specific render.
@@ -42,11 +43,14 @@ public interface IItemRenderingHandler {
      * @param entity
      * @return 
      */
-    default Object getItemQuadsCacheKey(World world, ItemStack stack, EntityLivingBase entity) {
-        return stack.getMetadata();
+    default Object getItemQuadsCacheKey(World world, ItemStack stack, LivingEntity entity) {
+        return stack.getItem();
     }
 
-    @SideOnly(Side.CLIENT)
+    default VertexFormat getVertexFormat() {
+        return DefaultVertexFormats.BLOCK;
+    }
+
     default DefaultTransforms.Transformer getPerspectiveTransformer() {
         return DefaultTransforms::getItemMatrix;
     }

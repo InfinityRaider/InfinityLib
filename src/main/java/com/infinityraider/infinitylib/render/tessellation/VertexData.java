@@ -3,11 +3,11 @@ package com.infinityraider.infinitylib.render.tessellation;
 import java.util.Objects;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class VertexData {
 
     private final VertexFormat format;
@@ -50,13 +50,13 @@ public class VertexData {
         this.nZ = z;
     }
 
-    public void applyVertexData(UnpackedBakedQuad.Builder builder) {
-        for (int index = 0; index < format.getElementCount(); index++) {
-            applyVertexDataForType(index, format.getElement(index).getUsage(), builder);
+    public void applyVertexData(BakedQuadBuilder builder) {
+        for (int index = 0; index < this.format.getElements().size(); index++) {
+            applyVertexDataForType(index, this.format.getElements().get(index).getUsage(), builder);
         }
     }
 
-    private void applyVertexDataForType(int index, VertexFormatElement.EnumUsage type, UnpackedBakedQuad.Builder builder) {
+    private void applyVertexDataForType(int index, VertexFormatElement.Usage type, BakedQuadBuilder builder) {
         switch (type) {
             case POSITION:
                 builder.put(index, x, y, z, 1);
@@ -77,7 +77,6 @@ public class VertexData {
             case GENERIC:
                 //TODO: figure this one out
                 builder.put(index);
-
         }
     }
 

@@ -9,8 +9,8 @@ public abstract class ItemBase extends Item implements IInfinityItem {
 
 	private final String internalName;
 
-	public ItemBase(String name) {
-		super();
+	public ItemBase(String name, Properties properties) {
+		super(properties);
 		this.internalName = name;
 	}
 

@@ -1,13 +1,14 @@
 package com.infinityraider.infinitylib.proxy.base;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.server.FMLServerHandler;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public interface IServerProxyBase extends IProxyBase {
     @Override
-    default EntityPlayer getClientPlayer() {
+    default PlayerEntity getClientPlayer() {
         return null;
     }
 
@@ -17,22 +18,23 @@ public interface IServerProxyBase extends IProxyBase {
     }
 
     @Override
-    default World getWorldByDimensionId(int dimension) {
-        return FMLServerHandler.instance().getServer().getWorld(dimension);
+    default LogicalSide getPhysicalSide() {
+        return LogicalSide.SERVER;
     }
 
     @Override
-    default Side getPhysicalSide() {
-        return Side.SERVER;
+    default LogicalSide getEffectiveSide() {
+        return this.getPhysicalSide();
     }
 
     @Override
-    default Side getEffectiveSide() {
-        return getPhysicalSide();
+    default World getWorldFromDimension(RegistryKey<World> dimension) {
+        return ServerLifecycleHooks.getCurrentServer().getWorld(dimension);
     }
+
 
     @Override
     default void queueTask(Runnable task) {
-        FMLServerHandler.instance().getServer().addScheduledTask(task);
+        this.getMinecraftServer().execute(task);
     }
 }

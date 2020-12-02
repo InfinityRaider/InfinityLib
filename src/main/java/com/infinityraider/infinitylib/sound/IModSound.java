@@ -2,10 +2,10 @@ package com.infinityraider.infinitylib.sound;
 
 import com.infinityraider.infinitylib.utility.IStoppable;
 import net.minecraft.client.audio.ISound;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public interface IModSound extends ISound, IStoppable {
     boolean repeat();
 

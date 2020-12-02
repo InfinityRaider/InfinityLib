@@ -1,13 +1,18 @@
 package com.infinityraider.infinitylib.utility;
 
 import com.google.common.base.Predicate;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
+import com.google.common.base.Predicates;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.*;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -15,216 +20,178 @@ import java.util.List;
 import java.util.Optional;
 
 public class RayTraceHelper {
-    @Nullable
-    public static RayTraceResult getTargetBlock(Entity entity, double distance) {
-        Optional<Tuple<Vec3d, Vec3d>> eyesAndTrace = getEyesAndTraceVectors(entity, distance);
-        if(!eyesAndTrace.isPresent()) {
-            return null;
-        }
-        return entity.getEntityWorld().rayTraceBlocks(eyesAndTrace.get().getFirst(), eyesAndTrace.get().getSecond(), false, false, true);
+    public static Optional<BlockRayTraceResult> getTargetBlock(Entity entity, double distance) {
+        return getRayFromEyesAndDistance(entity, distance).flatMap(ray ->
+                rayTraceBlockForEntity(entity, entity.getEntityWorld(), ray, false, false));
     }
 
-    @Nullable
-    public static RayTraceResult getTargetEntityOrBlock(Entity entity, double distance) {
-        Optional<Tuple<Vec3d, Vec3d>> eyesAndTrace = getEyesAndTraceVectors(entity, distance);
-        if(!eyesAndTrace.isPresent()) {
-            return null;
-        }
-        return rayTraceBlocksForEntity(entity, entity.getEntityWorld(), eyesAndTrace.get().getFirst(), eyesAndTrace.get().getSecond(), false, false, true);
+    public static Optional<EntityRayTraceResult> getTargetEntity(Entity entity, double distance) {
+        return getTargetEntity(entity, distance, Entity.class);
     }
 
-    @Nullable
-    public static RayTraceResult getTargetEntityOrBlock(Entity entity, double distance, Class<? extends Entity> entityClass) {
-        Optional<Tuple<Vec3d, Vec3d>> eyesAndTrace = getEyesAndTraceVectors(entity, distance);
-        if(!eyesAndTrace.isPresent()) {
-            return null;
-        }
-        return rayTraceBlocksForEntity(entity, entity.getEntityWorld(), eyesAndTrace.get().getFirst(), eyesAndTrace.get().getSecond(), false, false, true, entityClass);
+    @SuppressWarnings("Unchecked")
+    public static Optional<EntityRayTraceResult> getTargetEntity(Entity entity, double distance, Class<? extends Entity> entityClass) {
+        return getTargetEntity(entity, distance, new PredicateInstanceOf(entityClass));
     }
 
-    @Nullable
-    public static RayTraceResult getTargetEntityOrBlock(Entity entity, double distance, Predicate<? super Entity> filter) {
-        Optional<Tuple<Vec3d, Vec3d>> eyesAndTrace = getEyesAndTraceVectors(entity, distance);
-        if(!eyesAndTrace.isPresent()) {
-            return null;
-        }
-        return rayTraceBlocksForEntity(entity, entity.getEntityWorld(), eyesAndTrace.get().getFirst(), eyesAndTrace.get().getSecond(), false, false, true, filter);
+    public static Optional<EntityRayTraceResult> getTargetEntity(Entity entity, double distance, Predicate<? super Entity> filter) {
+        return getRayFromEyesAndDistance(entity, distance).flatMap(ray ->
+                rayTraceEntityForEntity(entity, entity.getEntityWorld(), ray, false, false, filter));
     }
 
-    private static Optional<Tuple<Vec3d, Vec3d>> getEyesAndTraceVectors(Entity entity, double distance) {
-        Vec3d eyes = new Vec3d(entity.posX, entity.posY + (double)entity.getEyeHeight(), entity.posZ);
-        Vec3d look = entity.getLookVec();
-        if(look == null) {
-            return Optional.empty();
-        }
-        Vec3d trace = eyes.addVector(look.x * distance, look.y * distance, look.z * distance);
-        return Optional.of(new Tuple<>(eyes, trace));
+    public static Optional<RayTraceResult> getTargetEntityOrBlock(Entity entity, double distance) {
+        return getTargetEntityOrBlock(entity, distance, Entity.class);
     }
 
-    @Nullable
-    public static RayTraceResult rayTraceBlocksForEntity(
-            Entity entity, World world, Vec3d start, Vec3d ray, boolean stopOnLiquid,
-            boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock) {
-
-        return rayTraceBlocksForEntity(entity, world, start, ray, stopOnLiquid, ignoreBlockWithoutBoundingBox, returnLastUncollidableBlock, Entity.class);
+    @SuppressWarnings("Unchecked")
+    public static Optional<RayTraceResult> getTargetEntityOrBlock(Entity entity, double distance, Class<? extends Entity> entityClass) {
+        return getTargetEntityOrBlock(entity, distance, new PredicateInstanceOf(entityClass));
     }
 
-    @Nullable
-    @SuppressWarnings("unchecked")
-    public static RayTraceResult rayTraceBlocksForEntity(
-            Entity entity, World world, Vec3d start, Vec3d ray, boolean stopOnLiquid,
-            boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock, Class<? extends Entity> entityClass) {
-
-        return rayTraceBlocksForEntity(entity, world, start, ray, stopOnLiquid, ignoreBlockWithoutBoundingBox, returnLastUncollidableBlock, new PredicateInstanceOf(entityClass));
+    public static Optional<RayTraceResult> getTargetEntityOrBlock(Entity entity, double distance, Predicate<? super Entity> filter) {
+        return getRayFromEyesAndDistance(entity, distance).flatMap(ray ->
+                rayTraceForEntity(entity, entity.getEntityWorld(), ray, false, false, filter));
     }
 
-    @Nullable
-    public static RayTraceResult rayTraceBlocksForEntity(
-            Entity entity, World world, Vec3d start, Vec3d ray, boolean stopOnLiquid,
-            boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock, Predicate<? super Entity> filter) {
-
-        if (!Double.isNaN(start.x) && !Double.isNaN(start.y) && !Double.isNaN(start.z)) {
-            if (!Double.isNaN(ray.x) && !Double.isNaN(ray.y) && !Double.isNaN(ray.z)) {
-                int x2 = MathHelper.floor(ray.x);
-                int y2 = MathHelper.floor(ray.y);
-                int z2 = MathHelper.floor(ray.z);
-                int x1 = MathHelper.floor(start.x);
-                int y1 = MathHelper.floor(start.y);
-                int z1 = MathHelper.floor(start.z);
-                BlockPos pos = new BlockPos(x1, y1, z1);
-                IBlockState state = world.getBlockState(pos);
-                Block blockStart = state.getBlock();
-
-                if ((!ignoreBlockWithoutBoundingBox || state.getCollisionBoundingBox(world, pos) != Block.NULL_AABB) && blockStart.canCollideCheck(state, stopOnLiquid)) {
-                    RayTraceResult raytraceresult = state.collisionRayTrace(world, pos, start, ray);
-                    if (raytraceresult != null) {
-                        return raytraceresult;
-                    }
-                }
-
-                RayTraceResult result = null;
-                int k1 = 200;
-                while (k1-- >= 0) {
-                    if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z)) {
-                        return null;
-                    }
-                    if (x1 == x2 && y1 == y2 && z1 == z2) {
-                        return returnLastUncollidableBlock ? result : null;
-                    }
-
-                    Tuple<Double, Boolean> xStep = step(x1, x2);
-                    Tuple<Double, Boolean> yStep = step(y1, y2);
-                    Tuple<Double, Boolean> zStep = step(z1, z2);
-                    boolean flagX = xStep.getSecond();
-                    boolean flagY = yStep.getSecond();
-                    boolean flagZ = zStep.getSecond();
-                    double dX = xStep.getFirst();
-                    double dY = yStep.getFirst();
-                    double dZ = zStep.getFirst();
-
-                    double xNew = 999.0D;
-                    double yNew = 999.0D;
-                    double zNew = 999.0D;
-                    double deltaX = ray.x - start.x;
-                    double deltaY = ray.y - start.y;
-                    double deltaZ = ray.z - start.z;
-
-                    if (flagX) {
-                        xNew = (dX - start.x) / deltaX;
-                    }
-
-                    if (flagY) {
-                        yNew = (dY - start.y) / deltaY;
-                    }
-
-                    if (flagZ) {
-                        zNew = (dZ - start.z) / deltaZ;
-                    }
-
-                    if (xNew == -0.0D) {
-                        xNew = -1.0E-4D;
-                    }
-
-                    if (yNew == -0.0D) {
-                        yNew = -1.0E-4D;
-                    }
-
-                    if (zNew == -0.0D) {
-                        zNew = -1.0E-4D;
-                    }
-
-                    EnumFacing enumfacing;
-
-                    if (xNew < yNew && xNew < zNew) {
-                        enumfacing = x2 > x1 ? EnumFacing.WEST : EnumFacing.EAST;
-                        start = new Vec3d(dX, start.y + deltaY * xNew, start.z + deltaZ * xNew);
-                    } else if (yNew < zNew) {
-                        enumfacing = y2 > y1 ? EnumFacing.DOWN : EnumFacing.UP;
-                        start = new Vec3d(start.x + deltaX * yNew, dY, start.z + deltaZ * yNew);
-                    } else {
-                        enumfacing = z2 > z1 ? EnumFacing.NORTH : EnumFacing.SOUTH;
-                        start = new Vec3d(start.x + deltaX * zNew, start.y + deltaY * zNew, dZ);
-                    }
-
-                    x1 = MathHelper.floor(start.x) - (enumfacing == EnumFacing.EAST ? 1 : 0);
-                    y1 = MathHelper.floor(start.y) - (enumfacing == EnumFacing.UP ? 1 : 0);
-                    z1 = MathHelper.floor(start.z) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
-                    pos = new BlockPos(x1, y1, z1);
-
-                    List<Entity> entities = world.getEntitiesInAABBexcluding(entity, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1), filter);
-                    Entity closest = null;
-                    double dist = 999.0D * 999.0D;
-                    for(Entity collided : entities) {
-                        double distTo = (collided.posX - entity.posX)*(collided.posX - entity.posX) + (collided.posY - entity.posY)*(collided.posY - entity.posY) + (collided.posZ- entity.posZ)*(collided.posZ - entity.posZ);
-                        if(distTo < dist) {
-                            dist = distTo;
-                            closest = collided;
-                        }
-                    }
-
-                    if(closest != null) {
-                        return new RayTraceResult(closest);
-                    }
-
-                    IBlockState stateAt = world.getBlockState(pos);
-                    Block block = stateAt.getBlock();
-
-                    if (!ignoreBlockWithoutBoundingBox || stateAt.getMaterial() == Material.PORTAL || stateAt.getCollisionBoundingBox(world, pos) != Block.NULL_AABB) {
-                        if (block.canCollideCheck(stateAt, stopOnLiquid)) {
-                            RayTraceResult newResult = stateAt.collisionRayTrace(world, pos, start, ray);
-                            if (newResult != null) {
-                                return newResult;
-                            }
-                        } else {
-                            result = new RayTraceResult(RayTraceResult.Type.MISS, start, enumfacing, pos);
-                        }
-                    }
-                }
-
-                return returnLastUncollidableBlock ? result : null;
-            } else {
-                return null;
-            }
+    public static Optional<BlockRayTraceResult> rayTraceBlockForEntity(
+            Entity entity, World world, Tuple<Vector3d,Vector3d> ray, boolean stopOnLiquid, boolean ignoreUncollidable) {
+        RayTraceOptions.Builder optionBuilder = getOptionBuilder().forEntity(entity);
+        if (stopOnLiquid) {
+            optionBuilder.stopOnAnyLiquid();
         } else {
-            return null;
+            optionBuilder.ignoreLiquid();
         }
+        if (ignoreUncollidable) {
+            optionBuilder.ignoreUnCollidableBlocks();
+        } else {
+            optionBuilder.useUnCollidableBlocks();
+        }
+        return Optional.ofNullable(doRayTrace(world, ray, optionBuilder.build(), BLOCK_RAY_TRACER));
     }
 
-    private static Tuple<Double, Boolean> step(int v1, int v2) {
-        boolean flag = true;
-        double d = 999.0;
+    public static Optional<EntityRayTraceResult> rayTraceEntityForEntity(
+            Entity entity, World world, Tuple<Vector3d,Vector3d> ray, boolean stopOnLiquid, boolean ignoreUncollidable) {
+        return rayTraceEntityForEntity(entity, world, ray, stopOnLiquid, ignoreUncollidable, Entity.class);
+    }
 
-        if (v2 > v1) {
-            d = (double)v1 + 1.0D;
-        }
-        else if (v2 < v1) {
-            d = (double)v1 + 0.0D;
-        }
-        else {
-            flag = false;
-        }
+    @SuppressWarnings("Unchecked")
+    public static Optional<EntityRayTraceResult> rayTraceEntityForEntity(
+            Entity entity, World world, Tuple<Vector3d,Vector3d> ray, boolean stopOnLiquid, boolean ignoreUncollidable, Class<? extends Entity> entityClass) {
+        return rayTraceEntityForEntity(entity, world, ray, stopOnLiquid, ignoreUncollidable, new PredicateInstanceOf(entityClass));
+    }
 
-        return new Tuple<>(d, flag);
+    public static Optional<EntityRayTraceResult> rayTraceEntityForEntity(
+            Entity entity, World world, Tuple<Vector3d,Vector3d> ray, boolean stopOnLiquid, boolean ignoreUncollidable, Predicate<? super Entity> filter) {
+
+        RayTraceOptions.Builder optionBuilder = getOptionBuilder().forEntity(entity);
+        optionBuilder.setEntityFilter(filter);
+        if (stopOnLiquid) {
+            optionBuilder.stopOnAnyLiquid();
+        } else {
+            optionBuilder.ignoreLiquid();
+        }
+        if (ignoreUncollidable) {
+            optionBuilder.ignoreUnCollidableBlocks();
+        } else {
+            optionBuilder.useUnCollidableBlocks();
+        }
+        return Optional.ofNullable(doRayTrace(world, ray, optionBuilder.build(), ENTITY_RAY_TRACER));
+    }
+
+    public static Optional<RayTraceResult> rayTraceForEntity(
+            Entity entity, World world, Tuple<Vector3d,Vector3d> ray, boolean stopOnLiquid, boolean ignoreUncollidable) {
+        return rayTraceForEntity(entity, world, ray, stopOnLiquid, ignoreUncollidable, Entity.class);
+    }
+
+    @SuppressWarnings("Unchecked")
+    public static Optional<RayTraceResult> rayTraceForEntity(
+            Entity entity, World world, Tuple<Vector3d,Vector3d> ray, boolean stopOnLiquid, boolean ignoreUncollidable, Class<? extends Entity> entityClass) {
+        return rayTraceForEntity(entity, world, ray, stopOnLiquid, ignoreUncollidable, new PredicateInstanceOf(entityClass));
+    }
+
+    public static Optional<RayTraceResult> rayTraceForEntity(
+            Entity entity, World world, Tuple<Vector3d,Vector3d> ray, boolean stopOnLiquid, boolean ignoreUncollidable, Predicate<? super Entity> filter) {
+
+        RayTraceOptions.Builder optionBuilder = getOptionBuilder().forEntity(entity);
+        optionBuilder.setEntityFilter(filter);
+        if (stopOnLiquid) {
+            optionBuilder.stopOnAnyLiquid();
+        } else {
+            optionBuilder.ignoreLiquid();
+        }
+        if (ignoreUncollidable) {
+            optionBuilder.ignoreUnCollidableBlocks();
+        } else {
+            optionBuilder.useUnCollidableBlocks();
+        }
+        return Optional.ofNullable(doRayTrace(world, ray, optionBuilder.build(), GENERAL_RAY_TRACER));
+    }
+
+    @Nullable
+    private static <T extends RayTraceResult> T doRayTrace(World world, Tuple<Vector3d, Vector3d> ray, RayTraceOptions options, RayTracer<T> rayTracer) {
+        Vector3d start = ray.getA();
+        Vector3d stop = ray.getB();
+        if (start.equals(stop)) {
+            return rayTracer.createMiss(ray);
+        } else {
+            // Define start coordinates
+            double x_1 = MathHelper.lerp(-1.0E-7D, start.x, stop.x);
+            double y_1 = MathHelper.lerp(-1.0E-7D, start.y, stop.y);
+            double z_1 = MathHelper.lerp(-1.0E-7D, start.z, stop.z);
+            // Check if a result is found at the initial position
+            int x_0 = MathHelper.floor(x_1);
+            int y_0 = MathHelper.floor(y_1);
+            int z_0 = MathHelper.floor(z_1);
+            BlockPos.Mutable mutable_pos = new BlockPos.Mutable(x_0, y_0, z_0);
+            T result = rayTracer.trace(world, x_1, y_1, z_1, mutable_pos, ray, options);
+            if (result != null) {
+                return result;
+            }
+            // Define end coordinates
+            double x_2 = MathHelper.lerp(-1.0E-7D, stop.x, start.x);
+            double y_2 = MathHelper.lerp(-1.0E-7D, stop.y, start.y);
+            double z_2 = MathHelper.lerp(-1.0E-7D, stop.z, start.z);
+            // Define iteration parameters
+            double dx = x_2 - x_1;
+            double dy = y_2 - y_1;
+            double dz = z_2 - z_1;
+            int xSign = MathHelper.signum(dx);
+            int ySign = MathHelper.signum(dy);
+            int zSign = MathHelper.signum(dz);
+            double dxInv = xSign == 0 ? Double.MAX_VALUE : (double) xSign / dx;
+            double dyInv = ySign == 0 ? Double.MAX_VALUE : (double) ySign / dy;
+            double dzInv = zSign == 0 ? Double.MAX_VALUE : (double) zSign / dz;
+            double progress_x = dxInv * (xSign > 0 ? 1.0D - MathHelper.frac(x_1) : MathHelper.frac(x_1));
+            double progress_y = dyInv * (ySign > 0 ? 1.0D - MathHelper.frac(y_1) : MathHelper.frac(y_1));
+            double progress_z = dzInv * (zSign > 0 ? 1.0D - MathHelper.frac(z_1) : MathHelper.frac(z_1));
+            // Iterate along the ray
+            while (progress_x <= 1.0D || progress_y <= 1.0D || progress_z <= 1.0D) {
+                // Calculate next ray trace position
+                if (progress_x < progress_y) {
+                    if (progress_x < progress_z) {
+                        x_0 += xSign;
+                        progress_x += dxInv;
+                    } else {
+                        z_0 += zSign;
+                        progress_z += dzInv;
+                    }
+                } else if (progress_y < progress_z) {
+                    y_0 += ySign;
+                    progress_y += dyInv;
+                } else {
+                    z_0 += zSign;
+                    progress_z += dzInv;
+                }
+                // Check if a result has been found
+                result = rayTracer.trace(world, x_1 + progress_x*dx, y_1+ progress_y*dy, z_1 + progress_z*dz,
+                        mutable_pos.setPos(x_0, y_0, z_0), ray, options);
+                if (result != null) {
+                    return result;
+                }
+            }
+            // No result has been found, return a miss
+            return rayTracer.createMiss(ray);
+        }
     }
 
     public static class PredicateInstanceOf<E extends Entity> implements Predicate<E> {
@@ -239,4 +206,181 @@ public class RayTraceHelper {
             return e != null && entityClass.isAssignableFrom(e.getClass());
         }
     }
+
+    private static Optional<Tuple<Vector3d, Vector3d>> getRayFromEyesAndDistance(Entity entity, double distance) {
+        if(entity == null && !entity.isAlive()) {
+            return Optional.empty();
+        }
+        Vector3d eyes = new Vector3d(entity.getPosX(), entity.getPosY() + (double)entity.getEyeHeight(), entity.getPosZ());
+        Vector3d look = entity.getLookVec();
+        if(look == null) {
+            return Optional.empty();
+        }
+        Vector3d trace = eyes.add(look.x * distance, look.y * distance, look.z * distance);
+        return Optional.of(new Tuple<>(eyes, trace));
+    }
+
+    public static RayTraceOptions.Builder getOptionBuilder() {
+        return new RayTraceOptions.Builder();
+    }
+
+    public static class RayTraceOptions {
+        private final RayTraceContext.BlockMode blockMode;
+        private final RayTraceContext.FluidMode fluidMode;
+        private final ISelectionContext context;
+        private final Predicate<? super Entity> entityFilter;
+
+        private RayTraceOptions(RayTraceContext.BlockMode blockMode, RayTraceContext.FluidMode fluidMode, ISelectionContext context, Predicate<? super Entity> entityFilter) {
+            this.blockMode = blockMode;
+            this.fluidMode = fluidMode;
+            this.context = context;
+            this.entityFilter = entityFilter;
+        }
+
+        public VoxelShape getBlockShape(IBlockReader world, BlockPos pos, BlockState state) {
+            return this.blockMode.get(state, world, pos, this.context);
+        }
+
+        public VoxelShape getFluidShape(IBlockReader world, BlockPos pos, FluidState state) {
+            return this.fluidMode.test(state) ? state.getShape(world, pos) : VoxelShapes.empty();
+        }
+
+        @Nullable
+        public Entity getHitEntity(World world, double x, double y, double z, Tuple<Vector3d, Vector3d> ray) {
+            double d = 0.25D;
+            AxisAlignedBB area = new AxisAlignedBB(x - d, y - d, z - d, x + d, y + d, z + d);
+            List<Entity> entities = world.getEntitiesInAABBexcluding(this.context.getEntity(), area, this.entityFilter);
+            Entity closest = null;
+            double dist = 999.0D * 999.0D;
+            for(Entity collided : entities) {
+                double distTo = (collided.getPosX() - ray.getA().x)*(collided.getPosX() -  ray.getA().x)
+                        + (collided.getPosY() -  ray.getA().y)*(collided.getPosY() -  ray.getA().y)
+                        + (collided.getPosZ()- ray.getA().z)*(collided.getPosZ() -  ray.getA().z);
+                if(distTo < dist) {
+                    dist = distTo;
+                    closest = collided;
+                }
+            }
+            return closest;
+        }
+
+        public static class Builder {
+            RayTraceContext.BlockMode blockMode;
+            RayTraceContext.FluidMode fluidMode;
+            ISelectionContext context;
+            Predicate<? super Entity> entityFilter;
+
+            private Builder() {
+                this.blockMode = RayTraceContext.BlockMode.OUTLINE;
+                this.fluidMode = RayTraceContext.FluidMode.NONE;
+                this.context = ISelectionContext.dummy();
+                this.entityFilter = Predicates.alwaysTrue();
+            }
+
+            public Builder forEntity(Entity entity) {
+                this.context = entity == null ? ISelectionContext.dummy() : ISelectionContext.forEntity(entity);
+                return this;
+            }
+
+            public Builder setEntityFilter(Predicate<? super Entity> filter) {
+                this.entityFilter = filter;
+                return this;
+            }
+
+            public Builder ignoreUnCollidableBlocks() {
+                this.blockMode = RayTraceContext.BlockMode.COLLIDER;
+                return this;
+            }
+
+            public Builder useUnCollidableBlocks() {
+                this.blockMode = RayTraceContext.BlockMode.OUTLINE;
+                return this;
+            }
+
+            public Builder useBlockVisual() {
+                this.blockMode = RayTraceContext.BlockMode.VISUAL;
+                return this;
+            }
+
+            public Builder ignoreLiquid() {
+                this.fluidMode = RayTraceContext.FluidMode.NONE;
+                return this;
+            }
+
+            public Builder stopOnLiquidSource() {
+                this.fluidMode = RayTraceContext.FluidMode.SOURCE_ONLY;
+                return this;
+            }
+
+            public Builder stopOnAnyLiquid() {
+                this.fluidMode = RayTraceContext.FluidMode.ANY;
+                return this;
+            }
+
+            public RayTraceOptions build() {
+                return new RayTraceOptions(blockMode, fluidMode, context, entityFilter);
+            }
+
+        }
+    }
+
+    public static abstract class RayTracer<T extends RayTraceResult> {
+        @Nullable
+        public abstract T trace(World world, double x, double y, double z, BlockPos pos, Tuple<Vector3d,Vector3d> ray, RayTraceOptions options);
+
+        public abstract T createMiss(Tuple<Vector3d,Vector3d> ray);
+    }
+
+    public static final RayTracer<BlockRayTraceResult> BLOCK_RAY_TRACER = new RayTracer<BlockRayTraceResult>() {
+        @Nullable
+        @Override
+        public BlockRayTraceResult trace(World world, double x, double y, double z, BlockPos pos, Tuple<Vector3d, Vector3d> ray, RayTraceOptions options) {
+            BlockState blockstate = world.getBlockState(pos);
+            FluidState fluidstate = world.getFluidState(pos);
+            VoxelShape blockShape = options.getBlockShape(world, pos, blockstate);
+            BlockRayTraceResult blockResult = world.rayTraceBlocks(ray.getA(), ray.getB(), pos, blockShape, blockstate);
+            VoxelShape fluidShape = options.getFluidShape(world, pos, fluidstate);
+            BlockRayTraceResult fluidResult = fluidShape.rayTrace(ray.getA(), ray.getB(), pos);
+            double d0 = blockResult == null ? Double.MAX_VALUE : ray.getA().squareDistanceTo(blockResult.getHitVec());
+            double d1 = fluidResult == null ? Double.MAX_VALUE : ray.getB().squareDistanceTo(fluidResult.getHitVec());
+            return d0 <= d1 ? blockResult : fluidResult;
+        }
+
+        @Override
+        public BlockRayTraceResult createMiss(Tuple<Vector3d, Vector3d> ray) {
+            Vector3d vector3d = ray.getA().subtract(ray.getB());
+            return BlockRayTraceResult.createMiss(ray.getB(), Direction.getFacingFromVector(vector3d.x, vector3d.y, vector3d.z), new BlockPos(ray.getB()));
+        }
+    };
+
+    public static final RayTracer<EntityRayTraceResult> ENTITY_RAY_TRACER = new RayTracer<EntityRayTraceResult>() {
+        @Nullable
+        @Override
+        public EntityRayTraceResult trace(World world, double x, double y, double z, BlockPos pos, Tuple<Vector3d, Vector3d> ray, RayTraceOptions options) {
+            Entity hit = options.getHitEntity(world, x, y, z, ray);
+            return hit == null ? null : new EntityRayTraceResult(hit, new Vector3d(x, y, z));
+        }
+
+        @Override
+        public EntityRayTraceResult createMiss(Tuple<Vector3d, Vector3d> ray) {
+            return new EntityRayTraceResult(null, ray.getB());
+        }
+    };
+
+    public static final RayTracer<RayTraceResult> GENERAL_RAY_TRACER = new RayTracer<RayTraceResult>() {
+        @Nullable
+        @Override
+        public RayTraceResult trace(World world, double x, double y, double z, BlockPos pos, Tuple<Vector3d, Vector3d> ray, RayTraceOptions options) {
+            EntityRayTraceResult entityResult = ENTITY_RAY_TRACER.trace(world, x, y, z, pos, ray, options);
+            if (entityResult != null) {
+                return entityResult;
+            }
+            return BLOCK_RAY_TRACER.trace(world, x, y, z, pos, ray, options);
+        }
+
+        @Override
+        public RayTraceResult createMiss(Tuple<Vector3d, Vector3d> ray) {
+            return BLOCK_RAY_TRACER.createMiss(ray);
+        }
+    };
 }

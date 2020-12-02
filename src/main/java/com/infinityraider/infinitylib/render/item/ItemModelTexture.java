@@ -1,17 +1,10 @@
-/*
- * 
- */
 package com.infinityraider.infinitylib.render.item;
 
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-/**
- *
- * @author RlonRyan
- */
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public final class ItemModelTexture {
 	
 	public static final String SEPARATOR = "~";

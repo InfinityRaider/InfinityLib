@@ -5,21 +5,23 @@ import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.render.DefaultTransforms;
 import com.infinityraider.infinitylib.render.item.IItemRenderingHandler;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
-import com.infinityraider.infinitylib.utility.HashableBlockState;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlock> extends IItemRenderingHandler {
 
     /**
@@ -37,7 +39,7 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      *
      * @return a list of ResourceLocations
      */
-    List<ResourceLocation> getAllTextures();
+    List<RenderMaterial> getAllTextures();
 
     /**
      * Called to render the block at a specific place in the world,
@@ -49,7 +51,7 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @param block the block
      * @param side the side being renderered
      */
-    void renderWorldBlockStatic(ITessellator tessellator, IBlockState state, B block, EnumFacing side);
+    void renderWorldBlockStatic(ITessellator tessellator, BlockState state, B block, Direction side);
 
     /**
      * Retrofitted to fix block rendering.
@@ -60,7 +62,7 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @param entity
      */
     @Override
-    default void renderItem(ITessellator tessellator, World world, ItemStack stack, EntityLivingBase entity) {
+    default void renderItem(ITessellator tessellator, World world, ItemStack stack, LivingEntity entity) {
         renderInventoryBlock(tessellator, world, this.getBlock().getDefaultState(), this.getBlock(), stack, entity, ItemCameraTransforms.TransformType.NONE);
     }
 
@@ -76,8 +78,8 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      * @param entity entity holding the stack
      * @param type camera transform type
      */
-    void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
-            ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type);
+    void renderInventoryBlock(ITessellator tessellator, World world, BlockState state, B block,
+            ItemStack stack, LivingEntity entity, ItemCameraTransforms.TransformType type);
 
     /**
      * Gets the main icon used for this renderer, used for the particle
@@ -99,8 +101,12 @@ public interface IBlockRenderingHandler<B extends BlockBase & ICustomRenderedBlo
      */
     boolean doInventoryRendering();
 
+    default VertexFormat getVertexFormat() {
+        return DefaultVertexFormats.BLOCK;
+    }
+
     @Override
-    public default DefaultTransforms.Transformer getPerspectiveTransformer() {
+    default DefaultTransforms.Transformer getPerspectiveTransformer() {
         return DefaultTransforms::getBlockMatrix;
     }
 

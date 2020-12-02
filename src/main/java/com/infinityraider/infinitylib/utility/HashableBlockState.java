@@ -1,20 +1,16 @@
-/*
- */
 package com.infinityraider.infinitylib.utility;
 
 import com.google.common.base.Preconditions;
-import java.util.Objects;
-import java.util.Optional;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
+import java.util.Objects;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.block.Block;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.EnumFacing;
-import net.minecraftforge.common.property.IExtendedBlockState;
-import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.Property;
+import net.minecraft.util.Direction;
 
 /**
  *
@@ -24,34 +20,29 @@ public class HashableBlockState {
     @Nonnull
     private final Block block;
     @Nullable
-    private final EnumFacing side;
+    private final Direction side;
     @Nonnull
-    private final ImmutableMap<IProperty<?>, Comparable<?>> listedProperties;
-    @Nonnull
-    private final ImmutableMap<IUnlistedProperty<?>, Optional<?>> unlistedProperties;
+    private final Collection<Property<?>> properties;
 
-    public HashableBlockState(@Nonnull IBlockState state) {
+    public HashableBlockState(@Nonnull BlockState state) {
         this(state, null);
     }
 
-    public HashableBlockState(@Nonnull IBlockState state, @Nullable EnumFacing side) {
+    public HashableBlockState(@Nonnull BlockState state, @Nullable Direction side) {
         this(
                 state.getBlock(),
                 state.getProperties(),
-                (state instanceof IExtendedBlockState) ? ((IExtendedBlockState) state).getUnlistedProperties() : ImmutableMap.of(),
                 side
         );
     }
 
     public HashableBlockState(
             @Nonnull Block block,
-            @Nonnull ImmutableMap<IProperty<?>, Comparable<?>> listedProperties,
-            @Nonnull ImmutableMap<IUnlistedProperty<?>, Optional<?>> unlistedProperties,
-            @Nullable EnumFacing side
+            @Nonnull Collection<Property<?>> properties,
+            @Nullable Direction side
     ) {
         this.block = Preconditions.checkNotNull(block);
-        this.listedProperties = Preconditions.checkNotNull(listedProperties);
-        this.unlistedProperties = Preconditions.checkNotNull(unlistedProperties);
+        this.properties = Preconditions.checkNotNull(properties);
         this.side = side;
     }
 
@@ -61,8 +52,7 @@ public class HashableBlockState {
             final HashableBlockState other = (HashableBlockState) obj;
             return Objects.equals(this.block, other.block)
                     && Objects.equals(this.side, other.side)
-                    && Objects.equals(this.listedProperties, other.listedProperties)
-                    && Objects.equals(this.unlistedProperties, other.unlistedProperties);
+                    && Objects.equals(this.properties, other.properties);
         } else {
             return false;
         }
@@ -73,8 +63,7 @@ public class HashableBlockState {
         int hash = 7;
         hash = 31 * hash + Objects.hashCode(block);
         hash = 31 * hash + Objects.hashCode(side);
-        hash = 31 * hash + Objects.hashCode(listedProperties);
-        hash = 31 * hash + Objects.hashCode(unlistedProperties);
+        hash = 31 * hash + Objects.hashCode(properties);
         return hash;
     }
 

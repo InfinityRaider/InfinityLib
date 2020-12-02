@@ -1,10 +1,9 @@
 package com.infinityraider.infinitylib.utility.text;
 
-import com.infinityraider.infinitylib.InfinityLib;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Optional;
 
@@ -20,10 +19,12 @@ public class ItemStackParser {
     public static Optional<ItemStack> parseItemStack(String string) {
         String[] split = string.split(":");
         if(split.length <= 2) {
-            Item item = Item.REGISTRY.getObject(new ResourceLocation(string));
-            return item == null ? Optional.empty() : Optional.of(new ItemStack(item, 1, OreDictionary.WILDCARD_VALUE));
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(string));
+            return item == null ? Optional.empty() : Optional.of(new ItemStack(item, 1));
         } else {
-            Item item = Item.REGISTRY.getObject(new ResourceLocation(split[0] + ":" + split[1]));
+            //TODO: metadata
+            /*
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(split[0] + ":" + split[1]));
             if(item == null) {
                 return Optional.empty();
             }
@@ -35,6 +36,8 @@ public class ItemStackParser {
                 InfinityLib.instance.getLogger().printStackTrace(e);
             }
             return meta < 0 ? Optional.empty() : Optional.of(new ItemStack(item, 1, meta));
+             */
+            return Optional.empty();
         }
     }
 }

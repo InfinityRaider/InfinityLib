@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.block.multiblock;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 
 public interface IMultiBlockComponent<M extends IMultiBlockManager<T>, T extends IMultiBlockPartData> {
     /**
@@ -27,7 +27,7 @@ public interface IMultiBlockComponent<M extends IMultiBlockManager<T>, T extends
      * @param dir the direction
      * @return if there is a neighbour in the same multiblock for a specified direction
      */
-    boolean hasNeighbour(EnumFacing dir);
+    boolean hasNeighbour(Direction dir);
 
     /**
      * @param component the component to be checked

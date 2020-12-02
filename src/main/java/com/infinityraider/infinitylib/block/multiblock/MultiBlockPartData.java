@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.block.multiblock;
 
 import com.infinityraider.infinitylib.reference.Names;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class MultiBlockPartData implements IMultiBlockPartData {
     private int posX;
@@ -51,23 +51,23 @@ public class MultiBlockPartData implements IMultiBlockPartData {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound tag) {
-        tag.setInteger(Names.NBT.X1, posX());
-        tag.setInteger(Names.NBT.Y1, posY());
-        tag.setInteger(Names.NBT.Z1, posZ());
-        tag.setInteger(Names.NBT.X2, sizeX());
-        tag.setInteger(Names.NBT.Y2, sizeY());
-        tag.setInteger(Names.NBT.Z2, sizeZ());
+    public void writeToNBT(CompoundNBT tag) {
+        tag.putInt(Names.NBT.X1, posX());
+        tag.putInt(Names.NBT.Y1, posY());
+        tag.putInt(Names.NBT.Z1, posZ());
+        tag.putInt(Names.NBT.X2, sizeX());
+        tag.putInt(Names.NBT.Y2, sizeY());
+        tag.putInt(Names.NBT.Z2, sizeZ());
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound tag) {
-        this.posX = tag.getInteger(Names.NBT.X1);
-        this.posY = tag.getInteger(Names.NBT.Y1);
-        this.posZ = tag.getInteger(Names.NBT.Z1);
-        this.sizeX = tag.getInteger(Names.NBT.X2);
-        this.sizeY = tag.getInteger(Names.NBT.Y2);
-        this.sizeZ = tag.getInteger(Names.NBT.Z2);
+    public void readFromNBT(CompoundNBT tag) {
+        this.posX = tag.getInt(Names.NBT.X1);
+        this.posY = tag.getInt(Names.NBT.Y1);
+        this.posZ = tag.getInt(Names.NBT.Z1);
+        this.sizeX = tag.getInt(Names.NBT.X2);
+        this.sizeY = tag.getInt(Names.NBT.Y2);
+        this.sizeZ = tag.getInt(Names.NBT.Z2);
     }
 
     @Override

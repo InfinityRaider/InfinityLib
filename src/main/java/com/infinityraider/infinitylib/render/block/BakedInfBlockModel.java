@@ -1,5 +1,3 @@
-/*
- */
 package com.infinityraider.infinitylib.render.block;
 
 import com.google.common.collect.ImmutableList;
@@ -8,25 +6,18 @@ import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
 import com.infinityraider.infinitylib.render.item.BakedInfItemModel;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import com.infinityraider.infinitylib.utility.HashableBlockState;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+
+import java.util.*;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Direction;
 
-/*
- * Lets try this instead.
- */
 public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> implements IBakedModel {
 
     @Nonnull
@@ -36,7 +27,7 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     @Nonnull
     private final IBlockRenderingHandler<B> renderer;
     @Nonnull
-    private final Function<ResourceLocation, TextureAtlasSprite> textureFunction;
+    private final Function<RenderMaterial, TextureAtlasSprite> textureFunction;
     @Nullable
     private final BakedInfItemModel itemRenderer;
     @Nonnull
@@ -47,7 +38,7 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
             @Nonnull B block,
             @Nonnull VertexFormat format,
             @Nonnull IBlockRenderingHandler<B> renderer,
-            @Nonnull Function<ResourceLocation, TextureAtlasSprite> textureFunction,
+            @Nonnull Function<RenderMaterial, TextureAtlasSprite> textureFunction,
             boolean hasInventoryRendering
     ) {
         // Validate and save parameters.
@@ -69,7 +60,7 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
 
     @Override
     @Nonnull
-    public ImmutableList<BakedQuad> getQuads(IBlockState state, @Nullable EnumFacing side, long rand) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
         // Return the quads.
         return this.cachedQuads.computeIfAbsent(
                 // The quad cache key.
@@ -80,7 +71,7 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     }
 
     @Nonnull
-    private ImmutableList<BakedQuad> createQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
+    private ImmutableList<BakedQuad> createQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
         // Get the tessellator to render with.
         final TessellatorBakedQuad tessellator = TessellatorBakedQuad.getInstance();
 
@@ -113,6 +104,11 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
     }
 
     @Override
+    public boolean isSideLit() {
+        return false;
+    }
+
+    @Override
     public boolean isBuiltInRenderer() {
         return false;
     }
@@ -135,7 +131,7 @@ public class BakedInfBlockModel<B extends BlockBase & ICustomRenderedBlock> impl
         if (this.itemRenderer != null) {
             return itemRenderer.getOverrides();
         } else {
-            return ItemOverrideList.NONE;
+            return ItemOverrideList.EMPTY;
         }
     }
 

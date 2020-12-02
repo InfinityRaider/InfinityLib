@@ -1,12 +1,12 @@
 package com.infinityraider.infinitylib.block.tile;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 
 @SuppressWarnings("unused")
 public interface IRotatableTile {
-    EnumFacing getOrientation();
+    Direction getOrientation();
 
-    void setOrientation(EnumFacing facing);
+    void setOrientation(Direction facing);
 
     void incrementRotation(int amount);
 }

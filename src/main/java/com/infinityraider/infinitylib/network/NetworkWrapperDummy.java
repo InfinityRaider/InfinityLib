@@ -5,10 +5,12 @@ import com.infinityraider.infinitylib.network.serialization.IMessageReader;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
 import com.infinityraider.infinitylib.network.serialization.MessageSerializerStore;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.network.PacketDistributor;
+
+import java.util.function.Supplier;
 
 public final class NetworkWrapperDummy implements INetworkWrapper {
     private static final NetworkWrapperDummy INSTANCE = new NetworkWrapperDummy();
@@ -30,7 +32,7 @@ public final class NetworkWrapperDummy implements INetworkWrapper {
     }
 
     @Override
-    public final void sendTo(MessageBase message, EntityPlayerMP player) {
+    public final void sendTo(MessageBase message, ServerPlayerEntity player) {
         this.logErrorMessage(message);
     }
 
@@ -40,12 +42,12 @@ public final class NetworkWrapperDummy implements INetworkWrapper {
     }
 
     @Override
-    public final void sendToAllAround(MessageBase message, int dimension, double x, double y, double z, double range) {
+    public final void sendToAllAround(MessageBase message, RegistryKey<World> dimension, double x, double y, double z, double range) {
         this.logErrorMessage(message);
     }
 
     @Override
-    public final void sendToAllAround(MessageBase message, NetworkRegistry.TargetPoint point) {
+    public final void sendToAllAround(MessageBase message, Supplier<PacketDistributor.TargetPoint> point) {
         this.logErrorMessage(message);
     }
 
@@ -55,7 +57,7 @@ public final class NetworkWrapperDummy implements INetworkWrapper {
     }
 
     @Override
-    public final void sendToDimension(MessageBase message, int dimensionId) {
+    public final void sendToDimension(MessageBase message, RegistryKey<World> dimension) {
         this.logErrorMessage(message);
     }
 
@@ -65,7 +67,7 @@ public final class NetworkWrapperDummy implements INetworkWrapper {
     }
 
     @Override
-    public final <REQ extends MessageBase<REPLY>, REPLY extends IMessage> void registerMessage(Class<? extends REQ> message) {
+    public final <REQ extends MessageBase> void registerMessage(Class<REQ> message) {
         // > . >
     }
 

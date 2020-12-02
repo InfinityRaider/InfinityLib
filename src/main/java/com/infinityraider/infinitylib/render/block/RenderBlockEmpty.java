@@ -2,20 +2,23 @@ package com.infinityraider.infinitylib.render.block;
 
 import com.infinityraider.infinitylib.block.BlockBase;
 import com.infinityraider.infinitylib.block.ICustomRenderedBlock;
+import com.infinityraider.infinitylib.render.RenderUtil;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Direction;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Collections;
 import java.util.List;
 
+@OnlyIn(Dist.CLIENT)
 public class RenderBlockEmpty<B extends BlockBase & ICustomRenderedBlock> implements IBlockRenderingHandler<B> {
 
     public static <B extends BlockBase & ICustomRenderedBlock> RenderBlockEmpty<B> createEmptyRender(B block) {
@@ -40,22 +43,22 @@ public class RenderBlockEmpty<B extends BlockBase & ICustomRenderedBlock> implem
     }
 
     @Override
-    public List<ResourceLocation> getAllTextures() {
+    public List<RenderMaterial> getAllTextures() {
         return Collections.emptyList();
     }
 
     @Override
-    public void renderWorldBlockStatic(ITessellator tessellator, IBlockState state, B block, EnumFacing side) {
+    public void renderWorldBlockStatic(ITessellator tessellator, BlockState state, B block, Direction side) {
     }
 
     @Override
-    public void renderInventoryBlock(ITessellator tessellator, World world, IBlockState state, B block,
-            ItemStack stack, EntityLivingBase entity, ItemCameraTransforms.TransformType type) {
+    public void renderInventoryBlock(ITessellator tessellator, World world, BlockState state, B block,
+                                     ItemStack stack, LivingEntity entity, ItemCameraTransforms.TransformType type) {
     }
 
     @Override
     public TextureAtlasSprite getIcon() {
-        return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
+        return RenderUtil.getMissingSprite();
     }
 
     @Override

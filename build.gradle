@@ -1,49 +1,96 @@
-// QuikMod Buildscript
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
-        maven {
-            name = "Forge Gradle"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "Gradle Plugins"
-            url "https://plugins.gradle.org/m2/"
-        }
+        mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'gradle.plugin.com.rlonryan:QuikMod:1.0.18'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
 
-// Apply QuikMod
-apply plugin: 'com.rlonryan.quikmod'
+ext.configFile = file('mod.properties')
+ext.config = parseConfig(configFile)
 
-// Tweak MineCraft Task
+version = "${config.version_major}.${config.version_minor}.${config.version_patch}"
+group = "${config.package}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = config.id
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = "${config.version_java}"
+
 minecraft {
-    makeObfSourceJar = false
-    useDepAts = true
-}
+    mappings channel: "${config.mapping_channel}", version: "${config.mapping_version}"
 
-repositories {
-    maven {
-        name "JEI"
-        url "http://dvs1.progwml6.com/files/maven"
+    runs {
+        client {
+            workingDirectory project.file('run')
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                infinitylib {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                infinitylib {
+                    source sourceSets.main
+                }
+            }
+        }
     }
 }
 
 dependencies {
-    shade "org.joml:joml:1.9.2"
-    compile "org.joml:joml:1.9.2:javadoc"
-    compile "org.joml:joml:1.9.2:sources"
+    minecraft "net.minecraftforge:forge:${config.version_minecraft}-${config.version_forge}"
 }
 
-// Jar Task
+processResources {
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'META-INF/mods.toml'
+
+        // replace version and mcversion
+        expand 'version': project.version
+    }
+
+    // copy everything else, thats not the mods.toml
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'META-INF/mods.toml', '**/psd/**'
+    }
+}
+
+def parseConfig(File config) {
+    config.withReader {
+        def prop = new Properties()
+        prop.load(it)
+        return (new ConfigSlurper().parse(prop))
+    }
+}
+
 jar {
-    configurations.shade.each { dep ->
-        from(project.zipTree(dep)){
-            exclude 'META-INF', 'META-INF/**'
-        }
+    archiveName = "${baseName} ${version}.${extension}"
+    manifest {
+        attributes([
+                "Specification-Title": "${config.id}",
+                "Specification-Vendor": "${config.author}",
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": "${config.name}",
+                "Implementation-Version": "${config.version_major}.${config.version_minor}.${config.version_patch}",
+                "Implementation-Vendor" :"${config.author}",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
     }
 }

@@ -1,13 +1,13 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.util.Hand;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class MessageMouseButtonPressed extends MessageBase<MessageSwingArm> {
+public class MessageMouseButtonPressed extends MessageBase {
     private boolean left;
     private boolean shift;
     private boolean ctrl;
@@ -22,25 +22,21 @@ public class MessageMouseButtonPressed extends MessageBase<MessageSwingArm> {
     }
 
     @Override
-    public Side getMessageHandlerSide() {
-        return Side.SERVER;
+    public NetworkDirection getMessageDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
     }
 
     @Override
-    protected void processMessage(MessageContext ctx) {
-        EntityPlayer player = ctx.getServerHandler().player;
-        ItemStack stack = player.getHeldItem(left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
+    protected void processMessage(NetworkEvent.Context ctx) {
+        ServerPlayerEntity player = ctx.getSender();
+        ItemStack stack = player.getHeldItem(left ? Hand.OFF_HAND : Hand.MAIN_HAND);
+        // Forward item use to the stack
         if (stack != null && stack.getItem() instanceof IDualWieldedWeapon) {
             IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-            weapon.onItemUsed(stack, player, shift, ctrl, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
+            weapon.onItemUsed(stack, player, shift, ctrl, left ? Hand.OFF_HAND : Hand.MAIN_HAND);
         }
-    }
+        // Notify all clients of the item usage (for animation)
+        new MessageSwingArm(player, left ? Hand.OFF_HAND : Hand.MAIN_HAND).sendToAll();
 
-    @Override
-    protected MessageSwingArm getReply(MessageContext ctx) {
-        if(ctx.side == Side.SERVER) {
-            new MessageSwingArm(ctx.getServerHandler().player, left ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND).sendToAll();
-        }
-        return null;
     }
 }

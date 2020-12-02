@@ -1,8 +1,9 @@
 package com.infinityraider.infinitylib.utility.debug;
 
 import java.util.function.Consumer;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * Implement this in TileEntity classes to be able to add debug info to a list
@@ -15,7 +16,7 @@ public interface IDebuggable {
 
     void addServerDebugInfo(Consumer<String> consumer);
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     default void addClientDebugInfo(Consumer<String> consumer) {
         consumer.accept("No client debug information available.");
     }

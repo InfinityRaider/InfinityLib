@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.block.multiblock;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public interface IMultiBlockPartData {
     /**
@@ -43,10 +43,10 @@ public interface IMultiBlockPartData {
     /**
      * @param tag NBT tag to write this part's data to
      */
-    void writeToNBT(NBTTagCompound tag);
+    void writeToNBT(CompoundNBT tag);
 
     /**
      * @param tag NBT tag to read this part's data from
      */
-    void readFromNBT(NBTTagCompound tag);
+    void readFromNBT(CompoundNBT tag);
 }

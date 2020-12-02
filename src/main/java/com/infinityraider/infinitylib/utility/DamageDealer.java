@@ -1,10 +1,10 @@
 package com.infinityraider.infinitylib.utility;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.projectile.EntityThrowable;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.ThrowableEntity;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
@@ -14,7 +14,7 @@ public class DamageDealer {
     private final String name;
     private float damageMultiplier;
 
-    private Function<EntityLivingBase, ITextComponent> deathMessenger;
+    private Function<LivingEntity, ITextComponent> deathMessenger;
     private IDamageCallbackPre damageCallbackPre;
     private IDamageCallbackPost damageCallbackPost;
 
@@ -40,7 +40,7 @@ public class DamageDealer {
         this.apply(target, this.createDamage(), amount);
     }
 
-    public void apply(Entity target, float amount, Vec3d dir) {
+    public void apply(Entity target, float amount, Vector3d dir) {
         this.apply(target, this.createDamage().setDirection(dir), amount);
     }
 
@@ -48,7 +48,7 @@ public class DamageDealer {
         this.apply(target, this.createDamage(source), amount);
     }
 
-    public void apply(Entity target, Entity source, float amount, Vec3d dir) {
+    public void apply(Entity target, Entity source, float amount, Vector3d dir) {
         this.apply(target, this.createDamage(source).setDirection(dir), amount);
     }
 
@@ -56,7 +56,7 @@ public class DamageDealer {
         this.apply(target, this.createDamage(source, cause), amount);
     }
 
-    public void apply(Entity target, Entity source, Entity cause, float amount, Vec3d dir) {
+    public void apply(Entity target, Entity source, Entity cause, float amount, Vector3d dir) {
         this.apply(target, this.createDamage(source, cause).setDirection(dir), amount);
     }
 
@@ -94,7 +94,7 @@ public class DamageDealer {
         return this;
     }
 
-    public DamageDealer setDeathMessenger(Function<EntityLivingBase, ITextComponent> deathMessenger) {
+    public DamageDealer setDeathMessenger(Function<LivingEntity, ITextComponent> deathMessenger) {
         this.deathMessenger = deathMessenger;
         return this;
     }
@@ -140,8 +140,8 @@ public class DamageDealer {
     }
 
     protected InfinityDamageSource createDamage(Entity source) {
-        if(source instanceof EntityThrowable) {
-            return this.createDamage(source, (((EntityThrowable) source).getThrower()));
+        if(source instanceof ThrowableEntity) {
+            return this.createDamage(source, (((ThrowableEntity) source).func_234616_v_()));
         } else {
             return this.createDamage(source, source);
         }
@@ -190,8 +190,8 @@ public class DamageDealer {
     public static class InfinityDamageSource extends DamageSource {
         private Entity source;
         private Entity cause;
-        private Vec3d direction;
-        private Function<EntityLivingBase, ITextComponent> deathMessenger;
+        private Vector3d direction;
+        private Function<LivingEntity, ITextComponent> deathMessenger;
 
         protected InfinityDamageSource(String damageTypeIn) {
             super(damageTypeIn);
@@ -207,12 +207,12 @@ public class DamageDealer {
             return this;
         }
 
-        public InfinityDamageSource setDirection(Vec3d direction) {
+        public InfinityDamageSource setDirection(Vector3d direction) {
             this.direction = direction;
             return this;
         }
 
-        public InfinityDamageSource setDeathMessenger(Function<EntityLivingBase, ITextComponent> deathMessenger) {
+        public InfinityDamageSource setDeathMessenger(Function<LivingEntity, ITextComponent> deathMessenger) {
             this.deathMessenger = deathMessenger;
             return this;
         }
@@ -229,12 +229,12 @@ public class DamageDealer {
             return this.source == null ? super.getTrueSource() : this.source;
         }
 
-        public Vec3d getDirection() {
+        public Vector3d getDirection() {
             return this.direction;
         }
 
         @Override
-        public ITextComponent getDeathMessage(EntityLivingBase target) {
+        public ITextComponent getDeathMessage(LivingEntity target) {
             return this.deathMessenger == null ? super.getDeathMessage(target) : deathMessenger.apply(target);
         }
 

@@ -1,19 +1,21 @@
 package com.infinityraider.infinitylib.render.item;
 
 import java.util.Collection;
-import java.util.Collections;
+
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.common.model.TRSRTransformation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.model.IModelConfiguration;
+import net.minecraftforge.client.model.geometry.IModelGeometry;
+
+import java.util.Set;
 import java.util.function.Function;
 
-@SideOnly(Side.CLIENT)
-public class ItemRenderer implements IModel {
+@OnlyIn(Dist.CLIENT)
+public class ItemRenderer implements IModelGeometry<ItemRenderer> {
 
     private final IItemRenderingHandler renderer;
 
@@ -22,23 +24,12 @@ public class ItemRenderer implements IModel {
     }
 
     @Override
-    public Collection<ResourceLocation> getDependencies() {
-        return Collections.emptyList();
+    public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation) {
+        return new BakedInfItemModel(this.renderer.getVertexFormat(), renderer, spriteGetter);
     }
 
     @Override
-    public Collection<ResourceLocation> getTextures() {
-        return renderer.getAllTextures();
+    public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
+        return this.renderer.getAllTextures();
     }
-
-    @Override
-    public BakedInfItemModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-        return new BakedInfItemModel(format, renderer, bakedTextureGetter);
-    }
-
-    @Override
-    public IModelState getDefaultState() {
-        return TRSRTransformation.identity();
-    }
-
 }

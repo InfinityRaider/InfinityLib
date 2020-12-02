@@ -2,11 +2,14 @@
  */
 package com.infinityraider.infinitylib.utility;
 
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.StringTextComponent;
+
 import java.text.MessageFormat;
+import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.text.TextComponentString;
 
 /**
  * Utility class for messaging players.
@@ -16,7 +19,11 @@ public class MessageUtil {
     public static final char COLOR_CODE_ESCAPE = '`';
     public static final char COLOR_CODE_REPLACEMENT = '\u00a7';
 
-    public static final void messagePlayer(@Nullable EntityPlayer player, @Nonnull String format, Object... args) {
+    public static final void messagePlayer(@Nullable PlayerEntity player, @Nonnull String format, Object... args) {
+        messagePlayer(player, Util.DUMMY_UUID, format, args);
+    }
+
+    public static final void messagePlayer(@Nullable PlayerEntity player, UUID id, @Nonnull String format, Object... args) {
         // If the player is null don't do anything.
         if (player == null) {
             return;
@@ -36,7 +43,7 @@ public class MessageUtil {
         message = colorize(message);
 
         // Send the message.
-        player.sendMessage(new TextComponentString(message));
+        player.sendMessage(new StringTextComponent(message), id);
     }
     
     public static final String colorize(@Nonnull String message) {

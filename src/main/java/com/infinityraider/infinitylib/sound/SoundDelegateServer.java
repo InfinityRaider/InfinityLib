@@ -3,7 +3,7 @@ package com.infinityraider.infinitylib.sound;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class SoundDelegateServer extends SidedSoundDelegate {
     public SoundDelegateServer() {
@@ -11,7 +11,7 @@ public class SoundDelegateServer extends SidedSoundDelegate {
     }
 
     @Override
-    public SoundTask playSoundAtPositionOnce(Vec3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    public SoundTask playSoundAtPositionOnce(Vector3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
         SoundTask soundTask = new SoundTaskServer(sound, category, volume, pitch).setRepeat(false);
         new MessagePlaySound(position, (SoundTaskServer) soundTask).sendToAll();
         return soundTask;
@@ -25,7 +25,7 @@ public class SoundDelegateServer extends SidedSoundDelegate {
     }
 
     @Override
-    public SoundTask playSoundAtPositionContinuous(Vec3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    public SoundTask playSoundAtPositionContinuous(Vector3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
         SoundTask soundTask = new SoundTaskServer(sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
         new MessagePlaySound(position, (SoundTaskServer) soundTask).sendToAll();
         return soundTask;

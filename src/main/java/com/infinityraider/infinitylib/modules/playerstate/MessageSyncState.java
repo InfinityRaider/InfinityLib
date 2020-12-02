@@ -1,20 +1,19 @@
 package com.infinityraider.infinitylib.modules.playerstate;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class MessageSyncState extends MessageBase<IMessage> {
-    private EntityPlayer player;
+public class MessageSyncState extends MessageBase {
+    private PlayerEntity player;
     private byte state;
 
     public MessageSyncState() {
         super();
     }
 
-    public MessageSyncState(EntityPlayer player, State state) {
+    public MessageSyncState(PlayerEntity player, State state) {
         this();
         this.player = player;
         this.state =
@@ -25,12 +24,12 @@ public class MessageSyncState extends MessageBase<IMessage> {
     }
 
     @Override
-    public Side getMessageHandlerSide() {
-        return Side.CLIENT;
+    public NetworkDirection getMessageDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
     }
 
     @Override
-    protected void processMessage(MessageContext ctx) {
+    protected void processMessage(NetworkEvent.Context ctx) {
         if(this.player != null) {
             PlayerStateHandler.getInstance().getState(this.player)
                     .setInvisible(((this.state) & 1) == 1)
@@ -38,10 +37,5 @@ public class MessageSyncState extends MessageBase<IMessage> {
                     .setEthereal(((this.state >> 2) & 1) == 1)
                     .setUndetectable(((this.state >> 3) & 1) == 1);
         }
-    }
-
-    @Override
-    protected IMessage getReply(MessageContext ctx) {
-        return null;
     }
 }

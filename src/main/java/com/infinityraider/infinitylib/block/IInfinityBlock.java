@@ -1,8 +1,9 @@
 package com.infinityraider.infinitylib.block;
 
 import com.infinityraider.infinitylib.item.IInfinityItem;
-import com.infinityraider.infinitylib.utility.IToggleable;
-import net.minecraft.item.ItemBlock;
+import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
+import net.minecraft.block.Block;
+import net.minecraft.item.BlockItem;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Collections;
@@ -10,15 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 
-public interface IInfinityBlock extends IToggleable {
-
-    /**
-     * The name used internally as to represent this block, not including the modid qualifier.
-     *
-     * @return the internal name of the block.
-     */
-    @Nonnull
-    String getInternalName();
+public interface IInfinityBlock extends IInfinityRegistrable<Block> {
 
     /**
      * Method should be implemented by default in any class extending Block.
@@ -34,7 +27,7 @@ public interface IInfinityBlock extends IToggleable {
      * @return a list of OreDict tags, or an empty list.
      */
     @Nonnull
-    default List<String> getOreTags() {
+    default List<String> getTagNames() {
         return Collections.emptyList();
     }
 
@@ -45,7 +38,7 @@ public interface IInfinityBlock extends IToggleable {
      * @return an optional containing the block's item form, or the empty optional.
      */
     @Nonnull
-    default <T extends ItemBlock & IInfinityItem> Optional<T> getItemBlock() {
+    default <T extends BlockItem & IInfinityItem> Optional<T> getBlockItem() {
         return Optional.empty();
     }
 

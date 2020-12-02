@@ -1,40 +1,34 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumHand;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Hand;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class MessageSwingArm extends MessageBase<IMessage> {
-    private EntityPlayer player;
+public class MessageSwingArm extends MessageBase {
+    private PlayerEntity player;
     private int hand;
 
     public MessageSwingArm() {
         super();
     }
 
-    public MessageSwingArm(EntityPlayer player, EnumHand hand) {
+    public MessageSwingArm(PlayerEntity player, Hand hand) {
         this();
         this.player = player;
         this.hand = hand.ordinal();
     }
 
     @Override
-    public Side getMessageHandlerSide() {
-        return Side.CLIENT;
+    public NetworkDirection getMessageDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
     }
 
     @Override
-    protected void processMessage(MessageContext ctx) {
+    protected void processMessage(NetworkEvent.Context ctx) {
         if(this.player != null) {
-            ArmSwingHandler.getInstance().swingArm(this.player, EnumHand.values()[this.hand]);
+            ArmSwingHandler.getInstance().swingArm(this.player, Hand.values()[this.hand]);
         }
-    }
-
-    @Override
-    protected IMessage getReply(MessageContext ctx) {
-        return null;
     }
 }

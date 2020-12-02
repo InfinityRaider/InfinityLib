@@ -1,31 +1,22 @@
 package com.infinityraider.infinitylib;
 
-import com.infinityraider.infinitylib.config.IModConfiguration;
-import com.infinityraider.infinitylib.config.ModConfiguration;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.MessageSetEntityDead;
-import com.infinityraider.infinitylib.sound.MessagePlaySound;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
-import com.infinityraider.infinitylib.proxy.IProxy;
+import com.infinityraider.infinitylib.proxy.ClientProxy;
+import com.infinityraider.infinitylib.proxy.ServerProxy;
+import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.reference.Reference;
+import com.infinityraider.infinitylib.sound.MessagePlaySound;
 import com.infinityraider.infinitylib.sound.MessageStopSound;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
 
-@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION)
+@Mod(Reference.MOD_ID)
 public class InfinityLib extends InfinityMod {
-
-    @Mod.Instance(Reference.MOD_ID)
     public static InfinityLib instance;
-
-    @SidedProxy(clientSide = Reference.CLIENT_PROXY_CLASS, serverSide = Reference.SERVER_PROXY_CLASS)
-    public static IProxy proxy;
-
-    @Override
-    public IProxy proxy() {
-        return proxy;
-    }
 
     @Override
     public String getModId() {
@@ -33,8 +24,20 @@ public class InfinityLib extends InfinityMod {
     }
 
     @Override
-    public IModConfiguration getConfiguration() {
-        return ModConfiguration.getInstance();
+    protected void onModConstructed() {
+        instance = this;
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    protected IProxyBase createClientProxy() {
+        return new ClientProxy();
+    }
+
+    @Override
+    @OnlyIn(Dist.DEDICATED_SERVER)
+    protected IProxyBase createServerProxy() {
+        return new ServerProxy();
     }
 
     @Override

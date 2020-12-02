@@ -2,25 +2,24 @@ package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelPlayer;
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderLivingBase;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.EnumHandSide;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.renderer.entity.PlayerRenderer;
+import net.minecraft.client.renderer.entity.model.PlayerModel;
+import net.minecraft.client.renderer.model.Model;
+import net.minecraft.client.renderer.model.ModelHelper;
+import net.minecraft.client.renderer.model.ModelRenderer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.HandSide;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 
-@SideOnly(Side.CLIENT)
-public class ModelPlayerCustomized extends ModelPlayer {
+@OnlyIn(Dist.CLIENT)
+public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T> {
     private static final ModelPlayerCustomized MODEL_MAIN =  new ModelPlayerCustomized(0.0F, false);
     private static final ModelPlayerCustomized MODEL_SLIM =  new ModelPlayerCustomized(0.0F, true);
 
@@ -38,14 +37,23 @@ public class ModelPlayerCustomized extends ModelPlayer {
 
     @Override
     @SuppressWarnings("incomplete-switch")
-    public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entity) {
-        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-        boolean flag = entity instanceof EntityLivingBase && ((EntityLivingBase) entity).getTicksElytraFlying() > 4;
-        this.bipedHead.rotateAngleY = netHeadYaw * 0.017453292F;
+    public void setRotationAngles(T entity,float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        // Call super for cape animation (because it is private and can not be replicated)
+        super.setRotationAngles(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+        // Replicate BipedModel behaviour
+        boolean flag = entity.getTicksElytraFlying() > 4;
+        boolean flag1 = entity.isActualySwimming();
+        this.bipedHead.rotateAngleY = netHeadYaw * ((float)Math.PI / 180F);
         if (flag) {
-            this.bipedHead.rotateAngleX = -((float)Math.PI / 4F);
+            this.bipedHead.rotateAngleX = (-(float)Math.PI / 4F);
+        } else if (this.swimAnimation > 0.0F) {
+            if (flag1) {
+                this.bipedHead.rotateAngleX = this.rotLerpRad(this.swimAnimation, this.bipedHead.rotateAngleX, (-(float)Math.PI / 4F));
+            } else {
+                this.bipedHead.rotateAngleX = this.rotLerpRad(this.swimAnimation, this.bipedHead.rotateAngleX, headPitch * ((float)Math.PI / 180F));
+            }
         } else {
-            this.bipedHead.rotateAngleX = headPitch * 0.017453292F;
+            this.bipedHead.rotateAngleX = headPitch * ((float)Math.PI / 180F);
         }
         this.bipedBody.rotateAngleY = 0.0F;
         this.bipedRightArm.rotationPointZ = 0.0F;
@@ -54,7 +62,7 @@ public class ModelPlayerCustomized extends ModelPlayer {
         this.bipedLeftArm.rotationPointX = 5.0F;
         float f = 1.0F;
         if (flag) {
-            f = (float)(entity.motionX * entity.motionX + entity.motionY * entity.motionY + entity.motionZ * entity.motionZ);
+            f = (float) entity.getMotion().lengthSquared();
             f = f / 0.2F;
             f = f * f * f;
         }
@@ -71,7 +79,7 @@ public class ModelPlayerCustomized extends ModelPlayer {
         this.bipedLeftLeg.rotateAngleY = 0.0F;
         this.bipedRightLeg.rotateAngleZ = 0.0F;
         this.bipedLeftLeg.rotateAngleZ = 0.0F;
-        if (this.isRiding) {
+        if (this.isSitting) {
             this.bipedRightArm.rotateAngleX += -((float)Math.PI / 5F);
             this.bipedLeftArm.rotateAngleX += -((float)Math.PI / 5F);
             this.bipedRightLeg.rotateAngleX = -1.4137167F;
@@ -83,37 +91,161 @@ public class ModelPlayerCustomized extends ModelPlayer {
         }
         this.bipedRightArm.rotateAngleY = 0.0F;
         this.bipedRightArm.rotateAngleZ = 0.0F;
+
+        this.bipedRightArm.rotateAngleY = 0.0F;
+        this.bipedLeftArm.rotateAngleY = 0.0F;
+        boolean primary_right = entity.getPrimaryHand() == HandSide.RIGHT;
+        boolean primary_swing = primary_right ? this.leftArmPose.func_241657_a_() : this.rightArmPose.func_241657_a_();
+        if (primary_right != primary_swing) {
+            this.handleLeftArmPose(entity);
+            this.handleRightArmPose(entity);
+        } else {
+            this.handleRightArmPose(entity);
+            this.handleLeftArmPose(entity);
+        }
+        this.handleSwingProcess(entity, ageInTicks);
+        if (this.isSneak) {
+            this.bipedBody.rotateAngleX = 0.5F;
+            this.bipedRightArm.rotateAngleX += 0.4F;
+            this.bipedLeftArm.rotateAngleX += 0.4F;
+            this.bipedRightLeg.rotationPointZ = 4.0F;
+            this.bipedLeftLeg.rotationPointZ = 4.0F;
+            this.bipedRightLeg.rotationPointY = 12.2F;
+            this.bipedLeftLeg.rotationPointY = 12.2F;
+            this.bipedHead.rotationPointY = 4.2F;
+            this.bipedBody.rotationPointY = 3.2F;
+            this.bipedLeftArm.rotationPointY = 5.2F;
+            this.bipedRightArm.rotationPointY = 5.2F;
+        } else {
+            this.bipedBody.rotateAngleX = 0.0F;
+            this.bipedRightLeg.rotationPointZ = 0.1F;
+            this.bipedLeftLeg.rotationPointZ = 0.1F;
+            this.bipedRightLeg.rotationPointY = 12.0F;
+            this.bipedLeftLeg.rotationPointY = 12.0F;
+            this.bipedHead.rotationPointY = 0.0F;
+            this.bipedBody.rotationPointY = 0.0F;
+            this.bipedLeftArm.rotationPointY = 2.0F;
+            this.bipedRightArm.rotationPointY = 2.0F;
+        }
+        ModelHelper.func_239101_a_(this.bipedRightArm, this.bipedLeftArm, ageInTicks);
+        if (this.swimAnimation > 0.0F) {
+            float f1 = limbSwing % 26.0F;
+            HandSide handside = this.getMainHand(entity);
+            float f2 = handside == HandSide.RIGHT && this.swingProgress > 0.0F ? 0.0F : this.swimAnimation;
+            float f3 = handside == HandSide.LEFT && this.swingProgress > 0.0F ? 0.0F : this.swimAnimation;
+            if (f1 < 14.0F) {
+                this.bipedLeftArm.rotateAngleX = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleX, 0.0F);
+                this.bipedRightArm.rotateAngleX = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleX, 0.0F);
+                this.bipedLeftArm.rotateAngleY = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleY, (float)Math.PI);
+                this.bipedRightArm.rotateAngleY = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleY, (float)Math.PI);
+                this.bipedLeftArm.rotateAngleZ = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleZ, (float)Math.PI + 1.8707964F * this.getArmAngleSq(f1) / this.getArmAngleSq(14.0F));
+                this.bipedRightArm.rotateAngleZ = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleZ, (float)Math.PI - 1.8707964F * this.getArmAngleSq(f1) / this.getArmAngleSq(14.0F));
+            } else if (f1 >= 14.0F && f1 < 22.0F) {
+                float f6 = (f1 - 14.0F) / 8.0F;
+                this.bipedLeftArm.rotateAngleX = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleX, ((float)Math.PI / 2F) * f6);
+                this.bipedRightArm.rotateAngleX = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleX, ((float)Math.PI / 2F) * f6);
+                this.bipedLeftArm.rotateAngleY = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleY, (float)Math.PI);
+                this.bipedRightArm.rotateAngleY = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleY, (float)Math.PI);
+                this.bipedLeftArm.rotateAngleZ = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleZ, 5.012389F - 1.8707964F * f6);
+                this.bipedRightArm.rotateAngleZ = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleZ, 1.2707963F + 1.8707964F * f6);
+            } else if (f1 >= 22.0F && f1 < 26.0F) {
+                float f4 = (f1 - 22.0F) / 4.0F;
+                this.bipedLeftArm.rotateAngleX = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleX, ((float)Math.PI / 2F) - ((float)Math.PI / 2F) * f4);
+                this.bipedRightArm.rotateAngleX = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleX, ((float)Math.PI / 2F) - ((float)Math.PI / 2F) * f4);
+                this.bipedLeftArm.rotateAngleY = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleY, (float)Math.PI);
+                this.bipedRightArm.rotateAngleY = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleY, (float)Math.PI);
+                this.bipedLeftArm.rotateAngleZ = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleZ, (float)Math.PI);
+                this.bipedRightArm.rotateAngleZ = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleZ, (float)Math.PI);
+            }
+
+            float f7 = 0.3F;
+            float f5 = 0.33333334F;
+            this.bipedLeftLeg.rotateAngleX = MathHelper.lerp(this.swimAnimation, this.bipedLeftLeg.rotateAngleX, 0.3F * MathHelper.cos(limbSwing * 0.33333334F + (float)Math.PI));
+            this.bipedRightLeg.rotateAngleX = MathHelper.lerp(this.swimAnimation, this.bipedRightLeg.rotateAngleX, 0.3F * MathHelper.cos(limbSwing * 0.33333334F));
+        }
+        // Replicate PlayerModel behaviour (except for the cape, which is private)
+        this.bipedHeadwear.copyModelAngles(this.bipedHead);
+        this.bipedLeftLegwear.copyModelAngles(this.bipedLeftLeg);
+        this.bipedRightLegwear.copyModelAngles(this.bipedRightLeg);
+        this.bipedLeftArmwear.copyModelAngles(this.bipedLeftArm);
+        this.bipedRightArmwear.copyModelAngles(this.bipedRightArm);
+        this.bipedBodyWear.copyModelAngles(this.bipedBody);
+    }
+
+    private float getArmAngleSq(float limbSwing) {
+        return -65.0F * limbSwing + limbSwing * limbSwing;
+    }
+
+    private void handleRightArmPose(T entity) {
+        switch(this.rightArmPose) {
+            case EMPTY:
+                this.bipedRightArm.rotateAngleY = 0.0F;
+                break;
+            case BLOCK:
+                this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleX * 0.5F - 0.9424779F;
+                this.bipedRightArm.rotateAngleY = (-(float)Math.PI / 6F);
+                break;
+            case ITEM:
+                this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleX * 0.5F - ((float)Math.PI / 10F);
+                this.bipedRightArm.rotateAngleY = 0.0F;
+                break;
+            case THROW_SPEAR:
+                this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleX * 0.5F - (float)Math.PI;
+                this.bipedRightArm.rotateAngleY = 0.0F;
+                break;
+            case BOW_AND_ARROW:
+                this.bipedRightArm.rotateAngleY = -0.1F + this.bipedHead.rotateAngleY;
+                this.bipedLeftArm.rotateAngleY = 0.1F + this.bipedHead.rotateAngleY + 0.4F;
+                this.bipedRightArm.rotateAngleX = (-(float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
+                this.bipedLeftArm.rotateAngleX = (-(float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
+                break;
+            case CROSSBOW_CHARGE:
+                ModelHelper.func_239102_a_(this.bipedRightArm, this.bipedLeftArm, entity, true);
+                break;
+            case CROSSBOW_HOLD:
+                ModelHelper.func_239104_a_(this.bipedRightArm, this.bipedLeftArm, this.bipedHead, true);
+        }
+
+    }
+
+    private void handleLeftArmPose(T entity) {
         switch (this.leftArmPose) {
             case EMPTY:
                 this.bipedLeftArm.rotateAngleY = 0.0F;
                 break;
             case BLOCK:
                 this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX * 0.5F - 0.9424779F;
-                this.bipedLeftArm.rotateAngleY = 0.5235988F;
+                this.bipedLeftArm.rotateAngleY = ((float) Math.PI / 6F);
                 break;
             case ITEM:
-                this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX * 0.5F - ((float)Math.PI / 10F);
+                this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX * 0.5F - ((float) Math.PI / 10F);
                 this.bipedLeftArm.rotateAngleY = 0.0F;
-        }
-        switch (this.rightArmPose) {
-            case EMPTY:
-                this.bipedRightArm.rotateAngleY = 0.0F;
                 break;
-            case BLOCK:
-                this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleX * 0.5F - 0.9424779F;
-                this.bipedRightArm.rotateAngleY = -0.5235988F;
+            case THROW_SPEAR:
+                this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX * 0.5F - (float) Math.PI;
+                this.bipedLeftArm.rotateAngleY = 0.0F;
                 break;
-            case ITEM:
-                this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleX * 0.5F - ((float)Math.PI / 10F);
-                this.bipedRightArm.rotateAngleY = 0.0F;
+            case BOW_AND_ARROW:
+                this.bipedRightArm.rotateAngleY = -0.1F + this.bipedHead.rotateAngleY - 0.4F;
+                this.bipedLeftArm.rotateAngleY = 0.1F + this.bipedHead.rotateAngleY;
+                this.bipedRightArm.rotateAngleX = (-(float) Math.PI / 2F) + this.bipedHead.rotateAngleX;
+                this.bipedLeftArm.rotateAngleX = (-(float) Math.PI / 2F) + this.bipedHead.rotateAngleX;
+                break;
+            case CROSSBOW_CHARGE:
+                ModelHelper.func_239102_a_(this.bipedRightArm, this.bipedLeftArm, entity, false);
+                break;
+            case CROSSBOW_HOLD:
+                ModelHelper.func_239104_a_(this.bipedRightArm, this.bipedLeftArm, this.bipedHead, false);
         }
+    }
+
+    private void handleSwingProcess(T entity, float ageInTicks) {
         if(this.swingProgressLeft > 0.0F || this.swingProgressRight > 0.0F) {
             if (this.swingProgressLeft > 0.0F) {
-                EnumHandSide enumhandside = EnumHandSide.LEFT;
-                ModelRenderer modelrenderer = this.getArmForSide(enumhandside);
-                this.getArmForSide(enumhandside.opposite());
-                float f1 = this.swingProgressLeft;
-                this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f1) * ((float) Math.PI * 2F)) * 0.2F;
+                HandSide handSide = HandSide.LEFT;
+                ModelRenderer modelrenderer = this.getArmForSide(handSide);
+                float f = this.swingProgressLeft;
+                this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f) * ((float) Math.PI * 2F)) * 0.2F;
                 this.bipedBody.rotateAngleY *= -1.0F;
                 this.bipedRightArm.rotationPointZ = MathHelper.sin(this.bipedBody.rotateAngleY) * 5.0F;
                 this.bipedRightArm.rotationPointX = -MathHelper.cos(this.bipedBody.rotateAngleY) * 5.0F;
@@ -122,21 +254,20 @@ public class ModelPlayerCustomized extends ModelPlayer {
                 this.bipedRightArm.rotateAngleY += this.bipedBody.rotateAngleY;
                 this.bipedLeftArm.rotateAngleY += this.bipedBody.rotateAngleY;
                 this.bipedLeftArm.rotateAngleX += this.bipedBody.rotateAngleY;
-                f1 = 1.0F - this.swingProgressLeft;
-                f1 = f1 * f1;
-                f1 = f1 * f1;
-                f1 = 1.0F - f1;
-                float f2 = MathHelper.sin(f1 * (float) Math.PI);
-                float f3 = MathHelper.sin(this.swingProgressLeft * (float) Math.PI) * -(this.bipedHead.rotateAngleX - 0.7F) * 0.75F;
-                modelrenderer.rotateAngleX = (float) ((double) modelrenderer.rotateAngleX - ((double) f2 * 1.2D + (double) f3));
+                f = 1.0F - this.swingProgressLeft;
+                f = f * f;
+                f = f * f;
+                f = 1.0F - f;
+                float f1 = MathHelper.sin(f * (float) Math.PI);
+                float f2 = MathHelper.sin(this.swingProgressLeft * (float) Math.PI) * -(this.bipedHead.rotateAngleX - 0.7F) * 0.75F;
+                modelrenderer.rotateAngleX = (float) ((double) modelrenderer.rotateAngleX - ((double) f1 * 1.2D + (double) f2));
                 modelrenderer.rotateAngleY += this.bipedBody.rotateAngleY * 2.0F;
                 modelrenderer.rotateAngleZ += MathHelper.sin(this.swingProgressLeft * (float) Math.PI) * -0.4F;
             } else {
-                EnumHandSide enumhandside = EnumHandSide.RIGHT;
-                ModelRenderer modelrenderer = this.getArmForSide(enumhandside);
-                this.getArmForSide(enumhandside.opposite());
-                float f1 = this.swingProgressRight;
-                this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f1) * ((float) Math.PI * 2F)) * 0.2F;
+                HandSide handSide = HandSide.RIGHT;
+                ModelRenderer modelrenderer = this.getArmForSide(handSide);
+                float f = this.swingProgressRight;
+                this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f) * ((float) Math.PI * 2F)) * 0.2F;
                 this.bipedRightArm.rotationPointZ = MathHelper.sin(this.bipedBody.rotateAngleY) * 5.0F;
                 this.bipedRightArm.rotationPointX = -MathHelper.cos(this.bipedBody.rotateAngleY) * 5.0F;
                 this.bipedLeftArm.rotationPointZ = -MathHelper.sin(this.bipedBody.rotateAngleY) * 5.0F;
@@ -144,24 +275,22 @@ public class ModelPlayerCustomized extends ModelPlayer {
                 this.bipedRightArm.rotateAngleY += this.bipedBody.rotateAngleY;
                 this.bipedLeftArm.rotateAngleY += this.bipedBody.rotateAngleY;
                 this.bipedLeftArm.rotateAngleX += this.bipedBody.rotateAngleY;
-                f1 = 1.0F - this.swingProgressRight;
-                f1 = f1 * f1;
-                f1 = f1 * f1;
-                f1 = 1.0F - f1;
-                float f2 = MathHelper.sin(f1 * (float) Math.PI);
-                float f3 = MathHelper.sin(this.swingProgressRight * (float) Math.PI) * -(this.bipedHead.rotateAngleX - 0.7F) * 0.75F;
-                modelrenderer.rotateAngleX = (float) ((double) modelrenderer.rotateAngleX - ((double) f2 * 1.2D + (double) f3));
+                f = 1.0F - this.swingProgressRight;
+                f = f * f;
+                f = f * f;
+                f = 1.0F - f;
+                float f1 = MathHelper.sin(f * (float) Math.PI);
+                float f2 = MathHelper.sin(this.swingProgressRight * (float) Math.PI) * -(this.bipedHead.rotateAngleX - 0.7F) * 0.75F;
+                modelrenderer.rotateAngleX = (float) ((double) modelrenderer.rotateAngleX - ((double) f1 * 1.2D + (double) f2));
                 modelrenderer.rotateAngleY += this.bipedBody.rotateAngleY * 2.0F;
-                modelrenderer.rotateAngleZ += MathHelper.sin(this.swingProgressRight * (float) Math.PI) * -0.4F;
                 modelrenderer.rotateAngleZ += MathHelper.sin(this.swingProgressRight * (float) Math.PI) * -0.4F;
             }
         } else if (this.swingProgress > 0.0F) {
-            EnumHandSide enumhandside = this.getMainHand(entity);
-            ModelRenderer modelrenderer = this.getArmForSide(enumhandside);
-            this.getArmForSide(enumhandside.opposite());
-            float f1 = this.swingProgress;
-            this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f1) * ((float)Math.PI * 2F)) * 0.2F;
-            if (enumhandside == EnumHandSide.LEFT) {
+            HandSide handSide = this.getMainHand(entity);
+            ModelRenderer modelrenderer = this.getArmForSide(handSide);
+            float f = this.swingProgress;
+            this.bipedBody.rotateAngleY = MathHelper.sin(MathHelper.sqrt(f) * ((float)Math.PI * 2F)) * 0.2F;
+            if (handSide == HandSide.LEFT) {
                 this.bipedBody.rotateAngleY *= -1.0F;
             }
             this.bipedRightArm.rotationPointZ = MathHelper.sin(this.bipedBody.rotateAngleY) * 5.0F;
@@ -171,61 +300,28 @@ public class ModelPlayerCustomized extends ModelPlayer {
             this.bipedRightArm.rotateAngleY += this.bipedBody.rotateAngleY;
             this.bipedLeftArm.rotateAngleY += this.bipedBody.rotateAngleY;
             this.bipedLeftArm.rotateAngleX += this.bipedBody.rotateAngleY;
-            f1 = 1.0F - this.swingProgress;
-            f1 = f1 * f1;
-            f1 = f1 * f1;
-            f1 = 1.0F - f1;
-            float f2 = MathHelper.sin(f1 * (float)Math.PI);
-            float f3 = MathHelper.sin(this.swingProgress * (float)Math.PI) * -(this.bipedHead.rotateAngleX - 0.7F) * 0.75F;
-            modelrenderer.rotateAngleX = (float)((double)modelrenderer.rotateAngleX - ((double)f2 * 1.2D + (double)f3));
+            f = 1.0F - this.swingProgress;
+            f = f * f;
+            f = f * f;
+            f = 1.0F - f;
+            float f1 = MathHelper.sin(f * (float)Math.PI);
+            float f2 = MathHelper.sin(this.swingProgress * (float)Math.PI) * -(this.bipedHead.rotateAngleX - 0.7F) * 0.75F;
+            modelrenderer.rotateAngleX = (float)((double)modelrenderer.rotateAngleX - ((double)f1 * 1.2D + (double)f2));
             modelrenderer.rotateAngleY += this.bipedBody.rotateAngleY * 2.0F;
             modelrenderer.rotateAngleZ += MathHelper.sin(this.swingProgress * (float)Math.PI) * -0.4F;
         }
-        if (this.isSneak) {
-            this.bipedBody.rotateAngleX = 0.5F;
-            this.bipedRightArm.rotateAngleX += 0.4F;
-            this.bipedLeftArm.rotateAngleX += 0.4F;
-            this.bipedRightLeg.rotationPointZ = 4.0F;
-            this.bipedLeftLeg.rotationPointZ = 4.0F;
-            this.bipedRightLeg.rotationPointY = 9.0F;
-            this.bipedLeftLeg.rotationPointY = 9.0F;
-            this.bipedHead.rotationPointY = 1.0F;
-        } else {
-            this.bipedBody.rotateAngleX = 0.0F;
-            this.bipedRightLeg.rotationPointZ = 0.1F;
-            this.bipedLeftLeg.rotationPointZ = 0.1F;
-            this.bipedRightLeg.rotationPointY = 12.0F;
-            this.bipedLeftLeg.rotationPointY = 12.0F;
-            this.bipedHead.rotationPointY = 0.0F;
-        }
-        this.bipedRightArm.rotateAngleZ += MathHelper.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-        this.bipedLeftArm.rotateAngleZ -= MathHelper.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-        this.bipedRightArm.rotateAngleX += MathHelper.sin(ageInTicks * 0.067F) * 0.05F;
-        this.bipedLeftArm.rotateAngleX -= MathHelper.sin(ageInTicks * 0.067F) * 0.05F;
-        if (this.rightArmPose == ArmPose.BOW_AND_ARROW) {
-            this.bipedRightArm.rotateAngleY = -0.1F + this.bipedHead.rotateAngleY;
-            this.bipedLeftArm.rotateAngleY = 0.1F + this.bipedHead.rotateAngleY + 0.4F;
-            this.bipedRightArm.rotateAngleX = -((float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
-            this.bipedLeftArm.rotateAngleX = -((float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
-        } else if (this.leftArmPose == ArmPose.BOW_AND_ARROW) {
-            this.bipedRightArm.rotateAngleY = -0.1F + this.bipedHead.rotateAngleY - 0.4F;
-            this.bipedLeftArm.rotateAngleY = 0.1F + this.bipedHead.rotateAngleY;
-            this.bipedRightArm.rotateAngleX = -((float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
-            this.bipedLeftArm.rotateAngleX = -((float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
-        }
-        copyModelAngles(this.bipedHead, this.bipedHeadwear);
     }
 
     public static void replaceOldModel() {
-        RenderPlayer renderer = getOldRenderer("default");
+        PlayerRenderer renderer = getOldRenderer("default");
         if(renderer == null) {
             InfinityLib.instance.getLogger().debug("Failed overriding left arm swing behaviour");
             return;
         }
-        ModelPlayer oldModel = renderer.getMainModel();
-        ModelPlayer newModel = null;
-        for(Field field : RenderLivingBase.class.getDeclaredFields()) {
-            if(field.getType() == ModelBase.class) {
+        PlayerModel<?> oldModel = renderer.getEntityModel();
+        PlayerModel<?> newModel = null;
+        for(Field field : LivingRenderer.class.getDeclaredFields()) {
+            if(field.getType().isAssignableFrom(Model.class)) {
                 try {
                     field.setAccessible(true);
                     Object obj = field.get(renderer);
@@ -247,34 +343,19 @@ public class ModelPlayerCustomized extends ModelPlayer {
     }
 
     @SuppressWarnings("unchecked")
-    private static RenderPlayer getOldRenderer(String keyword) {
-        RenderManager manager = Minecraft.getMinecraft().getRenderManager();
-        Map< Class <? extends Entity > , Render<? extends Entity >> entityRenderMap = manager.entityRenderMap;
-        for(Field field : manager.getClass().getDeclaredFields()) {
-            if(field.getType() == Map.class) {
-                field.setAccessible(true);
-                try {
-                    Object obj = field.get(manager);
-                    if(obj == entityRenderMap) {
-                        continue;
-                    }
-                    Map<String, RenderPlayer> skinMap = (Map<String, RenderPlayer>) obj;
-                    return skinMap.get(keyword);
-                } catch (IllegalAccessException e) {
-                    InfinityLib.instance.getLogger().printStackTrace(e);
-                }
-            }
-        }
-        return null;
+    private static PlayerRenderer getOldRenderer(String keyword) {
+        EntityRendererManager manager = Minecraft.getInstance().getRenderManager();
+        Map<String, PlayerRenderer> skinMap = manager.getSkinMap();
+        return skinMap.get(keyword);
     }
 
-    private static void replaceEntriesInRenderPlayer(RenderPlayer renderer, ModelPlayer newModel) {
+    private static void replaceEntriesInRenderPlayer(PlayerRenderer renderer, PlayerModel<?> newModel) {
         if(renderer == null) {
             return;
         }
-        //replace relevant fields in RenderPlayer
-        for(Field field : RenderLivingBase.class.getDeclaredFields()) {
-            if(field.getType() == ModelBase.class) {
+        //replace relevant fields in PlayerRenderer
+        for(Field field : LivingRenderer.class.getDeclaredFields()) {
+            if(field.getType().isAssignableFrom(Model.class)) {
                 field.setAccessible(true);
                 try {
                     field.set(renderer, newModel);

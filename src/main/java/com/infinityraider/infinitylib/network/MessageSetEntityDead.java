@@ -1,11 +1,10 @@
 package com.infinityraider.infinitylib.network;
 
 import net.minecraft.entity.Entity;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class MessageSetEntityDead extends MessageBase<IMessage> {
+public class MessageSetEntityDead extends MessageBase {
     private Entity entity;
 
     public MessageSetEntityDead() {
@@ -18,19 +17,14 @@ public class MessageSetEntityDead extends MessageBase<IMessage> {
     }
 
     @Override
-    public Side getMessageHandlerSide() {
-        return Side.CLIENT;
+    public NetworkDirection getMessageDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
     }
 
     @Override
-    protected void processMessage(MessageContext ctx) {
-        if(this.entity != null && !this.entity.isDead) {
-            this.entity.setDead();
+    protected void processMessage(NetworkEvent.Context ctx) {
+        if(this.entity != null && this.entity.isAlive()) {
+            this.entity.remove(false);
         }
-    }
-
-    @Override
-    protected IMessage getReply(MessageContext ctx) {
-        return null;
     }
 }

@@ -1,40 +1,44 @@
 package com.infinityraider.infinitylib.block.tile;
 
 import com.infinityraider.infinitylib.reference.Names;
-import javax.annotation.Nonnull;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.Direction;
 
 public abstract class TileEntityRotatableBase extends TileEntityBase implements IRotatableTile {
+    private Direction direction = Direction.NORTH;
 
-    @Nonnull
-    private EnumFacing direction = EnumFacing.NORTH;
+    public TileEntityRotatableBase(TileEntityType<?> tileEntityTypeIn) {
+        super(tileEntityTypeIn);
+    }
 
     @Override
-    protected final void writeTileNBT(NBTTagCompound tag) {
-        tag.setByte(Names.NBT.DIRECTION, (byte) this.direction.getHorizontalIndex());
+    protected final void writeTileNBT(CompoundNBT tag) {
+        tag.putByte(Names.NBT.DIRECTION, (byte) this.direction.getHorizontalIndex());
         this.writeRotatableTileNBT(tag);
     }
 
     @Override
-    protected final void readTileNBT(NBTTagCompound tag) {
-        if (tag.hasKey(Names.NBT.DIRECTION)) {
+    protected final void readTileNBT(BlockState state, CompoundNBT tag) {
+        if (tag.contains(Names.NBT.DIRECTION)) {
             this.setDirection(tag.getByte(Names.NBT.DIRECTION));
         }
         this.readRotatableTileNBT(tag);
     }
 
-    protected abstract void readRotatableTileNBT(NBTTagCompound tag);
+    protected abstract void readRotatableTileNBT(CompoundNBT tag);
 
-    protected abstract void writeRotatableTileNBT(NBTTagCompound tag);
+    protected abstract void writeRotatableTileNBT(CompoundNBT tag);
 
     @Override
-    public final EnumFacing getOrientation() {
+    public final Direction getOrientation() {
         return this.direction;
     }
 
     @Override
-    public final void setOrientation(EnumFacing facing) {
+    public final void setOrientation(Direction facing) {
         this.direction = (facing != null && facing.getAxis().isHorizontal()) ? facing : this.direction;
     }
 
@@ -46,6 +50,6 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
     // Notice, the ordinal follows the backwards orientation.
     private void setDirection(int cardinal) {
         // EnumFacing can actually handle all this stuff!
-        this.setOrientation(EnumFacing.getHorizontal(cardinal));
+        this.setOrientation(Direction.byHorizontalIndex(cardinal));
     }
 }

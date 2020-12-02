@@ -1,22 +1,16 @@
 package com.infinityraider.infinitylib.render.item;
 
-import com.infinityraider.infinitylib.item.IAutoRenderedItem;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.ICustomModelLoader;
-import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@SideOnly(Side.CLIENT)
-public class ItemRendererRegistry implements ICustomModelLoader {
+@OnlyIn(Dist.CLIENT)
+public class ItemRendererRegistry  {
 
 	private static final ItemRendererRegistry INSTANCE = new ItemRendererRegistry();
 
@@ -28,34 +22,13 @@ public class ItemRendererRegistry implements ICustomModelLoader {
 
 	private ItemRendererRegistry() {
 		this.renderers = new HashMap<>();
-		ModelLoaderRegistry.registerLoader(this);
-	}
-
-	@Override
-	public boolean accepts(ResourceLocation loc) {
-		return renderers.containsKey(loc);
-	}
-
-	@Override
-	public IModel loadModel(ResourceLocation loc) throws Exception {
-		return renderers.get(loc);
-	}
-
-	@Override
-	public void onResourceManagerReload(IResourceManager resourceManager) {
+		//ModelLoaderRegistry.registerLoader(this);		//TODO
 	}
 
 	public void registerCustomItemRenderer(Item item, IItemRenderingHandler handler) {
 		final ModelResourceLocation itemModel = new ModelResourceLocation(item.getRegistryName(), "inventory");
 		final ItemRenderer instance = new ItemRenderer(handler);
-		ModelLoader.setCustomMeshDefinition(item, stack -> itemModel);
-		renderers.put(itemModel, instance);
-	}
-
-	public <T extends Item & IAutoRenderedItem> void registerCustomItemRendererAuto(T item) {
-		final ModelResourceLocation itemModel = new ModelResourceLocation(item.getRegistryName(), "inventory");
-		final ItemRenderer instance = new ItemRenderer(new RenderItemAuto(item));
-		ModelLoader.setCustomMeshDefinition(item, stack -> itemModel);
+		//ModelLoader.setCustomMeshDefinition(item, stack -> itemModel);	//TODO
 		renderers.put(itemModel, instance);
 	}
 

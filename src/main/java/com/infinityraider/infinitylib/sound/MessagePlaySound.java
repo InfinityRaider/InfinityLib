@@ -2,7 +2,7 @@ package com.infinityraider.infinitylib.sound;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.network.MessageBase;
-import com.infinityraider.infinitylib.network.serialization.ByteBufUtil;
+import com.infinityraider.infinitylib.network.serialization.PacketBufferUtil;
 import com.infinityraider.infinitylib.network.serialization.IMessageReader;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
@@ -10,18 +10,19 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
-public class MessagePlaySound extends MessageBase<IMessage> {
+public class MessagePlaySound extends MessageBase {
     private Type type;
     private Entity entity;
-    private Vec3d position;
+    private Vector3d position;
     private String uuid;
     private SoundEvent sound;
     private SoundCategory category;
@@ -47,7 +48,7 @@ public class MessagePlaySound extends MessageBase<IMessage> {
         this.repeatDelay = task.repeatDelay();
     }
 
-    public MessagePlaySound(Vec3d position, SoundTaskServer task) {
+    public MessagePlaySound(Vector3d position, SoundTaskServer task) {
         this();
         this.type = Type.POSITION;
         this.position = position;
@@ -61,13 +62,13 @@ public class MessagePlaySound extends MessageBase<IMessage> {
     }
 
     @Override
-    public Side getMessageHandlerSide() {
-        return Side.CLIENT;
+    public NetworkDirection getMessageDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
     }
 
     @Override
-    protected void processMessage(MessageContext ctx) {
-        if(this.checkData() && this.sound != null && this.category != null && ctx.side == Side.CLIENT) {
+    protected void processMessage(NetworkEvent.Context ctx) {
+        if(this.checkData() && this.sound != null && this.category != null) {
             ModSoundHandler.getInstance().onSoundMessage(this);
         }
     }
@@ -92,22 +93,17 @@ public class MessagePlaySound extends MessageBase<IMessage> {
         return this.entity;
     }
 
-    public Vec3d getPosition() {
+    public Vector3d getPosition() {
         return this.position;
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public SoundTaskClient getModSound() {
         return new SoundTaskClient(this.uuid, this.sound, this.category, this.volume, this.pitch)
                 .setVolume(this.volume)
                 .setPitch(this.pitch)
                 .setRepeat(this.repeat)
                 .setRepeatDelay(this.repeatDelay);
-    }
-
-    @Override
-    protected IMessage getReply(MessageContext ctx) {
-        return null;
     }
 
     @Override
@@ -121,12 +117,12 @@ public class MessagePlaySound extends MessageBase<IMessage> {
 
                     @Override
                     public IMessageWriter<SoundEvent> getWriter(Class<SoundEvent> clazz) {
-                        return (buf, data) -> ByteBufUtil.writeString(buf, data.getSoundName().toString());
+                        return (buf, data) -> PacketBufferUtil.writeString(buf, data.getRegistryName().toString());
                     }
 
                     @Override
                     public IMessageReader<SoundEvent> getReader(Class<SoundEvent> clazz) {
-                        return (data) -> (SoundEvent.REGISTRY.getObject(new ResourceLocation(ByteBufUtil.readString(data))));
+                        return (data) -> (ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(PacketBufferUtil.readString(data))));
                     }
                 });
     }

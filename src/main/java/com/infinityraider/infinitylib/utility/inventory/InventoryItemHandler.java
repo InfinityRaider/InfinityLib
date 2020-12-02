@@ -1,11 +1,10 @@
 package com.infinityraider.infinitylib.utility.inventory;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -52,6 +51,11 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     @Override
     public int getSlotLimit(int slot) {
         return this.getItemHandler().getSlotLimit(slot);
+    }
+
+    @Override
+    public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        return this.getItemHandler().isItemValid(slot, stack);
     }
 
 
@@ -104,15 +108,15 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     public void markDirty() {}
 
     @Override
-    public boolean isUsableByPlayer(EntityPlayer player) {
+    public boolean isUsableByPlayer(PlayerEntity player) {
         return true;
     }
 
     @Override
-    public void openInventory(EntityPlayer player) {}
+    public void openInventory(PlayerEntity player) {}
 
     @Override
-    public void closeInventory(EntityPlayer player) {}
+    public void closeInventory(PlayerEntity player) {}
 
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
@@ -121,37 +125,9 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     }
 
     @Override
-    public int getField(int id) {
-        return 0;
-    }
-
-    @Override
-    public void setField(int id, int value) {}
-
-    @Override
-    public int getFieldCount() {
-        return 0;
-    }
-
-    @Override
     public void clear() {
         for(int i = 0; i < this.getSizeInventory(); i++) {
             this.setInventorySlotContents(i, ItemStack.EMPTY);
         }
-    }
-
-    @Override
-    public String getName() {
-        return "infinityLib.wrappedItemHandler";
-    }
-
-    @Override
-    public boolean hasCustomName() {
-        return false;
-    }
-
-    @Override
-    public ITextComponent getDisplayName() {
-        return new TextComponentTranslation(this.getName());
     }
 }

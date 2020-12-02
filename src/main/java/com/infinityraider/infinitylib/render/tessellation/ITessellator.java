@@ -1,23 +1,24 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.math.vector.Vector4f;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 import java.util.function.Function;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
-public interface ITessellator extends Function<ResourceLocation, TextureAtlasSprite> {
+public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprite> {
 
     /**
      * Method to start constructing quads
@@ -29,7 +30,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     /**
      * Method to get all quads constructed
      *
-     * @return list of quads, may be emtpy but never null
+     * @return list of quads, may be empty but never null
      */
     ImmutableList<BakedQuad> getQuads();
 
@@ -119,7 +120,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param face orientation of the face
      * @param offset offset of the face along its normal
      */
-    void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, float offset);
+    void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset);
 
     /**
      * Adds a quad for a scaled face, the face is defined by minimum and maximum
@@ -133,7 +134,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param icon icon to render the face with
      * @param offset offset of the face along its normal
      */
-    void drawScaledFace(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset);
+    void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset);
 
     /**
      * Adds two quads for a scaled face, this face will have both sides drawn.
@@ -146,7 +147,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param face orientation of the face
      * @param offset offset of the face along its normal
      */
-    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, float offset);
+    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, float offset);
 
     /**
      * Adds two quads for a scaled face, this face will have both sides drawn.
@@ -160,7 +161,7 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
      * @param icon icon to render the face with
      * @param offset offset of the face along its normal
      */
-    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, EnumFacing face, TextureAtlasSprite icon, float offset);
+    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset);
 
     /**
      * Adds 6 quads for a scaled prism, the prism is defined by maximum and
@@ -317,10 +318,10 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     /**
      * Gets a TextureAtlasSprite icon from a ResourceLocation
      *
-     * @param loc the ResourceLocation
+     * @param source the ResourceLocation
      * @return the icon
      */
-    TextureAtlasSprite getIcon(ResourceLocation loc);
+    TextureAtlasSprite getIcon(RenderMaterial source);
 
     /**
      * Binds a texture to use when rendering
@@ -450,8 +451,8 @@ public interface ITessellator extends Function<ResourceLocation, TextureAtlasSpr
     boolean getApplyDiffuseLighting();
 
     @Override
-    default TextureAtlasSprite apply(ResourceLocation loc) {
-        return this.getIcon(loc);
+    default TextureAtlasSprite apply(RenderMaterial source) {
+        return this.getIcon(source);
     }
 
 }

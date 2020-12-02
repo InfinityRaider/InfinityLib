@@ -1,14 +1,14 @@
 package com.infinityraider.infinitylib.utility;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -199,20 +199,13 @@ public class BoundingBox implements Iterable<BlockPos> {
         int chunkMinZ = minZ >> 4;
         int chunkMaxX = maxX >> 4;
         int chunkMaxZ = maxZ >> 4;
-        for(int x = chunkMinX; x <= chunkMaxX; x ++) {
-            for(int z = chunkMinZ; z <= chunkMaxZ; z ++) {
-                if (!world.getChunkFromChunkCoords(x, z).isLoaded()) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return world.isAreaLoaded(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void renderWireFrame(Tessellator tessellator, Color color) {
         BufferBuilder buffer = tessellator.getBuffer();
-        GlStateManager.disableTexture2D();
+        GlStateManager.disableTexture();
         GlStateManager.disableLighting();
         GL11.glTranslatef(minX(), minY(), minZ());
 
@@ -293,7 +286,7 @@ public class BoundingBox implements Iterable<BlockPos> {
 
         GL11.glTranslatef(-minX(), -minY(), -minZ());
         GlStateManager.enableLighting();
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
     }
 
     @Override

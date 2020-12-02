@@ -2,10 +2,10 @@ package com.infinityraider.infinitylib.sound;
 
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class SoundTaskClient extends SoundTask {
     SoundTaskClient(String uuid, SoundEvent sound, SoundCategory category, float volume, float pitch) {
         super(uuid, sound, category, volume, pitch);

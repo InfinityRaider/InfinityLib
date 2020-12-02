@@ -3,10 +3,12 @@ package com.infinityraider.infinitylib.network;
 import com.infinityraider.infinitylib.network.serialization.IMessageReader;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.network.PacketDistributor;
+
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public interface INetworkWrapper {
@@ -21,7 +23,7 @@ public interface INetworkWrapper {
      * Sends a message to one particular connected client
      * only valid if the message is handled on the client
      */
-    void sendTo(MessageBase message, EntityPlayerMP player);
+    void sendTo(MessageBase message, ServerPlayerEntity player);
 
     /**
      * Sends a message to all connected clients near a certain point,
@@ -33,13 +35,13 @@ public interface INetworkWrapper {
      * Sends a message to all connected clients near a certain point,
      * only valid if the message is handled on the client
      */
-    void sendToAllAround(MessageBase message, int dimension, double x, double y, double z, double range);
+    void sendToAllAround(MessageBase message, RegistryKey<World> dimension, double x, double y, double z, double range);
 
     /**
      * Sends a message to all connected clients near a certain point,
      * only valid if the message is handled on the client
      */
-    void sendToAllAround(MessageBase message, NetworkRegistry.TargetPoint point);
+    void sendToAllAround(MessageBase message, Supplier<PacketDistributor.TargetPoint> point);
 
     /**
      * Sends a message to all connected clients in a certain dimension,
@@ -51,7 +53,7 @@ public interface INetworkWrapper {
      * Sends a message to all connected clients in a certain dimension,
      * only valid if the message is handled on the client
      */
-    void sendToDimension(MessageBase message, int dimensionId);
+    void sendToDimension(MessageBase message, RegistryKey<World> dimension);
 
     /**
      * Sends a message to the server,
@@ -61,11 +63,10 @@ public interface INetworkWrapper {
 
     /**
      * Registers a MessageBase to this wrapper
-     * @param message the class of the message to register
+     * @param message a constructor of the message to register
      * @param <REQ> the generic type of the message
-     * @param <REPLY> the generic type of the reply (can be IMessage if no reply is expected)
      */
-    <REQ extends MessageBase<REPLY>, REPLY extends IMessage> void registerMessage(Class<? extends REQ> message);
+    <REQ extends MessageBase> void registerMessage(Class<REQ> message);
 
     /**
      * Registers a serializer for a class type, this method will also register the array type for this type (unless the type is an array itself).

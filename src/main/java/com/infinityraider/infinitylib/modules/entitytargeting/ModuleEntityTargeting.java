@@ -3,7 +3,7 @@ package com.infinityraider.infinitylib.modules.entitytargeting;
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.modules.Module;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.MobEntity;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class ModuleEntityTargeting extends Module {
         return ImmutableList.of(this.handler);
     }
 
-    public ModuleEntityTargeting registerEntityTargeting(Class<? extends Entity> target, Class<? extends EntityCreature> aggressor) {
+    public ModuleEntityTargeting registerEntityTargeting(Class<? extends Entity> target, Class<? extends MobEntity> aggressor) {
         this.handler.registerEntityTargetingRule(target, aggressor);
         return this;
     }
