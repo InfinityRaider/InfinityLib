@@ -7,6 +7,7 @@ import com.infinityraider.infinitylib.capability.CapabilityHandler;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import com.infinityraider.infinitylib.effect.IInfinityEffect;
 import com.infinityraider.infinitylib.enchantment.IInfinityEnchantment;
+import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.entity.IInfinityLivingEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
@@ -96,6 +97,10 @@ public interface IProxyBase {
                     // Register spawn egg
                     itemRegister.register(livingEntityType.getInternalName() + "_spawn_egg", () -> egg);
                 });
+                // Natural spawning
+                livingEntityType.getSpawnRules().forEach(rule ->
+                        AmbientSpawnHandler.getInstance().registerSpawnRule(livingEntityType.cast(), rule)
+                );
             }
         });
         itemRegister.register(FMLJavaModLoadingContext.get().getModEventBus());

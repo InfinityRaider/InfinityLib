@@ -5,6 +5,7 @@ import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
 
 public interface IInfinityEntityType extends IInfinityRegistrable<EntityType<?>> {
     /**
@@ -27,7 +28,7 @@ public interface IInfinityEntityType extends IInfinityRegistrable<EntityType<?>>
         return this;
     }
 
-    //TODO: rendering
+    <T extends Entity> IRenderFactory<T> getRenderFactory();
 
 
 }

@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.modules.playerstate;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
@@ -98,6 +99,11 @@ public class PlayerStateHandler {
             return;
         }
         if(getState((PlayerEntity) target).isUndetectable()) {
+            if (attacker instanceof MobEntity) {
+                MobEntity mob = (MobEntity) attacker;
+                mob.setAggroed(false);
+                mob.setAttackTarget(null);
+            }
             attacker.setRevengeTarget(null);
         }
     }

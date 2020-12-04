@@ -22,10 +22,10 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  * When implementing this interface, the mod must also be annotated with @InfinityMod
  */
 @SuppressWarnings("unused")
-public abstract class InfinityMod {
+public abstract class InfinityMod<P extends IProxyBase> {
     private final InfinityLogger logger;
     private final INetworkWrapper networkWrapper;
-    private IProxyBase proxy;
+    private P proxy;
 
     @SuppressWarnings("Unchecked")
     public InfinityMod() {
@@ -68,7 +68,7 @@ public abstract class InfinityMod {
         return this.networkWrapper;
     }
 
-    public IProxyBase proxy() {
+    public P proxy() {
         return this.proxy;
     }
 
@@ -86,13 +86,13 @@ public abstract class InfinityMod {
      * @return Creates the client proxy object for this mod
      */
     @OnlyIn(Dist.CLIENT)
-    protected abstract IProxyBase createClientProxy();
+    protected abstract P createClientProxy();
 
     /**
      * @return Creates the server proxy object for this mod
      */
     @OnlyIn(Dist.DEDICATED_SERVER)
-    protected abstract IProxyBase createServerProxy();
+    protected abstract P createServerProxy();
 
     /**
      * Register all messages added by this mod

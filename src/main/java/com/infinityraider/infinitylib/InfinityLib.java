@@ -5,17 +5,20 @@ import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.MessageSetEntityDead;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
 import com.infinityraider.infinitylib.proxy.ClientProxy;
+import com.infinityraider.infinitylib.proxy.IProxy;
 import com.infinityraider.infinitylib.proxy.ServerProxy;
-import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.reference.Reference;
 import com.infinityraider.infinitylib.sound.MessagePlaySound;
 import com.infinityraider.infinitylib.sound.MessageStopSound;
+import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod(Reference.MOD_ID)
-public class InfinityLib extends InfinityMod {
+public class InfinityLib extends InfinityMod<IProxy> {
     public static InfinityLib instance;
 
     @Override
@@ -30,13 +33,13 @@ public class InfinityLib extends InfinityMod {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    protected IProxyBase createClientProxy() {
+    protected IProxy createClientProxy() {
         return new ClientProxy();
     }
 
     @Override
     @OnlyIn(Dist.DEDICATED_SERVER)
-    protected IProxyBase createServerProxy() {
+    protected IProxy createServerProxy() {
         return new ServerProxy();
     }
 
@@ -47,5 +50,10 @@ public class InfinityLib extends InfinityMod {
         wrapper.registerMessage(MessagePlaySound.class);
         wrapper.registerMessage(MessageStopSound.class);
         Module.getActiveModules().stream().sorted().forEach(m -> m.registerMessages(wrapper));
+    }
+
+    @SubscribeEvent //ModBus, can't use addListener due to nested genetics.
+    public void registerRecipeSerialziers(RegistryEvent.Register<IRecipeSerializer<?>> event) {
+
     }
 }

@@ -1,14 +1,21 @@
 package com.infinityraider.infinitylib.entity;
 
 import com.sun.org.apache.bcel.internal.classfile.ClassFormatException;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 
 public interface IInfinityLivingEntityType extends IInfinityEntityType {
     /**
@@ -28,13 +35,12 @@ public interface IInfinityLivingEntityType extends IInfinityEntityType {
     }
 
     /**
-     * Retrieves the rules for ambient spawning of this entity in a given biome
+     * Retrieves the rules for ambient spawning of this entity
      *
-     * @param biome the biome
-     * @return optional with the spawn rules or an empty optional if the entity should not spawn naturally in this biome
+     * @return set with the spawn rules (can be empty)
      */
-    default Optional<SpawnRules> getSpawnRules(Biome biome) {
-        return Optional.empty();
+    default Set<SpawnRule> getSpawnRules() {
+        return Collections.emptySet();
     }
 
     /**
@@ -60,12 +66,26 @@ public interface IInfinityLivingEntityType extends IInfinityEntityType {
         ItemGroup tab();
     }
 
-    interface SpawnRules {
+    interface SpawnRule {
+
+        EntityClassification classification();
+
+        Predicate<Context> spawnRule();
 
         int min();
 
         int max();
 
         int weight();
+
+        interface Context {
+            IWorld world();
+
+            BlockPos pos();
+
+            BlockState stateBelow();
+
+            Biome biome();
+        }
     }
 }
