@@ -1,10 +1,10 @@
 package com.infinityraider.infinitylib;
 
+import com.infinityraider.infinitylib.config.ConfigurationHandler;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.utility.InfinityLogger;
-import com.infinityraider.infinitylib.utility.ModLoadUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -14,6 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -22,10 +23,11 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  * When implementing this interface, the mod must also be annotated with @InfinityMod
  */
 @SuppressWarnings("unused")
-public abstract class InfinityMod<P extends IProxyBase> {
+public abstract class InfinityMod<P extends IProxyBase<C>, C extends ConfigurationHandler.SidedModConfig> {
     private final InfinityLogger logger;
     private final INetworkWrapper networkWrapper;
     private P proxy;
+    private ConfigurationHandler<C> config;
 
     @SuppressWarnings("Unchecked")
     public InfinityMod() {
@@ -38,6 +40,8 @@ public abstract class InfinityMod<P extends IProxyBase> {
         //Create proxy
         DistExecutor.callWhenOn(Dist.CLIENT, () -> () -> this.proxy = this.createClientProxy());
         DistExecutor.callWhenOn(Dist.DEDICATED_SERVER, () -> () -> this.proxy = this.createServerProxy());
+        //Create configuration
+        this.config = new ConfigurationHandler<>(ModLoadingContext.get(), this.proxy().getConfigConstructor());
         //Register FML mod loading cycle listeners
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetupEvent);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetupEvent);
@@ -70,6 +74,10 @@ public abstract class InfinityMod<P extends IProxyBase> {
 
     public P proxy() {
         return this.proxy;
+    }
+
+    public C getConfig() {
+        return this.config.getConfig();
     }
 
     /**
@@ -200,6 +208,7 @@ public abstract class InfinityMod<P extends IProxyBase> {
     }
 
     private void onClientSetupEvent(final FMLClientSetupEvent event) {
+        this.proxy().registerRenderers(this);
         this.proxy().onClientSetupEvent(event);}
 
     private void onDedicatedServerSetupEvent(final FMLDedicatedServerSetupEvent event) {

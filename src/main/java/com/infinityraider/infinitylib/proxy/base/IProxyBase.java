@@ -5,6 +5,7 @@ import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.IInfinityBlockWithTile;
 import com.infinityraider.infinitylib.capability.CapabilityHandler;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
+import com.infinityraider.infinitylib.config.ConfigurationHandler;
 import com.infinityraider.infinitylib.effect.IInfinityEffect;
 import com.infinityraider.infinitylib.enchantment.IInfinityEnchantment;
 import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
@@ -25,6 +26,7 @@ import net.minecraft.item.SpawnEggItem;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.LogicalSidedProvider;
@@ -37,16 +39,16 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-@SuppressWarnings("unused")
-public interface IProxyBase {
+public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     /**
      * -------------------
      * REGISTERING METHODS
      * -------------------
      */
 
-    default void registerRegistrables(InfinityMod mod) {
+    default void registerRegistrables(InfinityMod<?,?> mod) {
         this.registerBlocks(mod);
         this.registerItems(mod);
         this.registerEnchantments(mod);
@@ -55,7 +57,7 @@ public interface IProxyBase {
         this.registerEffects(mod);
     }
 
-    default void registerBlocks(InfinityMod mod) {
+    default void registerBlocks(InfinityMod<?,?> mod) {
         // Register blocks
         this.registerObjects(mod, mod.getModBlockRegistry(), IInfinityBlock.class, ForgeRegistries.BLOCKS, block -> {
             // TileEntity registration:
@@ -65,17 +67,17 @@ public interface IProxyBase {
         });
     }
 
-    default void registerItems(InfinityMod mod) {
+    default void registerItems(InfinityMod<?,?> mod) {
         // Register items
         this.registerObjects(mod, mod.getModItemRegistry(), IInfinityItem.class, ForgeRegistries.ITEMS);
     }
 
-    default void registerEnchantments(InfinityMod mod) {
+    default void registerEnchantments(InfinityMod<?,?> mod) {
         // Register enchantments
         this.registerObjects(mod, mod.getModEnchantmentRegistry(), IInfinityEnchantment.class, ForgeRegistries.ENCHANTMENTS);
     }
 
-    default void registerEntities(InfinityMod mod) {
+    default void registerEntities(InfinityMod<?,?> mod) {
         // Create a deferred item register for the spawn eggs
         DeferredRegister<Item> itemRegister = DeferredRegister.create(ForgeRegistries.ITEMS, mod.getModId());
         // Register entities
@@ -106,24 +108,24 @@ public interface IProxyBase {
         itemRegister.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
-    default void registerSounds(InfinityMod mod) {
+    default void registerSounds(InfinityMod<?,?> mod) {
         // Register enchantments
         this.registerObjects(mod, mod.getModSoundRegistry(), IInfinitySoundEvent.class, ForgeRegistries.SOUND_EVENTS);
 
     }
 
-    default void registerEffects(InfinityMod mod) {
+    default void registerEffects(InfinityMod<?,?> mod) {
         // Register effects
         this.registerObjects(mod, mod.getModEffectRegistry(), IInfinityEffect.class, ForgeRegistries.POTIONS);
     }
 
-    default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod mod, Object modRegistry,
+    default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Object modRegistry,
                                                                     Class<? extends IInfinityRegistrable<T>> clazz,
                                                                     IForgeRegistry<T> targetRegistry) {
         this.registerObjects(mod, modRegistry, clazz, targetRegistry, (obj) -> {});
     }
 
-    default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod mod, Object modRegistry,
+    default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Object modRegistry,
                                                                     Class<? extends IInfinityRegistrable<T>> clazz,
                                                                     IForgeRegistry<T> registry,
                                                                     Consumer<IInfinityRegistrable<T>> tasks) {
@@ -137,7 +139,7 @@ public interface IProxyBase {
         }
     }
 
-    default <T extends IForgeRegistryEntry<T>> void registerObject(InfinityMod mod, IInfinityRegistrable<T> object,
+    default <T extends IForgeRegistryEntry<T>> void registerObject(InfinityMod<?,?> mod, IInfinityRegistrable<T> object,
                                                                    DeferredRegister<T> register,
                                                                    Consumer<IInfinityRegistrable<T>> tasks) {
         if(object.isEnabled()) {
@@ -146,6 +148,13 @@ public interface IProxyBase {
             tasks.accept(object);
         }
     }
+
+
+
+    /**
+     * Called to register the mod config
+     */
+    Function<ForgeConfigSpec.Builder, C> getConfigConstructor();
 
     /**
      * Called to register the event handlers
@@ -169,9 +178,12 @@ public interface IProxyBase {
 
 
     /** Registers a capability */
-    default void registerCapability(ICapabilityImplementation capability) {
+    default void registerCapability(ICapabilityImplementation<?, ?> capability) {
         CapabilityHandler.getInstance().registerCapability(capability);
     }
+
+    /** Called on the client to register renderers */
+    default void registerRenderers(InfinityMod<?,?> mod) {}
 
 
     /**

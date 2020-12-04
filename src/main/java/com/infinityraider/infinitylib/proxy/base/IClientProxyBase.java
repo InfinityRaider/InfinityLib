@@ -1,17 +1,39 @@
 package com.infinityraider.infinitylib.proxy.base;
 
+import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.InfinityMod;
+import com.infinityraider.infinitylib.config.ConfigurationHandler;
+import com.infinityraider.infinitylib.entity.EntityRenderFactoryEmpty;
+import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
+import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
-public interface IClientProxyBase extends IProxyBase {
+public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig> extends IProxyBase<C> {
 
-    //TODO: registration of renderers
+    @Override
+    /** Called on the client to register renderers */
+    default void registerRenderers(InfinityMod<?,?> mod) {
+        this.registerEntityRenderers(mod.getModEntityRegistry());
+    }
+
+    default void registerEntityRenderers(Object entityRegistry) {
+        ReflectionHelper.forEachValueIn(entityRegistry, IInfinityEntityType.class, object -> {
+            if (object.getRenderFactory() == null) {
+                InfinityLib.instance.getLogger().info("", "No entity rendering factory was found for entity " + object.getInternalName());
+                RenderingRegistry.registerEntityRenderingHandler(object.cast(), EntityRenderFactoryEmpty.getInstance());
+            } else {
+                RenderingRegistry.registerEntityRenderingHandler(object.cast(), object.getRenderFactory());
+            }
+        });
+    }
 
     @Override
     default PlayerEntity getClientPlayer() {

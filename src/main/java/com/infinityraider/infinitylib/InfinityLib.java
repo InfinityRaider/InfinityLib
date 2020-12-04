@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib;
 
+import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.MessageSetEntityDead;
@@ -18,7 +19,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod(Reference.MOD_ID)
-public class InfinityLib extends InfinityMod<IProxy> {
+public class InfinityLib extends InfinityMod<IProxy, Config> {
     public static InfinityLib instance;
 
     @Override

@@ -15,9 +15,9 @@ description='''
 Library Mod.
 '''
 
-[[dependencies.examplemod]] #optional
+[[dependencies.examplemod]]
     modId="forge"
-    mandatory=false
+    mandatory=true
     versionRange="[35,)"
     ordering="NONE"
     side="BOTH"

@@ -1,14 +1,14 @@
 package com.infinityraider.infinitylib.proxy;
 
+import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.event.lifecycle.*;
 
-@SuppressWarnings("unused")
 @OnlyIn(Dist.CLIENT)
-public class ClientProxy implements IProxy, IClientProxyBase {
+public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     public ClientProxy() {}
 
     @Override

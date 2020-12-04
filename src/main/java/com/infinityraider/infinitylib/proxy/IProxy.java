@@ -1,12 +1,21 @@
 package com.infinityraider.infinitylib.proxy;
 
+import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.crafting.FallbackIngredient;
 import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
-public interface IProxy extends IProxyBase {
+import java.util.function.Function;
+
+public interface IProxy extends IProxyBase<Config> {
+
+    @Override
+    default  Function<ForgeConfigSpec.Builder, Config> getConfigConstructor() {
+        return Config.Common::new;
+    }
 
     @Override
     default void registerEventHandlers() {
