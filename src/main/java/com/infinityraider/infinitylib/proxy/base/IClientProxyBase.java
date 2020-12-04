@@ -25,14 +25,16 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
     }
 
     default void registerEntityRenderers(Object entityRegistry) {
-        ReflectionHelper.forEachValueIn(entityRegistry, IInfinityEntityType.class, object -> {
-            if (object.getRenderFactory() == null) {
-                InfinityLib.instance.getLogger().info("", "No entity rendering factory was found for entity " + object.getInternalName());
-                RenderingRegistry.registerEntityRenderingHandler(object.cast(), EntityRenderFactoryEmpty.getInstance());
-            } else {
-                RenderingRegistry.registerEntityRenderingHandler(object.cast(), object.getRenderFactory());
-            }
-        });
+        if(entityRegistry != null) {
+            ReflectionHelper.forEachValueIn(entityRegistry, IInfinityEntityType.class, object -> {
+                if (object.getRenderFactory() == null) {
+                    InfinityLib.instance.getLogger().info("", "No entity rendering factory was found for entity " + object.getInternalName());
+                    RenderingRegistry.registerEntityRenderingHandler(object.cast(), EntityRenderFactoryEmpty.getInstance());
+                } else {
+                    RenderingRegistry.registerEntityRenderingHandler(object.cast(), object.getRenderFactory());
+                }
+            });
+        }
     }
 
     @Override
