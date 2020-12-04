@@ -1,5 +1,7 @@
 package com.infinityraider.infinitylib.proxy;
 
+import com.infinityraider.infinitylib.crafting.FallbackIngredient;
+import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -11,6 +13,7 @@ public interface IProxy extends IProxyBase {
         Module.getActiveModules().forEach(module -> {
             module.getCommonEventHandlers().forEach(this::registerEventHandler);
         });
+        this.registerEventHandler(AmbientSpawnHandler.getInstance());
     }
 
     @Override
@@ -26,5 +29,6 @@ public interface IProxy extends IProxyBase {
     @Override
     default void onCommonSetupEvent(FMLCommonSetupEvent event) {
         Module.getActiveModules().forEach(Module::init);
+        FallbackIngredient.registerSerializer();
     }
 }
