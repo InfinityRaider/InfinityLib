@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -24,8 +25,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  */
 @SuppressWarnings("unused")
 public abstract class InfinityMod<P extends IProxyBase<C>, C extends ConfigurationHandler.SidedModConfig> {
-    private final InfinityLogger logger;
-    private final INetworkWrapper networkWrapper;
+    private InfinityLogger logger;
+    private INetworkWrapper networkWrapper;
     private P proxy;
     private ConfigurationHandler<C> config;
 
@@ -33,9 +34,9 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     public InfinityMod() {
         //Populate static mod instance
         this.onModConstructed();
-        Object test = InfinityLib.instance;
-        //Create instances of utility objects
+        //Create logger
         this.logger = new InfinityLogger(this);
+        //Create network wrapper
         this.networkWrapper = new NetworkWrapper(this);
         //Create proxy
         DistExecutor.callWhenOn(Dist.CLIENT, () -> () -> this.proxy = this.createClientProxy());
@@ -43,12 +44,14 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         //Create configuration
         this.config = new ConfigurationHandler<>(ModLoadingContext.get(), this.proxy().getConfigConstructor());
         //Register FML mod loading cycle listeners
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetupEvent);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetupEvent);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onDedicatedServerSetupEvent);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onInterModEnqueueEvent);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onInterModProcessEvent);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onModLoadCompleteEvent);
+        FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        bus.addListener(this::onCommonSetupEvent);
+        bus.addListener(this::onClientSetupEvent);
+        bus.addListener(this::onDedicatedServerSetupEvent);
+        bus.addListener(this::onInterModEnqueueEvent);
+        bus.addListener(this::onInterModProcessEvent);
+        bus.addListener(this::onModLoadCompleteEvent);
         MinecraftForge.EVENT_BUS.register(this);
         //Activate required modules
         this.proxy().activateRequiredModules();
@@ -62,6 +65,13 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         this.proxy().registerRegistrables(this);
         //Initialize the API
         this.initializeAPI();
+    }
+
+    private void init() {
+    }
+
+    private void initClient() {
+        this.proxy().registerRenderers(this);
     }
 
     public final InfinityLogger getLogger() {
@@ -204,26 +214,35 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      */
 
     private void onCommonSetupEvent(final FMLCommonSetupEvent event) {
+        //self init
+        this.init();
+        //forward to proxy
         this.proxy().onCommonSetupEvent(event);
     }
 
     private void onClientSetupEvent(final FMLClientSetupEvent event) {
-        this.proxy().registerRenderers(this);
+        //self init
+        this.initClient();
+        //forward to proxy
         this.proxy().onClientSetupEvent(event);}
 
     private void onDedicatedServerSetupEvent(final FMLDedicatedServerSetupEvent event) {
+        //forward to proxy
         this.proxy().onDedicatedServerSetupEvent(event);
     }
 
     private void onInterModEnqueueEvent(final InterModEnqueueEvent event) {
+        //forward to proxy
         this.proxy().onInterModEnqueueEvent(event);
     }
 
     private void onInterModProcessEvent(final InterModProcessEvent event) {
+        //forward to proxy
         this.proxy().onInterModProcessEvent(event);
     }
 
     private void onModLoadCompleteEvent(final FMLLoadCompleteEvent event) {
+        //forward to proxy
         this.proxy().onModLoadCompleteEvent(event);
     }
 

@@ -19,5 +19,5 @@ Library Mod.
     modId="forge"
     mandatory=true
     versionRange="[35,)"
-    ordering="NONE"
+    ordering="AFTER"
     side="BOTH"
