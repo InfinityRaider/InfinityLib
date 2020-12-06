@@ -27,15 +27,22 @@ import java.util.function.Supplier;
 public class NetworkWrapper implements INetworkWrapper {
     private static final String PROTOCOL_VERSION = "1";
 
-    private final SimpleChannel channel;
+    private final InfinityMod<?,?> mod;
+
+    private SimpleChannel channel;
     private int nextId = 0;
 
-    public NetworkWrapper(InfinityMod mod) {
+    public NetworkWrapper(InfinityMod<?,?> mod) {
+        this.mod = mod;
+    }
+
+    public void init() {
         this.channel = NetworkRegistry.newSimpleChannel(
                 new ResourceLocation(mod.getModId(), "network_channel"),
                 () -> PROTOCOL_VERSION,
                 PROTOCOL_VERSION::equals,
                 PROTOCOL_VERSION::equals);
+        this.mod.registerMessages(this);
     }
 
     @Override
@@ -158,7 +165,7 @@ public class NetworkWrapper implements INetworkWrapper {
         @Override
         public void accept(MSG msg, Supplier<NetworkEvent.Context> ctxSupplier) {
             NetworkEvent.Context ctx = ctxSupplier.get();
-            ctx.enqueueWork(new MessageTask(msg, ctx));
+            ctx.enqueueWork(new MessageTask(msg, ctxSupplier.get()));
         }
     }
 
@@ -176,6 +183,7 @@ public class NetworkWrapper implements INetworkWrapper {
             if(this.message.getMessageDirection() == this.ctx.getDirection()) {
                 this.message.processMessage(this.ctx);
             }
+            ctx.setPacketHandled(true);
         }
     }
 }

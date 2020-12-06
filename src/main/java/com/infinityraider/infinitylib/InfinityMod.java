@@ -19,6 +19,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 /**
  * This interface should be implemented in a mod's main class to have the registering of Items, Blocks, Renderers, etc. handled by InfinityLib
@@ -26,7 +27,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  */
 public abstract class InfinityMod<P extends IProxyBase<C>, C extends ConfigurationHandler.SidedModConfig> {
     private final InfinityLogger logger;
-    private final INetworkWrapper networkWrapper;
+    private final NetworkWrapper networkWrapper;
     private final P proxy;
     private final ConfigurationHandler<C> config;
 
@@ -36,13 +37,13 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         this.onModConstructed();
         //Create logger
         this.logger = new InfinityLogger(this);
-        //Create network wrapper
+        // Create network wrapper
         this.networkWrapper = new NetworkWrapper(this);
-        //Create proxy
+        // Create proxy
         this.proxy = this.createProxy();
-        //Create configuration
+        // Create configuration
         this.config = new ConfigurationHandler<>(ModLoadingContext.get(), this.proxy().getConfigConstructor());
-        //Register FML mod loading cycle listeners
+        // Register FML mod loading cycle listeners
         FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
         IEventBus bus = context.getModEventBus();
         bus.addListener(this::onCommonSetupEvent);
@@ -54,15 +55,11 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         MinecraftForge.EVENT_BUS.register(this);
         //Activate required modules
         this.proxy().activateRequiredModules();
-        //Register messages
-        this.registerMessages(this.networkWrapper);
-        //Register capabilities
-        this.proxy().registerCapabilities();
-        //Register event handlers
-        this.proxy().registerEventHandlers();
-        //Call for deferred, automatic registration of IInfinityRegistrable objects
+        // Call for deferred, automatic registration of IInfinityRegistrable objects
         this.proxy().registerRegistrables(this);
-        //Initialize the API
+        // Register event handlers
+        this.proxy().registerEventHandlers();
+        // Initialize the API
         this.initializeAPI();
     }
 
@@ -72,15 +69,21 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
             proxy = DistExecutor.unsafeCallWhenOn(Dist.DEDICATED_SERVER, () -> this::createServerProxy);
         }
         if (proxy == null) {
-            throw new RuntimeException("Failed to create SidedProxy");
+            // Can only happen if the mod fails to correctly implement the createClientProxy and/or the createServerProxy methods
+            throw new RuntimeException("Failed to create SidedProxy for mod " + this.getModId() + " on side: " + FMLEnvironment.dist.name());
         }
         return proxy;
     }
 
     private void init() {
+        // Register capabilities
+        this.proxy().registerCapabilities();
+        // Register messages
+        this.networkWrapper.init();
     }
 
     private void initClient() {
+        // Register renderers
         this.proxy().registerRenderers(this);
     }
 
@@ -266,7 +269,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     /**
      * @return The physical side, is always Side.SERVER on the server and Side.CLIENT on the client
      */
-    public final LogicalSide getPhysicalSide() {
+    public final Dist getPhysicalSide() {
         return this.proxy().getPhysicalSide();
     }
 
@@ -274,7 +277,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      * @return The effective side, on the server, this is always Side.SERVER, on the client it is dependent on the thread
      */
     public final LogicalSide getEffectiveSide() {
-        return this.proxy().getEffectiveSide();
+        return this.proxy().getLogicalSide();
     }
 
     /**
