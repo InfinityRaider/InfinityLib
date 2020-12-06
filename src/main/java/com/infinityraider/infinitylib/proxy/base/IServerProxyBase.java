@@ -19,13 +19,9 @@ public interface IServerProxyBase<C extends ConfigurationHandler.SidedModConfig>
     }
 
     @Override
-    default LogicalSide getPhysicalSide() {
+    default LogicalSide getLogicalSide() {
+        // Can never be client
         return LogicalSide.SERVER;
-    }
-
-    @Override
-    default LogicalSide getEffectiveSide() {
-        return this.getPhysicalSide();
     }
 
     @Override

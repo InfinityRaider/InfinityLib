@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public abstract class Module implements Comparable<Module> {
-    private static final HashSet<Module> activeModules = new HashSet<>();
+    private static HashSet<Module> activeModules = new HashSet<>();
 
     public static List<Module> getActiveModules() {
         return ImmutableList.copyOf(activeModules);
@@ -46,7 +46,7 @@ public abstract class Module implements Comparable<Module> {
         return Collections.emptyList();
     }
 
-    public List<ICapabilityImplementation<?,?>> getCapabilities() {
+    public List<ICapabilityImplementation> getCapabilities() {
         return Collections.emptyList();
     }
 

@@ -49,7 +49,7 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
 
     @Override
     default World getWorldFromDimension(RegistryKey<World> dimension) {
-        LogicalSide effectiveSide = this.getEffectiveSide();
+        LogicalSide effectiveSide = this.getLogicalSide();
         if(effectiveSide == LogicalSide.SERVER) {
             return ServerLifecycleHooks.getCurrentServer().getWorld(dimension);
         } else {
@@ -58,13 +58,8 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
     }
 
     @Override
-    default LogicalSide getPhysicalSide() {
-        return LogicalSide.CLIENT;
-    }
-
-    @Override
     default void queueTask(Runnable task) {
-        if(getEffectiveSide() == LogicalSide.CLIENT) {
+        if(getLogicalSide() == LogicalSide.CLIENT) {
             Minecraft.getInstance().execute(task);
         } else {
             this.getMinecraftServer().execute(task);

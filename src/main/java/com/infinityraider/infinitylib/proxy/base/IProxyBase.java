@@ -26,6 +26,7 @@ import net.minecraft.item.SpawnEggItem;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.LogicalSide;
@@ -33,6 +34,7 @@ import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -178,7 +180,8 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
 
 
     /** Registers a capability */
-    default void registerCapability(ICapabilityImplementation<?, ?> capability) {
+    @SuppressWarnings("unchecked")
+    default void registerCapability(ICapabilityImplementation capability) {
         CapabilityHandler.getInstance().registerCapability(capability);
     }
 
@@ -212,12 +215,14 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     /**
      * @return The physical side, is always Side.SERVER on the server and Side.CLIENT on the client
      */
-    LogicalSide getPhysicalSide();
+    default Dist getPhysicalSide() {
+        return FMLEnvironment.dist;
+    }
 
     /**
      * @return The effective side, on the server, this is always Side.SERVER, on the client it is dependent on the thread
      */
-    default LogicalSide getEffectiveSide() {
+    default LogicalSide getLogicalSide() {
         return EffectiveSide.get();
     }
 
