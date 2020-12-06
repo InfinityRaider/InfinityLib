@@ -22,6 +22,10 @@ import net.minecraftforge.fml.common.Mod;
 public class InfinityLib extends InfinityMod<IProxy, Config> {
     public static InfinityLib instance;
 
+    public InfinityLib() {
+        super();
+    }
+
     @Override
     public String getModId() {
         return Reference.MOD_ID;
