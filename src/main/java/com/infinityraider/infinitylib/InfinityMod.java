@@ -23,12 +23,11 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  * This interface should be implemented in a mod's main class to have the registering of Items, Blocks, Renderers, etc. handled by InfinityLib
  * When implementing this interface, the mod must also be annotated with @InfinityMod
  */
-@SuppressWarnings("unused")
 public abstract class InfinityMod<P extends IProxyBase<C>, C extends ConfigurationHandler.SidedModConfig> {
-    private InfinityLogger logger;
-    private INetworkWrapper networkWrapper;
-    private P proxy;
-    private ConfigurationHandler<C> config;
+    private final InfinityLogger logger;
+    private final INetworkWrapper networkWrapper;
+    private final P proxy;
+    private final ConfigurationHandler<C> config;
 
     @SuppressWarnings("Unchecked")
     public InfinityMod() {
@@ -39,13 +38,12 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         //Create network wrapper
         this.networkWrapper = new NetworkWrapper(this);
         //Create proxy
-        DistExecutor.callWhenOn(Dist.CLIENT, () -> () -> this.proxy = this.createClientProxy());
-        DistExecutor.callWhenOn(Dist.DEDICATED_SERVER, () -> () -> this.proxy = this.createServerProxy());
+        this.proxy = this.createProxy();
         //Create configuration
         this.config = new ConfigurationHandler<>(ModLoadingContext.get(), this.proxy().getConfigConstructor());
         //Register FML mod loading cycle listeners
         FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
-        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        IEventBus bus = context.getModEventBus();
         bus.addListener(this::onCommonSetupEvent);
         bus.addListener(this::onClientSetupEvent);
         bus.addListener(this::onDedicatedServerSetupEvent);
@@ -65,6 +63,17 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         this.proxy().registerRegistrables(this);
         //Initialize the API
         this.initializeAPI();
+    }
+
+    private P createProxy() {
+        P proxy = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> this::createClientProxy);
+        if (proxy == null) {
+            proxy = DistExecutor.unsafeCallWhenOn(Dist.DEDICATED_SERVER, () -> this::createServerProxy);
+        }
+        if (proxy == null) {
+            throw new RuntimeException("Failed to create SidedProxy");
+        }
+        return proxy;
     }
 
     private void init() {
