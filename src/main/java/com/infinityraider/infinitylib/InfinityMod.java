@@ -8,6 +8,7 @@ import com.infinityraider.infinitylib.utility.InfinityLogger;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -298,10 +299,24 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
+     * @return the client World object on the client, null on the server
+     */
+    public final World getWorldFromDimension(RegistryKey<World> dimension) {
+        return this.proxy().getWorldFromDimension(dimension);
+    }
+
+    /**
      *  @return  the entity in that World object with that id
      */
     public final Entity getEntityById(World world, int id) {
         return this.proxy().getEntityById(world, id);
+    }
+
+    /**
+     *  @return  the entity in that World object with that id
+     */
+    public final Entity getEntityById(RegistryKey<World> dimension, int id) {
+        return this.proxy().getEntityById(dimension, id);
     }
 
     /** Queues a task to be executed on this side */

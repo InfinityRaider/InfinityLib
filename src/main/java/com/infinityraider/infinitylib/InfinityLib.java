@@ -11,11 +11,8 @@ import com.infinityraider.infinitylib.proxy.ServerProxy;
 import com.infinityraider.infinitylib.reference.Reference;
 import com.infinityraider.infinitylib.sound.MessagePlaySound;
 import com.infinityraider.infinitylib.sound.MessageStopSound;
-import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod(Reference.MOD_ID)
@@ -55,10 +52,5 @@ public class InfinityLib extends InfinityMod<IProxy, Config> {
         wrapper.registerMessage(MessagePlaySound.class);
         wrapper.registerMessage(MessageStopSound.class);
         Module.getActiveModules().stream().sorted().forEach(m -> m.registerMessages(wrapper));
-    }
-
-    @SubscribeEvent //ModBus, can't use addListener due to nested genetics.
-    public void registerRecipeSerialziers(RegistryEvent.Register<IRecipeSerializer<?>> event) {
-
     }
 }

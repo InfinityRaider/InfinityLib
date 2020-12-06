@@ -28,7 +28,7 @@ public class ModuleSynchronizedEffects extends Module {
     }
 
     @Override
-    public List<ICapabilityImplementation> getCapabilities() {
+    public List<ICapabilityImplementation<?,?>> getCapabilities() {
         return ImmutableList.of(CAPABILITY);
     }
 }

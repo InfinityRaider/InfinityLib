@@ -84,13 +84,13 @@ public class PathFindJob extends Path {
     public PathFindJob cancel() {
         this.cancelled = true;
         this.entity().getNavigator().setPath(null, this.speed());
-        InfinityLib.instance.proxy().queueTask(this.callback::onJobCancelled);
+        InfinityLib.instance.queueTask(this.callback::onJobCancelled);
         return this;
     }
 
     public PathFindJob finish(Path path) {
         this.entity().getNavigator().setPath(path, this.speed());
-        InfinityLib.instance.proxy().queueTask(() -> this.callback.onJobFinished(this.entity(), path));
+        InfinityLib.instance.queueTask(() -> this.callback.onJobFinished(this.entity(), path));
         this.cancelled = true;
         return this;
     }
@@ -98,7 +98,7 @@ public class PathFindJob extends Path {
     public PathFindJob fail() {
         this.cancelled = true;
         this.entity().getNavigator().setPath(null, this.speed());
-        InfinityLib.instance.proxy().queueTask(this.callback::onJobFailed);
+        InfinityLib.instance.queueTask(this.callback::onJobFailed);
         return this;
     }
 

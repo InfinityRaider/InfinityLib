@@ -137,7 +137,7 @@ public class PacketBufferUtil {
             return null;
         }
         RegistryKey<World> dimension = readRegistryKey(buf);
-        return InfinityLib.instance.proxy().getEntityById(dimension, id);
+        return InfinityLib.instance.getEntityById(dimension, id);
     }
 
     public static PacketBuffer writeTileEntity(PacketBuffer buf, TileEntity tile) {
@@ -148,7 +148,7 @@ public class PacketBufferUtil {
     public static TileEntity readTileEntity(PacketBuffer buf) {
         RegistryKey<World> dimension = readRegistryKey(buf);
         BlockPos pos = readBlockPos(buf);
-        World world = InfinityLib.instance.proxy().getWorldFromDimension(dimension);
+        World world = InfinityLib.instance.getWorldFromDimension(dimension);
         return world == null ? null : world.getTileEntity(pos);
     }
 
