@@ -5,8 +5,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
-import java.util.concurrent.Callable;
-
 public interface ICapabilityImplementation<C extends ICapabilityProvider, V extends ISerializable> {
     Capability<V> getCapability();
 
