@@ -18,7 +18,7 @@ public class EffectBase extends Effect implements IInfinityEffect {
 
     protected EffectBase(String name, EffectType type, int liquidColor) {
         super(type, liquidColor);
-        this.name = "effect." + name;
+        this.name = name;
     }
 
     @Nonnull
