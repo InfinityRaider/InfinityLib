@@ -69,11 +69,14 @@ public class FallbackIngredient extends Ingredient {
 
     @Override
     public JsonElement serialize() {
-        JsonObject json = new JsonObject();
+        JsonObject rootJson = new JsonObject();
+        JsonObject ingredientJson = new JsonObject();
         ResourceLocation rl = ItemTags.getCollection().getDirectIdFromTag(this.getTag());
-        json.addProperty("tag", rl.toString());
-        json.add("fallback", this.getFallback().serialize());
-        return json;
+        ingredientJson.addProperty("tag", rl.toString());
+        ingredientJson.add("fallback", this.getFallback().serialize());
+        rootJson.add("ingredient", ingredientJson);
+        rootJson.addProperty("type", InfinityLib.instance.getModId() + ":fallback");
+        return rootJson;
     }
 
     @Override
@@ -114,15 +117,23 @@ public class FallbackIngredient extends Ingredient {
 
         @Override
         public FallbackIngredient parse(JsonObject json) {
-            if(!json.has("tag")) {
+            if(!json.has("ingredient")) {
+                throw new JsonParseException("com.infinityraider.infinitylib.crafting.FallBackIngredient requires an ingredient element");
+            }
+            JsonElement element = json.get("ingredient");
+            if(!(element instanceof JsonObject)) {
+                throw new JsonParseException("com.infinityraider.infinitylib.crafting.FallBackIngredient expected an object for ingredient");
+            }
+            JsonObject ingredientJson = (JsonObject) element;
+            if(!ingredientJson.has("tag")) {
                 throw new JsonParseException("com.infinityraider.infinitylib.crafting.FallBackIngredient requires a tag element");
             }
-            if(!json.has("fallback")) {
+            if(!ingredientJson.has("fallback")) {
                 throw new JsonParseException("com.infinityraider.infinitylib.crafting.FallBackIngredient requires a fallback element");
             }
-            ResourceLocation rl = new ResourceLocation(JSONUtils.getString(json, "tag"));
+            ResourceLocation rl = new ResourceLocation(JSONUtils.getString(ingredientJson, "tag"));
             ITag<Item> tag = ItemTags.getCollection().getTagByID(rl);
-            Ingredient fallback = CraftingHelper.getIngredient(json.get("fallback"));
+            Ingredient fallback = CraftingHelper.getIngredient(ingredientJson.get("fallback"));
             return new FallbackIngredient(tag, fallback);
         }
 
