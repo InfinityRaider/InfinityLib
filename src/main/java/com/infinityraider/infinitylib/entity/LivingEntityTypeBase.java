@@ -50,17 +50,33 @@ public class LivingEntityTypeBase<T extends LivingEntity> extends EntityTypeBase
     }
 
     public static <T extends LivingEntity> Builder<T> livingEntityTypeBuilder(
-            String name, Class<T> entityClass, EntityClassification classification, EntitySize size) {
-        return new Builder<>(name, entityClass, classification, size);
+            String name, Class<T> entityClass, EntityType.IFactory<T> factory,
+            EntityClassification classification, EntitySize size) {
+
+        return new Builder<>(name, entityClass, factory, classification, size);
+    }
+
+    public static <T extends LivingEntity> EntityTypeBase.Builder<T> livingEntityTypeBuilder(
+            String name, Class<T> entityClass, BiFunction<FMLPlayMessages.SpawnEntity, World, T>  clientFactory,
+            EntityClassification classification, EntitySize size) {
+
+        return new Builder<>(name, entityClass, clientFactory, classification, size);
     }
 
     public static class Builder<T extends LivingEntity> extends EntityTypeBase.Builder<T> {
         private Supplier<AttributeModifierMap> attributeSupplier;
         private SpawnEggData spawnEggData;
-        private Set<SpawnRule> spawnRules;
+        private final Set<SpawnRule> spawnRules;
 
-        protected Builder(String name, Class<T> entityClass, EntityClassification classification, EntitySize size) {
-            super(name, entityClass, classification, size);
+        protected Builder(String name, Class<T> entityClass, EntityType.IFactory<T> factory,
+                          EntityClassification classification, EntitySize size) {
+            super(name, entityClass, factory, classification, size);
+            this.spawnRules = Sets.newIdentityHashSet();
+        }
+
+        protected Builder(String name, Class<T> entityClass,  BiFunction<FMLPlayMessages.SpawnEntity, World, T> factory,
+                          EntityClassification classification, EntitySize size) {
+            super(name, entityClass, factory, classification, size);
             this.spawnRules = Sets.newIdentityHashSet();
         }
 

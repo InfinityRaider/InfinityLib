@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.entity.*;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
+import net.minecraft.util.datafix.TypeReferences;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.network.FMLPlayMessages;
@@ -59,8 +62,17 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
     }
 
     public static <T extends Entity> Builder<T> entityTypeBuilder(
-            String name, Class<T> entityClass, EntityClassification classification, EntitySize size) {
-        return new Builder<>(name, entityClass, classification, size);
+            String name, Class<T> entityClass, EntityType.IFactory<T> clientFactory,
+            EntityClassification classification, EntitySize size) {
+
+        return new Builder<>(name, entityClass, clientFactory, classification, size);
+    }
+
+    public static <T extends Entity> Builder<T> entityTypeBuilder(
+            String name, Class<T> entityClass,  BiFunction<FMLPlayMessages.SpawnEntity, World, T>  clientFactory,
+            EntityClassification classification, EntitySize size) {
+
+        return new Builder<>(name, entityClass, clientFactory, classification, size);
     }
 
     public static class Builder<T extends Entity> {
@@ -82,17 +94,27 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
         protected BiFunction<FMLPlayMessages.SpawnEntity, World, T> customClientFactory;
         protected IRenderFactory<T> renderFactory;
 
-        protected Builder(String name, Class<T> entityClass, EntityClassification classification, EntitySize size) {
+        private Builder(String name, Class<T> entityClass, EntityClassification classification, EntitySize size) {
             this.name = name;
             this.entityClass = entityClass;
             this.classification = classification;
             this.size = size;
             this.blocks = Sets.newIdentityHashSet();
             this.aggressors = Sets.newIdentityHashSet();
-
-            this.factory = (type, world) -> null;
             this.trackingRange = 32;
             this.updateInterval = 1;
+        }
+
+        protected Builder(String name, Class<T> entityClass, EntityType.IFactory<T> factory,
+                          EntityClassification classification, EntitySize size) {
+            this(name, entityClass, classification, size);
+            this.factory = factory;
+        }
+
+        protected Builder(String name, Class<T> entityClass, BiFunction<FMLPlayMessages.SpawnEntity, World, T> factory,
+                          EntityClassification classification, EntitySize size) {
+            this(name, entityClass, classification, size);
+            this.customClientFactory = factory;
         }
 
         public EntityTypeBase<T> build() {

@@ -3,7 +3,7 @@ package com.infinityraider.infinitylib.proxy.base;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
-import com.infinityraider.infinitylib.entity.EntityRenderFactoryEmpty;
+import com.infinityraider.infinitylib.entity.EmptyEntityRenderFactory;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
@@ -29,7 +29,7 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
             ReflectionHelper.forEachValueIn(entityRegistry, IInfinityEntityType.class, object -> {
                 if (object.getRenderFactory() == null) {
                     InfinityLib.instance.getLogger().info("", "No entity rendering factory was found for entity " + object.getInternalName());
-                    RenderingRegistry.registerEntityRenderingHandler(object.cast(), EntityRenderFactoryEmpty.getInstance());
+                    RenderingRegistry.registerEntityRenderingHandler(object.cast(), EmptyEntityRenderFactory.getInstance());
                 } else {
                     RenderingRegistry.registerEntityRenderingHandler(object.cast(), object.getRenderFactory());
                 }
