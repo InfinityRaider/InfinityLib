@@ -8,15 +8,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 
-public class EntityRenderFactoryEmpty implements IRenderFactory<Entity> {
-    private static final EntityRenderFactoryEmpty INSTANCE = new EntityRenderFactoryEmpty();
+public class EmptyEntityRenderFactory implements IRenderFactory<Entity> {
+    private static final EmptyEntityRenderFactory INSTANCE = new EmptyEntityRenderFactory();
 
     @SuppressWarnings("unchecked")
     public static <T extends Entity> IRenderFactory<T> getInstance() {
         return (IRenderFactory<T>) INSTANCE;
     }
 
-    private EntityRenderFactoryEmpty() {}
+    private EmptyEntityRenderFactory() {}
 
     @Override
     @OnlyIn(Dist.CLIENT)
