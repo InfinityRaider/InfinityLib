@@ -109,8 +109,12 @@ public class FallbackIngredient extends Ingredient {
 
         @Override
         public FallbackIngredient parse(PacketBuffer buffer) {
-            ResourceLocation rl = buffer.readResourceLocation();
-            ITag<Item> tag = ItemTags.getCollection().getTagByID(rl);
+            boolean flag = buffer.readBoolean();
+            ITag<Item> tag = null;
+            if(flag) {
+                ResourceLocation rl = buffer.readResourceLocation();
+                tag = ItemTags.getCollection().getTagByID(rl);
+            }
             Ingredient fallback = Ingredient.read(buffer);
             return new FallbackIngredient(tag, fallback);
         }
@@ -140,7 +144,11 @@ public class FallbackIngredient extends Ingredient {
         @Override
         public void write(PacketBuffer buffer, FallbackIngredient ingredient) {
             ResourceLocation rl = ItemTags.getCollection().getDirectIdFromTag(ingredient.getTag());
-            buffer.writeResourceLocation(rl);
+            boolean flag = rl != null;
+            buffer.writeBoolean(flag);
+            if(flag) {
+                buffer.writeResourceLocation(rl);
+            }
             ingredient.getFallback().write(buffer);
         }
     }
