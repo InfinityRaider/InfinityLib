@@ -33,6 +33,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
 import net.minecraftforge.fml.event.lifecycle.*;
+import net.minecraftforge.fml.event.server.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.DeferredRegister;
@@ -205,6 +206,14 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     default void onInterModProcessEvent(final InterModProcessEvent event) {}
 
     default void onModLoadCompleteEvent(final FMLLoadCompleteEvent event) {}
+
+    default void onServerStartingEvent(final FMLServerStartingEvent event) {};
+
+    default void onServerAboutToStartEvent(final FMLServerAboutToStartEvent event) {};
+
+    default void onServerStoppingEvent(final FMLServerStoppingEvent event) {};
+
+    default void onServerStoppedEvent(final FMLServerStoppedEvent event) {};
 
     /**
      * ---------------

@@ -14,10 +14,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.*;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
@@ -259,6 +264,33 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         this.proxy().onModLoadCompleteEvent(event);
     }
 
+    @SubscribeEvent
+    @SuppressWarnings("unused")
+    private void onServerStartingEvent(final FMLServerStartingEvent event) {
+        //forward to proxy
+        this.proxy().onServerStartingEvent(event);
+    }
+
+    @SubscribeEvent
+    @SuppressWarnings("unused")
+    private void onServerAboutToStartEvent(final FMLServerAboutToStartEvent event) {
+        //forward to proxy
+        this.proxy().onServerAboutToStartEvent(event);
+    }
+
+    @SubscribeEvent
+    @SuppressWarnings("unused")
+    private void onServerStoppingEvent(final FMLServerStoppingEvent event) {
+        //forward to proxy
+        this.proxy().onServerStoppingEvent(event);
+    }
+
+    @SubscribeEvent
+    @SuppressWarnings("unused")
+    private void onServerStoppedEvent(final FMLServerStoppedEvent event) {
+        //forward to proxy
+        this.proxy().onServerStoppedEvent(event);
+    }
 
     /**
      * --------------------------
