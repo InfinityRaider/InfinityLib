@@ -41,7 +41,7 @@ public class FallbackIngredient extends Ingredient {
 
     private Ingredient getActualIngredient() {
         if(this.ingredient == null) {
-            if(getTag().getAllElements().size() > 0) {
+            if(this.getTag() != null && this.getTag().getAllElements().size() > 0) {
                 this.ingredient = Ingredient.fromTag(this.getTag());
             } else if (this.getFallback().hasNoMatchingItems()) {
                 return EMPTY;
