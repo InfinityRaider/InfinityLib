@@ -3,7 +3,7 @@ loaderVersion="[35,)"
 license="license.txt"
 issueTrackerURL="https://github.com/InfinityRaider/InfinityLib/issues/"
 
-[[mods]] #mandatory
+[[mods]]
 modId="infinitylib"
 version="1.16.4-2.0.0"
 displayName="InfinityLib"
@@ -15,7 +15,7 @@ description='''
 Library Mod.
 '''
 
-[[dependencies.examplemod]]
+[[dependencies.infinitylib]]
     modId="forge"
     mandatory=true
     versionRange="[35,)"
