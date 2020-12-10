@@ -88,6 +88,7 @@ public class KeyEventHandler {
         private KeyTracker(int key) {
             this.key = key;
             this.listeners = Sets.newIdentityHashSet();
+            this.status = KeyStatus.UNPRESSED;
             this.modifier = -1;
             this.count = 0;
         }

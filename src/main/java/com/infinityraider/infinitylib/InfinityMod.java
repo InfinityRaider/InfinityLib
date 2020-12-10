@@ -231,63 +231,63 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      * --------------------------
      */
 
-    private void onCommonSetupEvent(final FMLCommonSetupEvent event) {
+    public final void onCommonSetupEvent(final FMLCommonSetupEvent event) {
         //self init
         this.init();
         //forward to proxy
         this.proxy().onCommonSetupEvent(event);
     }
 
-    private void onClientSetupEvent(final FMLClientSetupEvent event) {
+    public final void onClientSetupEvent(final FMLClientSetupEvent event) {
         //self init
         this.initClient();
         //forward to proxy
         this.proxy().onClientSetupEvent(event);}
 
-    private void onDedicatedServerSetupEvent(final FMLDedicatedServerSetupEvent event) {
+    public final void onDedicatedServerSetupEvent(final FMLDedicatedServerSetupEvent event) {
         //forward to proxy
         this.proxy().onDedicatedServerSetupEvent(event);
     }
 
-    private void onInterModEnqueueEvent(final InterModEnqueueEvent event) {
+    public final void onInterModEnqueueEvent(final InterModEnqueueEvent event) {
         //forward to proxy
         this.proxy().onInterModEnqueueEvent(event);
     }
 
-    private void onInterModProcessEvent(final InterModProcessEvent event) {
+    public final void onInterModProcessEvent(final InterModProcessEvent event) {
         //forward to proxy
         this.proxy().onInterModProcessEvent(event);
     }
 
-    private void onModLoadCompleteEvent(final FMLLoadCompleteEvent event) {
+    public final void onModLoadCompleteEvent(final FMLLoadCompleteEvent event) {
         //forward to proxy
         this.proxy().onModLoadCompleteEvent(event);
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    private void onServerStartingEvent(final FMLServerStartingEvent event) {
+    public final void onServerStartingEvent(final FMLServerStartingEvent event) {
         //forward to proxy
         this.proxy().onServerStartingEvent(event);
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    private void onServerAboutToStartEvent(final FMLServerAboutToStartEvent event) {
+    public final void onServerAboutToStartEvent(final FMLServerAboutToStartEvent event) {
         //forward to proxy
         this.proxy().onServerAboutToStartEvent(event);
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    private void onServerStoppingEvent(final FMLServerStoppingEvent event) {
+    public final void onServerStoppingEvent(final FMLServerStoppingEvent event) {
         //forward to proxy
         this.proxy().onServerStoppingEvent(event);
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    private void onServerStoppedEvent(final FMLServerStoppedEvent event) {
+    public final void onServerStoppedEvent(final FMLServerStoppedEvent event) {
         //forward to proxy
         this.proxy().onServerStoppedEvent(event);
     }

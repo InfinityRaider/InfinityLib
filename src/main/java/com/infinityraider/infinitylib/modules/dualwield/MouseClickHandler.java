@@ -37,14 +37,21 @@ public class MouseClickHandler {
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public void onLeftClick(InputEvent.MouseInputEvent event) {
+    public void onLeftClick(InputEvent.RawMouseEvent event) {
+        if(Minecraft.getInstance().currentScreen != null) {
+            // We do not want to do anything while a GUI is open
+            return;
+        }
         ClientPlayerEntity player = Minecraft.getInstance().player;
+        if(player == null) {
+            return;
+        }
         ItemStack stack = player.getHeldItemOffhand();
         if(event.getButton() != LMB) {
             return;
         }
         leftButtonPressed = !leftButtonPressed;
-        if(stack == null) {
+        if(stack == null || stack.isEmpty()) {
             return;
         }
         if(stack.getItem() instanceof IDualWieldedWeapon) {
@@ -64,14 +71,21 @@ public class MouseClickHandler {
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public void onRightClick(InputEvent.MouseInputEvent event) {
+    public void onRightClick(InputEvent.RawMouseEvent event) {
+        if(Minecraft.getInstance().currentScreen != null) {
+            // We do not want to do anything while a GUI is open
+            return;
+        }
         ClientPlayerEntity player = Minecraft.getInstance().player;
+        if(player == null) {
+            return;
+        }
         ItemStack stack = player.getHeldItemMainhand();
         if(event.getButton() != RMB) {
             return;
         }
         rightButtonPressed = !rightButtonPressed;
-        if(stack == null) {
+        if(stack == null || stack.isEmpty()) {
             return;
         }
         if(stack.getItem() instanceof IDualWieldedWeapon) {
