@@ -12,13 +12,11 @@ import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemModelsProperties;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
@@ -49,9 +47,8 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
         }
         ReflectionHelper.forEachValueIn(itemRegistry, IInfinityItem.class, object -> {
             if(object instanceof IInfinityItemWithProperties) {
-                ((IInfinityItemWithProperties) object).getProperties().forEach(prop ->{
-                    ItemModelsProperties.registerProperty(object.cast(), prop.getId(), prop::getValue);
-                });
+                ((IInfinityItemWithProperties) object).getProperties().forEach(prop ->
+                        ItemModelsProperties.registerProperty(object.cast(), prop.getId(), prop::getValue));
             }
         });
     }

@@ -62,8 +62,6 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         this.proxy().activateRequiredModules();
         // Call for deferred, automatic registration of IInfinityRegistrable objects
         this.proxy().registerRegistrables(this);
-        // Register event handlers
-        this.proxy().registerEventHandlers();
         // Initialize the API
         this.initializeAPI();
     }
@@ -81,6 +79,8 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     private void init() {
+        // Register event handlers
+        this.proxy().registerEventHandlers();
         // Register capabilities
         this.proxy().registerCapabilities();
         // Register messages

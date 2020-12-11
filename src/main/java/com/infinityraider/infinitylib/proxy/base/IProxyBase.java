@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.proxy.base;
 
+import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.IInfinityBlockWithTile;
@@ -176,6 +177,7 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
 
     /** Registers an event handler */
     default void registerEventHandler(Object handler) {
+        InfinityLib.instance.getLogger().debug("Registering event handler: " + handler.getClass().getName());
         MinecraftForge.EVENT_BUS.register(handler);
     }
 
