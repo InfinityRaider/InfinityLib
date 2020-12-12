@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.MessageElement;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.RegistryKey;
@@ -137,6 +138,19 @@ public abstract class MessageBase {
      */
     public final MessageBase sendToAll() {
         this.getNetworkWrapper().sendToAll(this);
+        return this;
+    }
+
+    /**
+     * Sends this message to one particular connected client
+     * only valid if this message is handled on the client
+     */
+    public final MessageBase sendTo(PlayerEntity player) {
+        if(player instanceof ServerPlayerEntity) {
+            this.getNetworkWrapper().sendTo(this, (ServerPlayerEntity) player);
+        } else {
+            InfinityLib.instance.getLogger().error("Can not send message directly to a player from a client");
+        }
         return this;
     }
 
