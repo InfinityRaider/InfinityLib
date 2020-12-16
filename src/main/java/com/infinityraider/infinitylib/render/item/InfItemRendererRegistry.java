@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.render.item;
 
 import com.google.common.collect.Maps;
-import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -17,24 +16,22 @@ import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 @OnlyIn(Dist.CLIENT)
-public class ItemRendererRegistry {
-    private static final ItemRendererRegistry INSTANCE = new ItemRendererRegistry();
+public class InfItemRendererRegistry {
+    private static final InfItemRendererRegistry INSTANCE = new InfItemRendererRegistry();
 
-    public static ItemRendererRegistry getInstance() {
+    public static InfItemRendererRegistry getInstance() {
         return INSTANCE;
     }
 
     private final Map<Item, InfItemRenderer> registry;
-    private final Dispatcher dispatcher;
     private final InfItemRenderer defaultRenderer;
 
-    private ItemRendererRegistry() {
+    private InfItemRendererRegistry() {
         this.registry = Maps.newIdentityHashMap();
-        this.dispatcher = new Dispatcher(this);
         this.defaultRenderer = ItemStackTileEntityRenderer.instance::func_239207_a_;
     }
 
-    public ItemRendererRegistry register(IInfinityItem item) {
+    public InfItemRendererRegistry register(IInfinityItem item) {
         InfItemRenderer renderer = item.getItemRenderer();
         if(renderer != null) {
             this.registry.put(item.cast(), renderer);
@@ -47,20 +44,28 @@ public class ItemRendererRegistry {
     }
 
     public Supplier<Callable<ItemStackTileEntityRenderer>> getISTER() {
-        return () -> () -> this.dispatcher;
+        return () -> () -> new Dispatcher(this);
     }
 
     private static class Dispatcher extends ItemStackTileEntityRenderer {
-        private final ItemRendererRegistry registry;
+        private final InfItemRendererRegistry registry;
+        private InfItemRenderer renderer;
 
-        private Dispatcher(ItemRendererRegistry registry) {
+        private Dispatcher(InfItemRendererRegistry registry) {
             this.registry = registry;
+        }
+
+        private InfItemRenderer getRenderer(ItemStack stack) {
+            if(this.renderer == null) {
+                this.renderer = this.registry.getRenderer(stack);
+            }
+            return this.renderer;
         }
 
         @Override
         public void func_239207_a_(ItemStack stack, ItemCameraTransforms.TransformType perspective, MatrixStack transforms,
                                    IRenderTypeBuffer buffer, int light, int overlay) {
-            this.registry.getRenderer(stack).render(stack, perspective, transforms, buffer, light, overlay);
+            this.getRenderer(stack).render(stack, perspective, transforms, buffer, light, overlay);
         }
     }
 }

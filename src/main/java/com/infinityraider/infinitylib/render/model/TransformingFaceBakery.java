@@ -17,10 +17,10 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 @OnlyIn(Dist.CLIENT)
-public class InfFaceBakery extends FaceBakery {
-    private static final InfFaceBakery INSTANCE = new InfFaceBakery();
+public class TransformingFaceBakery extends FaceBakery {
+    private static final TransformingFaceBakery INSTANCE = new TransformingFaceBakery();
 
-    public static InfFaceBakery getInstance() {
+    public static TransformingFaceBakery getInstance() {
         return INSTANCE;
     }
 
@@ -28,7 +28,7 @@ public class InfFaceBakery extends FaceBakery {
     private TransformationMatrix matrix;
     private boolean initialized;
 
-    private InfFaceBakery() {}
+    private TransformingFaceBakery() {}
 
     public void init() {
         this.initialized = this.initialized || this.hijackVanillaFaceBakery();

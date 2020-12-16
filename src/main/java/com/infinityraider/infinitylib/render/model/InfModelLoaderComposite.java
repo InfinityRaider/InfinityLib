@@ -37,12 +37,12 @@ import static net.minecraft.client.renderer.model.ItemTransformVec3f.Deserialize
  * Once Forge decides to implement transformations for the different sub-models, this class becomes redundant.
  */
 @OnlyIn(Dist.CLIENT)
-public class InfCompositeModelLoader implements InfModelLoader<InfCompositeModelLoader.Geometry> {
-    public static final InfCompositeModelLoader INSTANCE = new InfCompositeModelLoader();
+public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderComposite.Geometry> {
+    public static final InfModelLoaderComposite INSTANCE = new InfModelLoaderComposite();
 
     private static final ResourceLocation ID = new ResourceLocation(InfinityLib.instance.getModId(), "composite");
 
-    private InfCompositeModelLoader() {
+    private InfModelLoaderComposite() {
     }
 
     @Override
@@ -195,10 +195,10 @@ public class InfCompositeModelLoader implements InfModelLoader<InfCompositeModel
             //Discern between Forge and Vanilla models, Forge handles the transformation fine, however, Vanilla does not
             if (this.model.customData.getCustomGeometry() == null) {
                 //Vanilla: use the identity transformation, but intercept baked quads and transform them right after baking
-                InfFaceBakery.getInstance().startTransformingQuads(this.modelTransform.getRotation());
+                TransformingFaceBakery.getInstance().startTransformingQuads(this.modelTransform.getRotation());
                 baked = model.bakeModel(bakery, spriteGetter, new ModelTransformComposition(SimpleModelTransform.IDENTITY, modelTransform,
                         this.modelTransform.isUvLock() || modelTransform.isUvLock()), modelLocation);
-                InfFaceBakery.getInstance().stopTransformingQuads();
+                TransformingFaceBakery.getInstance().stopTransformingQuads();
             } else {
                 //Forge: carry on with the predefined transformation
                 baked = model.bakeModel(bakery, spriteGetter, new ModelTransformComposition(this.modelTransform, modelTransform,
