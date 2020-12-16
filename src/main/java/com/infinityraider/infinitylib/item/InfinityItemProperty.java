@@ -1,4 +1,4 @@
-package com.infinityraider.infinitylib.item.property;
+package com.infinityraider.infinitylib.item;
 
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;

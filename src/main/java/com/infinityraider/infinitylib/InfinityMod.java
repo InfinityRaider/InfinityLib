@@ -57,6 +57,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         bus.addListener(this::onInterModEnqueueEvent);
         bus.addListener(this::onInterModProcessEvent);
         bus.addListener(this::onModLoadCompleteEvent);
+        this.proxy().registerFMLEventHandlers(bus);
         MinecraftForge.EVENT_BUS.register(this);
         //Activate required modules
         this.proxy().activateRequiredModules();

@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.render.entity;
 
+import com.infinityraider.infinitylib.render.IRenderUtilities;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -18,7 +19,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import static net.minecraft.inventory.container.PlayerContainer.LOCATION_BLOCKS_TEXTURE;
 
-public abstract class RenderEntityAsItem<T extends Entity> extends EntityRenderer<T> {
+public abstract class RenderEntityAsItem<T extends Entity> extends EntityRenderer<T> implements IRenderUtilities {
     private final ItemStack item;
 
     public RenderEntityAsItem(EntityRendererManager renderManager, ItemStack item) {
@@ -41,7 +42,7 @@ public abstract class RenderEntityAsItem<T extends Entity> extends EntityRendere
     public void render(T entity, float yaw, float partialTicks, MatrixStack transforms, IRenderTypeBuffer buffer, int light) {
         transforms.push();
 
-        transforms.rotate(this.renderManager.getCameraOrientation());
+        transforms.rotate(this.getCameraOrientation());
         transforms.rotate(ROTATION);
         this.applyTransformations(entity, yaw, partialTicks, transforms);
         this.getItemRenderer().renderItem(item, ItemCameraTransforms.TransformType.GROUND, light, OverlayTexture.NO_OVERLAY, transforms, buffer);
@@ -55,5 +56,10 @@ public abstract class RenderEntityAsItem<T extends Entity> extends EntityRendere
     @ParametersAreNonnullByDefault
     public ResourceLocation getEntityTexture(T entity) {
         return LOCATION_BLOCKS_TEXTURE;
+    }
+
+    @Override
+    public EntityRendererManager getEntityRendererManager() {
+        return this.renderManager;
     }
 }

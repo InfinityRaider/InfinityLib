@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.collect.ImmutableList;
+import com.infinityraider.infinitylib.render.IRenderUtilities;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -18,7 +19,7 @@ import java.util.function.Function;
 
 @OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
-public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprite> {
+public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprite>, IRenderUtilities {
 
     /**
      * Method to start constructing quads
@@ -326,9 +327,9 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
     /**
      * Binds a texture to use when rendering
      *
-     * @param loc ResourceLocation pointing towards the texture
+     * @param location ResourceLocation pointing towards the texture
      */
-    void bindTexture(ResourceLocation loc);
+    void bindTexture(ResourceLocation location);
 
     /**
      * Sets the normal for the tessellator

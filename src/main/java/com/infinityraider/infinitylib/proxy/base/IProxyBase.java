@@ -30,6 +30,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
@@ -42,8 +43,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     /**
@@ -175,6 +178,12 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
      */
     void registerCapabilities();
 
+    /**
+     * Called to register event handlers for FML IModBusEvent events
+     * @param bus the bus for the mod
+     */
+    default void registerFMLEventHandlers(IEventBus bus) {}
+
     /** Registers an event handler */
     default void registerEventHandler(Object handler) {
         InfinityLib.instance.getLogger().debug("Registering event handler: " + handler.getClass().getName());
@@ -283,4 +292,9 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
 
     /** Queues a task to be executed on this side */
     void queueTask(Runnable task);
+
+    /** Sets the ItemStackTileEntityRenderer in the properties on the client side */
+    default Item.Properties setItemRenderer(Item.Properties properties) {
+        return properties;
+    }
 }

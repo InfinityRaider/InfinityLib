@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.infinityraider.infinitylib.reference.Constants;
-import com.infinityraider.infinitylib.render.RenderUtil;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.BakedQuad;
@@ -163,7 +162,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     @Override
     public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite sprite, float u, float v) {
         if (sprite == null) {
-            sprite = RenderUtil.getMissingSprite();
+            sprite = this.getMissingSprite();
         }
         this.addVertexWithUV(x, y, z, sprite.getInterpolatedU(u), sprite.getInterpolatedV(v));
     }
@@ -541,13 +540,13 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         if (source != null) {
             return ModelLoader.defaultTextureGetter().apply(source);
         } else {
-            return RenderUtil.getMissingSprite();
+            return this.getMissingSprite();
         }
     }
 
     @Override
-    public void bindTexture(ResourceLocation loc) {
-        Minecraft.getInstance().getTextureManager().bindTexture(loc);
+    public void bindTexture(ResourceLocation location) {
+        Minecraft.getInstance().getTextureManager().bindTexture(location);
     }
 
     @Override

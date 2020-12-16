@@ -7,13 +7,14 @@ import com.infinityraider.infinitylib.config.ConfigurationHandler;
 import com.infinityraider.infinitylib.entity.EmptyEntityRenderFactory;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
-import com.infinityraider.infinitylib.item.property.IInfinityItemWithProperties;
+import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemModelsProperties;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
@@ -46,10 +47,10 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
             return;
         }
         ReflectionHelper.forEachValueIn(itemRegistry, IInfinityItem.class, object -> {
-            if(object instanceof IInfinityItemWithProperties) {
-                ((IInfinityItemWithProperties) object).getProperties().forEach(prop ->
-                        ItemModelsProperties.registerProperty(object.cast(), prop.getId(), prop::getValue));
-            }
+            // Register custom item renderers
+            InfItemRendererRegistry.getInstance().register(object);
+            // Register model properties
+            object.getModelProperties().forEach(prop -> ItemModelsProperties.registerProperty(object.cast(), prop.getId(), prop::getValue));
         });
     }
 
@@ -99,5 +100,10 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
     @Override
     default SidedSoundDelegate getSoundDelegate() {
         return new SoundDelegateClient(Minecraft.getInstance().getSoundHandler());
+    }
+
+    @Override
+    default Item.Properties setItemRenderer(Item.Properties properties) {
+        return properties.setISTER(InfItemRendererRegistry.getInstance().getISTER());
     }
 }

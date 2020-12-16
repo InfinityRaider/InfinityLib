@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.collect.ImmutableList;
-import com.infinityraider.infinitylib.render.RenderUtil;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -163,7 +162,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     @Override
     public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite sprite, float u, float v) {
         if (sprite == null) {
-            sprite = RenderUtil.getMissingSprite();
+            sprite = this.getMissingSprite();
         }
         this.icon = sprite;
         this.addVertexWithUV(x, y, z, sprite.getInterpolatedU(u), sprite.getInterpolatedV(v));
