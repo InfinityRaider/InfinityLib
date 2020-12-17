@@ -35,7 +35,7 @@ public class TransformingFaceBakery extends FaceBakery {
 
 
     // Previous object in Vanilla's FaceBakery seat, calls are forwarded to this, so we don't break someone else's shit
-    // in case they else over before us (hijackers together, strong)
+    // in case they took over before us (hijackers together, strong)
     private final FaceBakery pilot;
 
     // Thread-safety first
