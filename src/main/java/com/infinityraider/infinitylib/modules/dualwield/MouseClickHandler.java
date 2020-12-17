@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
-import com.infinityraider.infinitylib.modules.keyboard.ModuleKeyboard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.multiplayer.PlayerController;
@@ -15,7 +14,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.lwjgl.glfw.GLFW;
 
 @OnlyIn(Dist.CLIENT)
 public class MouseClickHandler {
@@ -56,8 +54,8 @@ public class MouseClickHandler {
         }
         if(stack.getItem() instanceof IDualWieldedWeapon) {
             if(leftButtonPressed) {
-                boolean shift = ModuleKeyboard.getInstance().isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT);
-                boolean ctrl = ModuleKeyboard.getInstance().isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL);
+                boolean shift = Minecraft.getInstance().gameSettings.keyBindSneak.isKeyDown();
+                boolean ctrl = Minecraft.getInstance().gameSettings.keyBindSprint.isKeyDown();
                 IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
                 attackEntity(weapon, player, stack, true, shift, ctrl, Hand.OFF_HAND);
                 weapon.onItemUsed(stack, player, shift, ctrl, Hand.OFF_HAND);

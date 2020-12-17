@@ -2,7 +2,6 @@ package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.modules.Module;
-import com.infinityraider.infinitylib.modules.keyboard.ModuleKeyboard;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
@@ -39,11 +38,6 @@ public class ModuleDualWield extends Module {
     }
 
     private ModuleDualWield() {}
-
-    @Override
-    public List<Module> requiredModules() {
-        return ImmutableList.of(ModuleKeyboard.getInstance());
-    }
 
     @Override
     public void registerMessages(INetworkWrapper wrapper) {
