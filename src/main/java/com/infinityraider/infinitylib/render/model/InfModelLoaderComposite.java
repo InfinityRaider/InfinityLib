@@ -195,10 +195,10 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
             //Discern between Forge and Vanilla models, Forge handles the transformation fine, however, Vanilla does not
             if (this.model.customData.getCustomGeometry() == null) {
                 //Vanilla: use the identity transformation, but intercept baked quads and transform them right after baking
-                TransformingFaceBakery.getInstance().startTransformingQuads(this.modelTransform.getRotation());
+                TransformingFaceBakery.getInstance().pushQuadTransform(this.modelTransform.getRotation());
                 baked = model.bakeModel(bakery, spriteGetter, new ModelTransformComposition(SimpleModelTransform.IDENTITY, modelTransform,
                         this.modelTransform.isUvLock() || modelTransform.isUvLock()), modelLocation);
-                TransformingFaceBakery.getInstance().stopTransformingQuads();
+                TransformingFaceBakery.getInstance().popQuadTransform();
             } else {
                 //Forge: carry on with the predefined transformation
                 baked = model.bakeModel(bakery, spriteGetter, new ModelTransformComposition(this.modelTransform, modelTransform,

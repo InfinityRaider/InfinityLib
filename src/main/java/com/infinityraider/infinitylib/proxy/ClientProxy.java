@@ -18,7 +18,7 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     public void onCommonSetupEvent(FMLCommonSetupEvent event) {
         IProxy.super.onCommonSetupEvent(event);
         Module.getActiveModules().forEach(Module::initClient);
-        TransformingFaceBakery.getInstance().init();
+        TransformingFaceBakery.init();
     }
 
     @Override
