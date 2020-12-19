@@ -4,19 +4,12 @@ import com.google.common.collect.ImmutableSet;
 import com.infinityraider.infinitylib.render.item.InfItemRenderer;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
 import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Set;
 
 public interface IInfinityItem extends IInfinityRegistrable<Item> {
-
-    /**
-     * This method should be standard implemented in every Item, used for default implementation in sub-interfaces
-     */
-    ResourceLocation getRegistryName();
-
 
     /**
      * Method to define model properties for use in the model json
