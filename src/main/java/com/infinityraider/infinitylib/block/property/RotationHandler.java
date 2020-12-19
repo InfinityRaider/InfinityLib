@@ -3,8 +3,7 @@ package com.infinityraider.infinitylib.block.property;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Rotation;
 
-@FunctionalInterface
-public interface RotationHandler<T extends Comparable<T>> {
+public interface RotationHandler<T> {
     T handle(Rotation rotation, T value);
 
     class Handlers {

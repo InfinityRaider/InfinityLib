@@ -4,7 +4,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.Mirror;
 
 @FunctionalInterface
-public interface MirrorHandler<T extends Comparable<T>> {
+public interface MirrorHandler<T> {
     T handle(Mirror mirror, T value);
 
     class Handlers {
