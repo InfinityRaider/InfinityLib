@@ -3,7 +3,7 @@ package com.infinityraider.infinitylib.proxy.base;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
-import com.infinityraider.infinitylib.block.IInfinityBlockWithTile;
+import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
 import com.infinityraider.infinitylib.capability.CapabilityHandler;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
@@ -57,6 +57,7 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
 
     default void registerRegistrables(InfinityMod<?,?> mod) {
         this.registerBlocks(mod);
+        this.registerTiles(mod);
         this.registerItems(mod);
         this.registerEnchantments(mod);
         this.registerEntities(mod);
@@ -66,12 +67,12 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
 
     default void registerBlocks(InfinityMod<?,?> mod) {
         // Register blocks
-        this.registerObjects(mod, mod.getModBlockRegistry(), IInfinityBlock.class, ForgeRegistries.BLOCKS, block -> {
-            // TileEntity registration:
-            if (block instanceof IInfinityBlockWithTile) {
-                //TODO: register Tile Entity
-            }
-        });
+        this.registerObjects(mod, mod.getModBlockRegistry(), IInfinityBlock.class, ForgeRegistries.BLOCKS);
+    }
+
+    default void registerTiles(InfinityMod<?,?> mod) {
+        // Register tiles
+        this.registerObjects(mod, mod.getModTileRegistry(), IInfinityTileEntityType.class, ForgeRegistries.TILE_ENTITIES);
     }
 
     default void registerItems(InfinityMod<?,?> mod) {

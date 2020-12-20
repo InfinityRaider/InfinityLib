@@ -25,12 +25,12 @@ public abstract class TileEntityRotatableBase extends TileEntityBase implements 
         if (tag.contains(Names.NBT.DIRECTION)) {
             this.setDirection(tag.getByte(Names.NBT.DIRECTION));
         }
-        this.readRotatableTileNBT(tag);
+        this.readRotatableTileNBT(state, tag);
     }
 
-    protected abstract void readRotatableTileNBT(CompoundNBT tag);
-
     protected abstract void writeRotatableTileNBT(CompoundNBT tag);
+
+    protected abstract void readRotatableTileNBT(BlockState state, CompoundNBT tag);
 
     @Override
     public final Direction getOrientation() {

@@ -7,6 +7,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 
 import java.util.Random;
@@ -96,7 +97,8 @@ public abstract class TileEntityBase extends TileEntity {
     }
 
     public void syncToClient(boolean renderUpdate) {
-        if(!this.getWorld().isRemote) {
+        World world = this.getWorld();
+        if(world != null && !this.getWorld().isRemote) {
             new MessageSyncTile(this, renderUpdate).sendToAllAround(this.getWorld(), this.xCoord(), this.yCoord(), this.zCoord(), 128);
         }
     }

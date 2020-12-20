@@ -1,7 +1,6 @@
-/*
- */
 package com.infinityraider.infinitylib.render.tile;
 
+import com.infinityraider.infinitylib.render.IRenderUtilities;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.tileentity.TileEntity;
@@ -13,8 +12,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 @OnlyIn(Dist.CLIENT)
 @FunctionalInterface
-public interface ITesr<T extends TileEntity> {
+public interface ITileRenderer<T extends TileEntity> extends IRenderUtilities {
 	
-	void renderTileEntityAt(T tile, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay);
-	
+	void render(T tile, float partialTicks, MatrixStack transforms, IRenderTypeBuffer buffer, int light, int overlay);
 }

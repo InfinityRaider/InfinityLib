@@ -144,7 +144,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
 
 
     /**
-     * Used to register the Blocks, recipes, renderers, TileEntities, etc. for all the mod's blocks.
+     * Used to register all of the mod's Blocks.
      * The object returned by this should have a field for each of its blocks
      * @return Block registry object or class
      */
@@ -153,7 +153,16 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register the Items, recipes, renderers, etc. for all the mod's items.
+     * Used to register all of the mod's TileEntities.
+     * The object returned by this should have a field for each of its blocks
+     * @return Block registry object or class
+     */
+    public Object getModTileRegistry() {
+        return null;
+    }
+
+    /**
+     * Used to register all of the mod's Items.
      * The object returned by this should have a field for each of its items
      * @return Item registry object or class
      */
@@ -162,7 +171,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register the Biomes for all the mod's biomes.
+     * Used to register all of the mod's Biomes.
      * The object returned by this should have a field for each of its biomes
      * @return Biome registry object or class
      */
@@ -171,7 +180,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register the Enchantments for all the mod's enchantments.
+     * Used to register all of the mod's Enchantments.
      * The object returned by this should have a field for each of its enchantments
      * @return Enchantment registry object or class
      */
@@ -180,7 +189,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register the Entities for all the mod's entities.
+     * Used to register all of the mod's Entities.
      * The object returned by this should have a field for each of its entities
      * @return Entity registry object or class
      */
@@ -189,7 +198,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register the Potions for all the mod's potions.
+     * Used to register all of the mod's Effects.
      * The object returned by this should have a field for each of its Potions
      * @return Potion registry object or class
      */
@@ -198,7 +207,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register the PotionTypes for all the mod's potion type.
+     * Used to register all of the mod's PotionTypes.
      * The object returned by this should have a field for each of its PotionTypes
      * @return PotionType registry object or class
      */
@@ -207,7 +216,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register the Sounds for all the mod's sounds.
+     * Used to register all of the mod's SoundEvents.
      * The object returned by this should have a field for each of its SoundEvents
      * @return SoundEvent registry object or class
      */
@@ -216,7 +225,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register the VillagerProfessions for all the mod's villager professions.
+     * Used to register all of the mod's VillagerProfessions.
      * The object returned by this should have a field for each of its VillagerProfessions
      * @return VillagerProfession registry object or class
      */
