@@ -7,6 +7,7 @@ import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
 import com.infinityraider.infinitylib.capability.CapabilityHandler;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
+import com.infinityraider.infinitylib.container.IInfinityContainerType;
 import com.infinityraider.infinitylib.effect.IInfinityEffect;
 import com.infinityraider.infinitylib.enchantment.IInfinityEnchantment;
 import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
@@ -43,10 +44,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     /**
@@ -63,6 +62,7 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
         this.registerEntities(mod);
         this.registerSounds(mod);
         this.registerEffects(mod);
+        this.registerContainers(mod);
     }
 
     default void registerBlocks(InfinityMod<?,?> mod) {
@@ -126,6 +126,17 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
         // Register effects
         this.registerObjects(mod, mod.getModEffectRegistry(), IInfinityEffect.class, ForgeRegistries.POTIONS);
     }
+
+    default void registerContainers(InfinityMod<?,?> mod) {
+        // Register containers
+        this.registerObjects(mod, mod.getModContainerRegistry(), IInfinityContainerType.class, ForgeRegistries.CONTAINERS, containerType -> {
+            if(containerType instanceof IInfinityContainerType) {
+                this.registerGuiContainer((IInfinityContainerType) containerType);
+            }
+        });
+    }
+
+    default void registerGuiContainer(IInfinityContainerType containerType) {}
 
     default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Object modRegistry,
                                                                     Class<? extends IInfinityRegistrable<T>> clazz,

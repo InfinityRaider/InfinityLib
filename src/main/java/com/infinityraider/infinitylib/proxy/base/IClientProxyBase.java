@@ -5,6 +5,7 @@ import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
+import com.infinityraider.infinitylib.container.IInfinityContainerType;
 import com.infinityraider.infinitylib.entity.EmptyEntityRenderFactory;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
@@ -15,6 +16,7 @@ import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -28,6 +30,14 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig> extends IProxyBase<C> {
+
+    @Override
+    default void registerGuiContainer(IInfinityContainerType containerType) {
+        IInfinityContainerType.IGuiFactory<?> factory = containerType.getGuiFactory();
+        if(factory != null) {
+            ScreenManager.registerFactory(containerType.cast(), IInfinityContainerType.castGuiFactory(factory));
+        }
+    }
 
     @Override
     /** Called on the client to register renderers */

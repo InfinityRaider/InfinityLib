@@ -58,7 +58,7 @@ public class InfinityTileEntityType<T extends TileEntity> extends TileEntityType
         private final Supplier<? extends T> factory;
         private final Set<Block> blocks;
 
-        private IRenderFactory renderFactory;
+        private IRenderFactory<T> renderFactory;
 
         private Builder(String name, Supplier<? extends T> factory) {
             this.name = name;

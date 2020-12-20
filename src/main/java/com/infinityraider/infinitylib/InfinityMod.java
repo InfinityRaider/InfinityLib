@@ -154,8 +154,8 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
 
     /**
      * Used to register all of the mod's TileEntities.
-     * The object returned by this should have a field for each of its blocks
-     * @return Block registry object or class
+     * The object returned by this should have a field for each of its TileEntities
+     * @return TileEntity registry object or class
      */
     public Object getModTileRegistry() {
         return null;
@@ -221,6 +221,15 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      * @return SoundEvent registry object or class
      */
     public Object getModSoundRegistry() {
+        return null;
+    }
+
+    /**
+     * Used to register all of the mod's ContainerTypes.
+     * The object returned by this should have a field for each of its ContainerTypes
+     * @return ContainerType registry object or class
+     */
+    public Object getModContainerRegistry() {
         return null;
     }
 
