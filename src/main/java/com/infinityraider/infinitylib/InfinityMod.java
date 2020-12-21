@@ -62,7 +62,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         //Activate required modules
         this.proxy().activateRequiredModules();
         // Call for deferred, automatic registration of IInfinityRegistrable objects
-        this.proxy().registerRegistrables(this);
+        InfinityLib.instance.proxy().registerRegistrables(this);
         // Initialize the API
         this.initializeAPI();
     }
@@ -90,7 +90,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
 
     private void initClient() {
         // Register renderers
-        this.proxy().registerRenderers(this);
+        InfinityLib.instance.proxy().registerRenderers(this);
     }
 
     public final InfinityLogger getLogger() {

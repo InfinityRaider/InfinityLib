@@ -13,7 +13,7 @@ public class InfinityContainerType<T extends ContainerBase> extends ContainerTyp
     private InfinityContainerType(String name, IContainerFactory<T> factory, IGuiFactory<T> guiFactory) {
         super(factory);
         this.name = name;
-        this.guiFactory = getGuiFactory();
+        this.guiFactory = guiFactory;
     }
 
     @Nonnull
