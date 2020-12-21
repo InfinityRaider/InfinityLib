@@ -1,24 +1,31 @@
 package com.infinityraider.infinitylib.render;
 
+import com.infinityraider.infinitylib.InfinityLib;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.model.ModelManager;
-import net.minecraft.client.renderer.texture.AtlasTexture;
-import net.minecraft.client.renderer.texture.MissingTextureSprite;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.*;
 import net.minecraft.client.settings.PointOfView;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraftforge.client.model.data.IModelData;
+
+import java.util.Random;
 
 /**
  * Interface with utility methods which can make life easier when rendering stuff.
@@ -26,6 +33,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 @OnlyIn(Dist.CLIENT)
 public interface IRenderUtilities {
+    /**
+     * Renders an item
+     */
+    default void renderItem(ItemStack stack, ItemCameraTransforms.TransformType perspective, int light,
+                            MatrixStack transforms, IRenderTypeBuffer buffer) {
+        this.renderItem(stack, perspective, light, OverlayTexture.NO_OVERLAY, transforms, buffer);
+    }
 
     /**
      * Renders an item
@@ -33,6 +47,30 @@ public interface IRenderUtilities {
     default void renderItem(ItemStack stack, ItemCameraTransforms.TransformType perspective, int light, int overlay,
                             MatrixStack transforms, IRenderTypeBuffer buffer) {
         this.getItemRenderer().renderItem(stack, perspective, light, overlay, transforms, buffer);
+    }
+
+    /**
+     * Renders a block state
+     */
+    default boolean renderBlockState(BlockState state, MatrixStack transforms, IVertexBuilder buffer) {
+        return this.renderBlockState(state, transforms, buffer, OverlayTexture.NO_OVERLAY);
+    }
+
+    /**
+     * Renders a block state
+     */
+    default boolean renderBlockState(BlockState state, MatrixStack transforms, IVertexBuilder buffer, int overlay) {
+        World world =InfinityLib.instance.getClientWorld();
+        return this.renderBlockModel(world, this.getModelForState(state), state, Objects.DEFAULT_POS,
+                transforms, buffer, false, world.getRandom(), world.getRandom().nextLong(), overlay, EmptyModelData.INSTANCE);
+    }
+
+    /**
+     * Renders a block model
+     */
+    default boolean renderBlockModel(IBlockDisplayReader world, IBakedModel model, BlockState state, BlockPos pos, MatrixStack transforms,
+                                     IVertexBuilder buffer, boolean checkSides, Random random, long rand, int overlay, IModelData modelData) {
+        return this.getBlockRenderer().renderModel(world, model, state, pos, transforms, buffer, checkSides, random, rand, overlay, modelData);
     }
 
     /**
@@ -47,6 +85,7 @@ public interface IRenderUtilities {
 
     /**
      * Fetches the sprite on the Texture Atlas related to a Resource Location
+     *
      * @param location the Resource Location
      * @return the sprite
      */
@@ -56,6 +95,7 @@ public interface IRenderUtilities {
 
     /**
      * Binds a texture for rendering
+     *
      * @param location the ResourceLocation for the texture
      */
     default void bindTexture(ResourceLocation location) {
@@ -71,6 +111,7 @@ public interface IRenderUtilities {
 
     /**
      * Fetches the AtlasTexture object representing the Texture Atlas
+     *
      * @return the AtlasTexture object
      */
     default AtlasTexture getTextureAtlas() {
@@ -79,6 +120,7 @@ public interface IRenderUtilities {
 
     /**
      * Fetches the ResourceLocation associated with the Texture Atlas
+     *
      * @return ResourceLocation for the Texture Atlas
      */
     default ResourceLocation getTextureAtlasLocation() {
@@ -87,6 +129,7 @@ public interface IRenderUtilities {
 
     /**
      * Fetches Minecraft's Texture Manager
+     *
      * @return the TextureManager object
      */
     default TextureManager getTextureManager() {
@@ -95,6 +138,7 @@ public interface IRenderUtilities {
 
     /**
      * Fetches Minecraft's Model Manager
+     *
      * @return the ModelManager object
      */
     default ModelManager getModelManager() {
@@ -102,7 +146,36 @@ public interface IRenderUtilities {
     }
 
     /**
+     * Fetches Minecraft's Block Renderer Dispatcher
+     *
+     * @return the BlockRendererDispatcher object
+     */
+    default BlockRendererDispatcher getBlockRendererDispatcher() {
+        return Minecraft.getInstance().getBlockRendererDispatcher();
+    }
+
+    /**
+     * Fetches Minecraft's Block Model Renderer
+     *
+     * @return the BlockModelRenderer object
+     */
+    default BlockModelRenderer getBlockRenderer() {
+        return this.getBlockRendererDispatcher().getBlockModelRenderer();
+    }
+
+    /**
+     * Fetches the IBakedModel for a BlockState
+     *
+     * @param state the BlockState
+     * @return the IBakedModel
+     */
+    default IBakedModel getModelForState(BlockState state) {
+        return this.getBlockRendererDispatcher().getModelForState(state);
+    }
+
+    /**
      * Fetches Minecraft's Item Renderer
+     *
      * @return the ItemRenderer object
      */
     default ItemRenderer getItemRenderer() {
@@ -111,6 +184,7 @@ public interface IRenderUtilities {
 
     /**
      * Fetches Minecraft's Entity Rendering Manager
+     *
      * @return the EntityRendererManager object
      */
     default EntityRendererManager getEntityRendererManager() {
@@ -119,6 +193,7 @@ public interface IRenderUtilities {
 
     /**
      * Fetches the Player's current Camera Orientation
+     *
      * @return a Quaternion object representing the orientation of the camera
      */
     default Quaternion getCameraOrientation() {
@@ -127,6 +202,7 @@ public interface IRenderUtilities {
 
     /**
      * Fetches the Player's current Point of View (First Person, Third Person over shoulder, Third Person front)
+     *
      * @return the PointOfView object
      */
     default PointOfView getPointOfView() {
@@ -156,8 +232,11 @@ public interface IRenderUtilities {
      * Internal class to store pointers to objects which need initialization
      */
     final class Objects {
-        private Objects() {}
+        private Objects() {
+        }
 
         private static TextureAtlasSprite missingSprite;
+
+        private static final BlockPos DEFAULT_POS = new BlockPos(0,0,0);
     }
 }
