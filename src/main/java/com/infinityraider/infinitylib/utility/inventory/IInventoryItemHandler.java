@@ -4,6 +4,8 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nonnull;
+
 /**
  * IInventory interface to link the IItemHandler methods automatically to the IInventory methods
  */
@@ -19,8 +21,9 @@ public interface IInventoryItemHandler extends IInventory, IItemHandler {
     }
 
     @Override
-    default ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-        if(!isValidSlot(slot) || stack == null || stack.getCount() <= 0) {
+    @Nonnull
+    default ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+        if(!isValidSlot(slot) || stack.isEmpty() || stack.getCount() <= 0) {
             return ItemStack.EMPTY;
         }
         ItemStack inSlot = this.getStackInSlot(slot);
@@ -48,6 +51,7 @@ public interface IInventoryItemHandler extends IInventory, IItemHandler {
     }
 
     @Override
+    @Nonnull
     default ItemStack extractItem(int slot, int amount, boolean simulate) {
         if(!isValidSlot(slot) || amount <= 0) {
             return ItemStack.EMPTY;

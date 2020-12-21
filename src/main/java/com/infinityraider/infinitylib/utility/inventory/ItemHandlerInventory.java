@@ -5,11 +5,11 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Simple class to wrap an IInventory as an IItemHandler while maintaining IInventory functionality
  */
+@SuppressWarnings("unused")
 public class ItemHandlerInventory implements IInventoryItemHandler {
     private final IInventory inventory;
 
@@ -26,8 +26,8 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
         return this.getInventory().getSizeInventory();
     }
 
-    @Nullable
     @Override
+    @Nonnull
     public ItemStack getStackInSlot(int index) {
         return  this.getInventory().getStackInSlot(index);
     }
@@ -42,20 +42,20 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
         return this.getInventory().isItemValidForSlot(slot, stack);
     }
 
-    @Nullable
     @Override
+    @Nonnull
     public ItemStack decrStackSize(int index, int count) {
         return  this.getInventory().decrStackSize(index, count);
     }
 
-    @Nullable
     @Override
+    @Nonnull
     public ItemStack removeStackFromSlot(int index) {
         return  this.getInventory().removeStackFromSlot(index);
     }
 
     @Override
-    public void setInventorySlotContents(int index, @Nullable ItemStack stack) {
+    public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
         this.getInventory().setInventorySlotContents(index, stack);
     }
 
@@ -70,22 +70,22 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
     }
 
     @Override
-    public boolean isUsableByPlayer(PlayerEntity player) {
+    public boolean isUsableByPlayer(@Nonnull PlayerEntity player) {
         return this.getInventory().isUsableByPlayer(player);
     }
 
     @Override
-    public void openInventory(PlayerEntity player) {
+    public void openInventory(@Nonnull PlayerEntity player) {
         this.getInventory().openInventory(player);
     }
 
     @Override
-    public void closeInventory(PlayerEntity player) {
+    public void closeInventory(@Nonnull PlayerEntity player) {
         this.getInventory().closeInventory(player);
     }
 
     @Override
-    public boolean isItemValidForSlot(int index, ItemStack stack) {
+    public boolean isItemValidForSlot(int index, @Nonnull ItemStack stack) {
         return this.getInventory().isItemValidForSlot(index, stack);
     }
 

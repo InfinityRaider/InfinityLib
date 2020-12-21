@@ -13,12 +13,12 @@ public interface IInventorySerializable extends IInventory {
     default CompoundNBT writeInventoryToNBT(CompoundNBT tag) {
         ListNBT list = new ListNBT();
         for(int i = 0; i < this.getSizeInventory(); i++) {
-            CompoundNBT tagAt = new CompoundNBT();
             ItemStack stack = this.getStackInSlot(i);
+            CompoundNBT tagAt = stack.serializeNBT();
             boolean flag = !stack.isEmpty() && stack.getCount() > 0;
             tagAt.putBoolean(Names.NBT.FLAG, flag);
             if(flag) {
-                stack.deserializeNBT(tagAt);
+                stack.write(tagAt);
             }
             list.add(tagAt);
         }

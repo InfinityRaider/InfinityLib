@@ -46,7 +46,7 @@ public class ContainerBase extends Container {
             while (stack.getCount() > 0 && (!backwards && slotIndex < stop || backwards && slotIndex >= start)) {
                 slot = this.inventorySlots.get(slotIndex);
                 stackInSlot = slot.getStack();
-                if (stackInSlot != null && slot.isItemValid(stack) && stackInSlot.getItem() == stack.getItem() && ItemStack.areItemStackTagsEqual(stack, stackInSlot)) {
+                if (!(stackInSlot.isEmpty()) && slot.isItemValid(stack) && stackInSlot.getItem() == stack.getItem() && ItemStack.areItemStackTagsEqual(stack, stackInSlot)) {
                     int combinedSize = stackInSlot.getCount() + stack.getCount();
                     if (combinedSize <= stack.getMaxStackSize()) {
                         stack.setCount(0);
@@ -69,7 +69,7 @@ public class ContainerBase extends Container {
             while (!backwards && slotIndex < stop || backwards && slotIndex >= start && !foundSlot) {
                 slot = this.inventorySlots.get(slotIndex);
                 stackInSlot = slot.getStack();
-                if (stackInSlot == null && slot.isItemValid(stack)) {
+                if (stackInSlot.isEmpty() && slot.isItemValid(stack)) {
                     slot.putStack(stack.copy());
                     slot.onSlotChanged();
                     stack.setCount(0);

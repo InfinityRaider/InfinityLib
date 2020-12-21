@@ -5,11 +5,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Simple class to wrap an IItemHandler as an IInventory while maintaining IItemHandler functionality
  */
+@SuppressWarnings("unused")
 public class InventoryItemHandler implements IInventoryItemHandler {
     private final IItemHandler itemHandler;
 
@@ -32,18 +32,20 @@ public class InventoryItemHandler implements IInventoryItemHandler {
         return this.getItemHandler().getSlots();
     }
 
-    @Nullable
     @Override
+    @Nonnull
     public ItemStack getStackInSlot(int index) {
         return this.getItemHandler().getStackInSlot(index);
     }
 
     @Override
-    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+    @Nonnull
+    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
         return this.getItemHandler().insertItem(slot, stack, simulate);
     }
 
     @Override
+    @Nonnull
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         return this.getItemHandler().extractItem(slot, amount, simulate);
     }
@@ -70,30 +72,30 @@ public class InventoryItemHandler implements IInventoryItemHandler {
         return this.getSlots();
     }
 
-    @Nullable
     @Override
+    @Nonnull
     public ItemStack decrStackSize(int index, int count) {
         ItemStack stack = this.getStackInSlot(index);
-        if(stack != null) {
+        if(!stack.isEmpty()) {
             stack = this.extractItem(index, count, false);
         }
         return stack;
     }
 
-    @Nullable
     @Override
+    @Nonnull
     public ItemStack removeStackFromSlot(int index) {
         ItemStack stack = this.getStackInSlot(index);
-        if(stack != null) {
+        if(!stack.isEmpty()) {
             stack = this.extractItem(index, stack.getCount(), false);
         }
         return stack;
     }
 
     @Override
-    public void setInventorySlotContents(int index, @Nullable ItemStack stack) {
+    public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
         ItemStack inSlot = this.getStackInSlot(index);
-        if(inSlot != null) {
+        if(!inSlot.isEmpty()) {
             this.extractItem(index, inSlot.getCount(), false);
         }
         this.insertItem(index, stack, false);
@@ -108,18 +110,18 @@ public class InventoryItemHandler implements IInventoryItemHandler {
     public void markDirty() {}
 
     @Override
-    public boolean isUsableByPlayer(PlayerEntity player) {
+    public boolean isUsableByPlayer(@Nonnull PlayerEntity player) {
         return true;
     }
 
     @Override
-    public void openInventory(PlayerEntity player) {}
+    public void openInventory(@Nonnull PlayerEntity player) {}
 
     @Override
-    public void closeInventory(PlayerEntity player) {}
+    public void closeInventory(@Nonnull PlayerEntity player) {}
 
     @Override
-    public boolean isItemValidForSlot(int index, ItemStack stack) {
+    public boolean isItemValidForSlot(int index, @Nonnull ItemStack stack) {
         ItemStack simulated = this.insertItem(index, stack, true);
         return simulated.getCount() != stack.getCount();
     }
