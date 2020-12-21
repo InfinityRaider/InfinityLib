@@ -2,44 +2,35 @@ package com.infinityraider.infinitylib.render.entity;
 
 import com.infinityraider.infinitylib.render.IRenderUtilities;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-public abstract class RenderEntityAsItem<T extends Entity> extends EntityRenderer<T> implements IRenderUtilities {
-    private final ItemStack item;
-
-    public RenderEntityAsItem(EntityRendererManager renderManager, ItemStack item) {
+public abstract class RenderEntityAsBlock<T extends Entity> extends EntityRenderer<T> implements IRenderUtilities {
+    protected RenderEntityAsBlock(EntityRendererManager renderManager) {
         super(renderManager);
-        this.item = item;
     }
-
-    public ItemStack getItem() {
-        return this.item;
-    }
-
-    private static final Quaternion ROTATION = Vector3f.YP.rotationDegrees(180);
 
     @Override
     @ParametersAreNonnullByDefault
     public void render(T entity, float yaw, float partialTicks, MatrixStack transforms, IRenderTypeBuffer buffer, int light) {
         transforms.push();
-        transforms.rotate(this.getCameraOrientation());
-        transforms.rotate(ROTATION);
         this.applyTransformations(entity, yaw, partialTicks, transforms);
-        this.renderItem(item, ItemCameraTransforms.TransformType.GROUND, light, transforms, buffer);
+        this.renderBlockState(this.getBlockState(entity), transforms, buffer.getBuffer(this.getRenderType()));
         transforms.pop();
     }
 
     protected abstract void applyTransformations(T entity, float yaw, float partialTicks, MatrixStack transforms);
+
+    protected abstract BlockState getBlockState(T entity);
+
+    protected abstract RenderType getRenderType();
 
     @Override
     @ParametersAreNonnullByDefault

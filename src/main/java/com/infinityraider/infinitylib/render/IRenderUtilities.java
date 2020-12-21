@@ -53,16 +53,16 @@ public interface IRenderUtilities {
      * Renders a block state
      */
     default boolean renderBlockState(BlockState state, MatrixStack transforms, IVertexBuilder buffer) {
-        return this.renderBlockState(state, transforms, buffer, OverlayTexture.NO_OVERLAY);
+        return this.renderBlockState(state, Objects.DEFAULT_POS, transforms, buffer, OverlayTexture.NO_OVERLAY);
     }
 
     /**
      * Renders a block state
      */
-    default boolean renderBlockState(BlockState state, MatrixStack transforms, IVertexBuilder buffer, int overlay) {
+    default boolean renderBlockState(BlockState state, BlockPos pos, MatrixStack transforms, IVertexBuilder buffer, int overlay) {
         World world =InfinityLib.instance.getClientWorld();
-        return this.renderBlockModel(world, this.getModelForState(state), state, Objects.DEFAULT_POS,
-                transforms, buffer, false, world.getRandom(), world.getRandom().nextLong(), overlay, EmptyModelData.INSTANCE);
+        return this.renderBlockModel(world, this.getModelForState(state), state, pos,
+                transforms, buffer, false, world.getRandom(), state.getPositionRandom(pos), overlay, EmptyModelData.INSTANCE);
     }
 
     /**
