@@ -4,9 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.entity.*;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.datafix.TypeReferences;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.network.FMLPlayMessages;
@@ -25,12 +22,12 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
     @SuppressWarnings("Unchecked")
     protected EntityTypeBase(String name, Class<T> entityClass,
                            EntityType.IFactory<T> factory, EntityClassification classification,
-                           boolean p_i231489_3_, boolean summonable, boolean immuneToFire, boolean p_i231489_6_,
+                           boolean serializable, boolean summonable, boolean immuneToFire, boolean p_i231489_6_,
                            ImmutableSet<Block> blocks, EntitySize size, int trackingRange, int updateInterval, boolean velocityUpdates,
                            final BiFunction<FMLPlayMessages.SpawnEntity, World, T> customClientFactory,
                            Set<Class<? extends MobEntity>> aggressors, IRenderFactory<T> renderFactory) {
 
-        super(factory, classification, p_i231489_3_, summonable, immuneToFire, p_i231489_6_, blocks, size, trackingRange, updateInterval,
+        super(factory, classification, serializable, summonable, immuneToFire, p_i231489_6_, blocks, size, trackingRange, updateInterval,
                 t -> velocityUpdates, t -> trackingRange, t -> updateInterval, customClientFactory);
 
         this.name = name;
@@ -84,7 +81,7 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
         protected final Set<Class<? extends MobEntity>> aggressors;
 
         protected EntityType.IFactory<T> factory;
-        protected boolean p_i231489_3_;
+        protected boolean serializable;
         protected boolean summonable;
         protected boolean immuneToFire;
         protected boolean p_i231489_6_;
@@ -118,7 +115,7 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
         }
 
         public EntityTypeBase<T> build() {
-            return new EntityTypeBase<>(this.name, this.entityClass, this.factory, this.classification, this.p_i231489_3_,
+            return new EntityTypeBase<>(this.name, this.entityClass, this.factory, this.classification, this.serializable,
                     this.summonable, this. immuneToFire, this.p_i231489_6_, ImmutableSet.copyOf(this.blocks), this.size,
                     this.trackingRange, this.updateInterval, this.velocityUpdates, this.customClientFactory,
                     this.aggressors, this.renderFactory);
@@ -134,8 +131,12 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
             return this;
         }
 
-        public Builder<T> setMysteryBoolean1(boolean value) {  //TODO: figure out what mystery boolean 1 does
-            this.p_i231489_3_ = value;
+        public Builder<T> setSerializable() {
+            return this.setSerializable(true);
+        }
+
+        public Builder<T> setSerializable(boolean value) {
+            this.serializable = value;
             return this;
         }
 
@@ -149,7 +150,7 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
             return this;
         }
 
-        public Builder<T> setMysteryBoolean2(boolean value) {  //TODO: figure out what mystery boolean 1 does
+        public Builder<T> setMysteryBoolean(boolean value) {  //TODO: figure out what the mystery boolean does
             this.p_i231489_6_ = value;
             return this;
         }
