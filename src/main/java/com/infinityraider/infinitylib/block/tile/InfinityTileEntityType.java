@@ -43,7 +43,7 @@ public class InfinityTileEntityType<T extends TileEntity> extends TileEntityType
     @Nullable
     @OnlyIn(Dist.CLIENT)
     public ITileRenderer<T> getRenderer() {
-        if(this.renderer == null) {
+        if (this.renderer == null) {
             this.renderer = this.renderFactory.createRenderer();
         }
         return this.renderer;
@@ -64,7 +64,7 @@ public class InfinityTileEntityType<T extends TileEntity> extends TileEntityType
             this.name = name;
             this.factory = factory;
             this.blocks = Sets.newIdentityHashSet();
-            this.renderFactory = () -> null;
+            this.renderFactory = noRenderer();
         }
 
         public Builder<T> addBlock(Block block) {
@@ -92,9 +92,22 @@ public class InfinityTileEntityType<T extends TileEntity> extends TileEntityType
         }
     }
 
+    public static <T extends TileEntity> IRenderFactory<T> noRenderer() {
+        return new NoRenderFactory<>();
+    }
+
     public interface IRenderFactory<T extends TileEntity> {
         @Nullable
         @OnlyIn(Dist.CLIENT)
         ITileRenderer<T> createRenderer();
+    }
+
+    private static final class NoRenderFactory<T extends TileEntity> implements IRenderFactory<T> {
+        @Override
+        @Nullable
+        @OnlyIn(Dist.CLIENT)
+        public ITileRenderer<T> createRenderer() {
+            return null;
+        }
     }
 }
