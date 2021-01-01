@@ -7,13 +7,13 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.Vector;
 
 @SuppressWarnings("unchecked")
 public final class MessageSerializerStore {
@@ -63,6 +63,7 @@ public final class MessageSerializerStore {
         registerMessageSerializer(CompoundNBT.class, PacketBufferUtil::writeNBT, PacketBufferUtil::readNBT);
         registerMessageSerializer(Vector3d.class, PacketBufferUtil::writeVec3d, PacketBufferUtil::readVec3d);
         registerMessageSerializer(ITextComponent.class, PacketBufferUtil::writeTextComponent, PacketBufferUtil::readTextComponent);
+        registerMessageSerializer(RegistryKey.class, PacketBufferUtil::writeRegistryKey, PacketBufferUtil::readRegistryKey);
         registerMessageSerializer(MessageSerializerEnum.INSTANCE);
         registerMessageSerializer(MessageSerializerSubClass.TILE_ENTITY);
         registerMessageSerializer(MessageSerializerSubClass.ENTITY);

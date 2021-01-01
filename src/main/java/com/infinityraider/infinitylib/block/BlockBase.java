@@ -4,11 +4,15 @@ import com.infinityraider.infinitylib.block.property.InfProperty;
 import com.infinityraider.infinitylib.block.property.InfPropertyConfiguration;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateContainer;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
@@ -58,5 +62,15 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
         return this.internalName;
     }
 
+    public final BlockState waterlog(BlockState state, World world, BlockPos pos) {
+        if(this.getPropertyConfiguration().isWaterLoggable()) {
+            FluidState fluid = world.getFluidState(pos);
+            state = InfProperty.Defaults.waterlogged().apply(state, fluid.getFluid() == Fluids.WATER);
+        }
+        return state;
+    }
 
+    public final void spawnItem(World world, BlockPos pos, ItemStack stack) {
+        world.addEntity(new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack));
+    }
 }

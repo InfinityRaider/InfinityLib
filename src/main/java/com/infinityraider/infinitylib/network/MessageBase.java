@@ -6,11 +6,15 @@ import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.MessageElement;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -215,6 +219,12 @@ public abstract class MessageBase {
     public final MessageBase sendToServer() {
         this.getNetworkWrapper().sendToServer(this);
         return this;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public final String getServerId() {
+        final ServerData data = Minecraft.getInstance().getCurrentServerData();
+        return "server_" + data.serverIP.replaceAll("\\.", "-").replaceAll(":", "_");
     }
 
     static void onMessageRegistered(Class<? extends MessageBase> clazz, INetworkWrapper wrapper) {
