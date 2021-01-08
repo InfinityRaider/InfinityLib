@@ -33,6 +33,14 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     public ClientProxy() {}
 
     @Override
+    public void registerRegistrables(InfinityMod<?,?> mod) {
+        // Forward to common proxy
+        IProxy.super.registerRegistrables(mod);
+        // Register client side stuff
+        mod.getModModelLoaders().forEach(loader -> ModelLoaderRegistrar.getInstance().registerModelLoader(loader));
+    }
+
+    @Override
     public void onCommonSetupEvent(FMLCommonSetupEvent event) {
         IProxy.super.onCommonSetupEvent(event);
         Module.getActiveModules().forEach(Module::initClient);

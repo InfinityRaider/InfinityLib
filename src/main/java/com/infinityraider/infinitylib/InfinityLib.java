@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib;
 
+import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
@@ -9,11 +10,15 @@ import com.infinityraider.infinitylib.proxy.ClientProxy;
 import com.infinityraider.infinitylib.proxy.IProxy;
 import com.infinityraider.infinitylib.proxy.ServerProxy;
 import com.infinityraider.infinitylib.reference.Reference;
+import com.infinityraider.infinitylib.render.model.InfModelLoader;
+import com.infinityraider.infinitylib.render.model.InfModelLoaderComposite;
 import com.infinityraider.infinitylib.sound.MessagePlaySound;
 import com.infinityraider.infinitylib.sound.MessageStopSound;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.List;
 
 @Mod(Reference.MOD_ID)
 public class InfinityLib extends InfinityMod<IProxy, Config> {
@@ -52,5 +57,13 @@ public class InfinityLib extends InfinityMod<IProxy, Config> {
         wrapper.registerMessage(MessagePlaySound.class);
         wrapper.registerMessage(MessageStopSound.class);
         Module.getActiveModules().stream().sorted().forEach(m -> m.registerMessages(wrapper));
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public List<InfModelLoader<?>> getModModelLoaders() {
+        return ImmutableList.of(
+                InfModelLoaderComposite.getInstance()
+        );
     }
 }

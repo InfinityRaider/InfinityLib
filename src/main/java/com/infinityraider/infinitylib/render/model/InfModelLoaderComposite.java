@@ -38,12 +38,15 @@ import static net.minecraft.client.renderer.model.ItemTransformVec3f.Deserialize
  */
 @OnlyIn(Dist.CLIENT)
 public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderComposite.Geometry> {
-    public static final InfModelLoaderComposite INSTANCE = new InfModelLoaderComposite();
-
     private static final ResourceLocation ID = new ResourceLocation(InfinityLib.instance.getModId(), "composite");
 
-    private InfModelLoaderComposite() {
+    private static final InfModelLoaderComposite INSTANCE = new InfModelLoaderComposite();
+
+    public static InfModelLoaderComposite getInstance() {
+        return INSTANCE;
     }
+
+    private InfModelLoaderComposite() {}
 
     @Override
     public ResourceLocation getId() {

@@ -1,9 +1,11 @@
 package com.infinityraider.infinitylib;
 
+import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
+import com.infinityraider.infinitylib.render.model.InfModelLoader;
 import com.infinityraider.infinitylib.utility.InfinityLogger;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,6 +27,8 @@ import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+
+import java.util.List;
 
 /**
  * This interface should be implemented in a mod's main class to have the registering of Items, Blocks, Renderers, etc. handled by InfinityLib
@@ -242,7 +246,10 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         return null;
     }
 
-
+    @OnlyIn(Dist.CLIENT)
+    public List<InfModelLoader<?>> getModModelLoaders() {
+        return ImmutableList.of();
+    }
 
     /**
      * --------------------------
