@@ -1,5 +1,8 @@
 package com.infinityraider.infinitylib.block.tile;
 
+import com.google.common.collect.Maps;
+import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.network.MessageAutoSyncTileField;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
@@ -8,18 +11,23 @@ import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.IChunk;
+import net.minecraftforge.fml.LogicalSide;
 
+import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.Random;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public abstract class TileEntityBase extends TileEntity {
+    private static final Random RANDOM = new Random();
+
+    private final Map<Integer, AutoSyncedField<?>> syncedFields;
+
     public TileEntityBase(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
-    }
-
-    public BlockState getState() {
-        return this.getWorld().getBlockState(this.getPos());
+        this.syncedFields = Maps.newHashMap();
     }
 
     public final int xCoord() {
@@ -35,15 +43,11 @@ public abstract class TileEntityBase extends TileEntity {
     }
 
     public Random getRandom() {
-        return this.getWorld().rand;
+        return this.getWorld() == null ? RANDOM : this.getWorld().rand;
     }
 
     public boolean isRemote() {
-        return this.getWorld().isRemote;
-    }
-
-    public IChunk getChunk() {
-        return this.getWorld().getChunk(this.getPos());
+        return this.getWorld() != null && this.getWorld().isRemote;
     }
 
     @Override
@@ -51,6 +55,7 @@ public abstract class TileEntityBase extends TileEntity {
         return new SUpdateTileEntityPacket(this.getPos(), -1, this.getUpdateTag()); //TODO: figure out the int argument
     }
 
+    @Nonnull
     @Override
     public CompoundNBT getUpdateTag() {
         CompoundNBT tag = new CompoundNBT();
@@ -61,7 +66,10 @@ public abstract class TileEntityBase extends TileEntity {
     //read data from packet
     @Override
     public void onDataPacket(NetworkManager networkManager, SUpdateTileEntityPacket pkt){
-        BlockState before = this.getWorld().getBlockState(pkt.getPos());
+        if(this.getWorld() == null) {
+            return;
+        }
+        BlockState before = this.getBlockState();
         this.read(before, pkt.getNbtCompound());
         BlockState after = this.getWorld().getBlockState(pkt.getPos());
         if(!after.equals(before)) {
@@ -69,27 +77,32 @@ public abstract class TileEntityBase extends TileEntity {
         }
     }
 
+    @Nonnull
     @Override
-    public final CompoundNBT write(CompoundNBT tag) {
+    public final CompoundNBT write(@Nonnull CompoundNBT tag) {
         super.write(tag);
+        this.syncedFields.values().forEach(field -> field.serialize(tag));
         this.writeTileNBT(tag);
         return tag;
     }
 
     @Override
-    public final void read(BlockState state, CompoundNBT tag) {
+    public final void read(@Nonnull BlockState state, @Nonnull CompoundNBT tag) {
         super.read(state, tag);
+        this.syncedFields.values().forEach(field -> field.deserialize(tag));
         this.readTileNBT(state, tag);
     }
 
-    protected abstract void writeTileNBT(CompoundNBT tag);
+    protected abstract void writeTileNBT(@Nonnull CompoundNBT tag);
 
-    protected abstract void readTileNBT(BlockState state, CompoundNBT tag);
+    protected abstract void readTileNBT(@Nonnull BlockState state, @Nonnull CompoundNBT tag);
 
-    public void markForUpdate() {
-        BlockState state = this.getWorld().getBlockState(this.getPos());
-        this.getWorld().notifyBlockUpdate(getPos(), state, state, 3);
-        this.markDirty();
+    public void markForUpdateAndNotify() {
+        if(this.getWorld() != null) {
+            BlockState state = this.getBlockState();
+            this.getWorld().notifyBlockUpdate(getPos(), state, state, 3);
+            this.markDirty();
+        }
     }
 
     public void syncToClient() {
@@ -101,5 +114,86 @@ public abstract class TileEntityBase extends TileEntity {
         if(world != null && !this.getWorld().isRemote) {
             new MessageSyncTile(this, renderUpdate).sendToAllAround(this.getWorld(), this.xCoord(), this.yCoord(), this.zCoord(), 128);
         }
+    }
+
+    protected <F> AutoSyncedField<F> createField(
+            F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
+
+        AutoSyncedField<F> field = new AutoSyncedField<>(value, this.syncedFields.size(), this, serializer, deserializer);
+        this.syncedFields.put(field.getId(), field);
+        return field;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <F> AutoSyncedField<F> getField(int id) {
+        return (AutoSyncedField<F>) this.syncedFields.get(id);
+    }
+
+    public static class AutoSyncedField<F> {
+        private F value;
+
+        private final int id;
+        private final TileEntityBase tile;
+        private final LogicalSide side;
+
+        private final BiConsumer<F, CompoundNBT> serializer;
+        private final Function<CompoundNBT, F> deserializer;
+
+        private AutoSyncedField(F value, final int id, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
+            this.value = value;
+            this.id = id;
+            this.tile = tile;
+            this.side = InfinityLib.instance.proxy().getLogicalSide();
+            this.serializer = serializer;
+            this.deserializer = deserializer;
+        }
+
+        public void set(F value) {
+            if(this.getSide().isServer() && !this.get().equals(value)) {
+                this.setInternal(value);
+                this.sync();
+                this.getTile().markDirty();
+            }
+        }
+
+        public void setClient(F value) {
+            if(this.getSide().isClient()) {
+                this.setInternal(value);
+            }
+        }
+
+        private void setInternal(F value) {
+            this.value = value;
+        }
+
+        public F get() {
+            return this.value;
+        }
+
+        public int getId() {
+            return this.id;
+        }
+
+        public TileEntityBase getTile() {
+            return this.tile;
+        }
+
+        public LogicalSide getSide() {
+            return this.side;
+        }
+
+        public CompoundNBT serialize(CompoundNBT tag) {
+            this.serializer.accept(this.get(), tag);
+            return tag;
+        }
+
+        public void deserialize(CompoundNBT tag) {
+            this.setInternal(this.deserializer.apply(tag));
+        }
+
+        protected void sync() {
+            new MessageAutoSyncTileField<>(this).sendToAll();
+        }
+
     }
 }

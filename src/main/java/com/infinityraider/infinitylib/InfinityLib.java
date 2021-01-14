@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
+import com.infinityraider.infinitylib.network.MessageAutoSyncTileField;
 import com.infinityraider.infinitylib.network.MessageSetEntityDead;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
 import com.infinityraider.infinitylib.proxy.ClientProxy;
@@ -52,6 +53,7 @@ public class InfinityLib extends InfinityMod<IProxy, Config> {
 
     @Override
     public void registerMessages(INetworkWrapper wrapper) {
+        wrapper.registerMessage(MessageAutoSyncTileField.class);
         wrapper.registerMessage(MessageSetEntityDead.class);
         wrapper.registerMessage(MessageSyncTile.class);
         wrapper.registerMessage(MessagePlaySound.class);

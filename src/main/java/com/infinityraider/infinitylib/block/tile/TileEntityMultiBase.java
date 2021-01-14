@@ -8,13 +8,15 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 
+import javax.annotation.Nonnull;
+
 public abstract class TileEntityMultiBase<M extends IMultiBlockManager<D>, D extends IMultiBlockPartData> extends TileEntityBase implements IMultiBlockComponent<M, D> {
     public TileEntityMultiBase(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
     }
 
     @Override
-    protected final void writeTileNBT(CompoundNBT tag) {
+    protected final void writeTileNBT(@Nonnull CompoundNBT tag) {
         if (tag.contains(Names.NBT.MULTI)) {
             CompoundNBT multiBlockTag = tag.getCompound(Names.NBT.MULTI);
             ((IMultiBlockComponent) this).getMultiBlockData().readFromNBT(multiBlockTag);
@@ -23,7 +25,7 @@ public abstract class TileEntityMultiBase<M extends IMultiBlockManager<D>, D ext
     }
 
     @Override
-    protected final void readTileNBT(BlockState state, CompoundNBT tag) {
+    protected final void readTileNBT(@Nonnull BlockState state, @Nonnull CompoundNBT tag) {
         if (tag.contains(Names.NBT.MULTI)) {
             CompoundNBT multiBlockTag = tag.getCompound(Names.NBT.MULTI);
             ((IMultiBlockComponent) this).getMultiBlockData().readFromNBT(multiBlockTag);
