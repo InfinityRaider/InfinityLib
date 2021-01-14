@@ -31,21 +31,6 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     public static final int DRAW_MODE_QUADS = 4;
 
     /**
-     * The VertexCreator instance
-     */
-    private static final ThreadLocal<TessellatorBakedQuad> INSTANCE = new ThreadLocal<>();
-
-    /* Getter for the VertexCreator instance */
-    public static TessellatorBakedQuad getInstance() {
-        TessellatorBakedQuad tessellator = INSTANCE.get();
-        if (tessellator == null) {
-            tessellator = new TessellatorBakedQuad();
-            INSTANCE.set(tessellator);
-        }
-        return tessellator;
-    }
-
-    /**
      * Currently constructed quads
      */
     private final List<BakedQuad> quads;
@@ -74,7 +59,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     /**
      * Private constructor
      */
-    private TessellatorBakedQuad() {
+    public TessellatorBakedQuad() {
         super();
         this.quads = new ArrayList<>();
         this.vertexData = new ArrayList<>();

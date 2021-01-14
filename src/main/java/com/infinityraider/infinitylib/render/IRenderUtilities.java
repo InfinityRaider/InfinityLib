@@ -1,6 +1,8 @@
 package com.infinityraider.infinitylib.render;
 
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.render.tessellation.ITessellator;
+import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.block.BlockState;
@@ -33,6 +35,13 @@ import java.util.Random;
  */
 @OnlyIn(Dist.CLIENT)
 public interface IRenderUtilities {
+    /**
+     *
+     */
+    default ITessellator getQuadTessellator() {
+        return new TessellatorBakedQuad();
+    }
+
     /**
      * Renders an item
      */
