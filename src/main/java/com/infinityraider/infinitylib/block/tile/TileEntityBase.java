@@ -81,6 +81,7 @@ public abstract class TileEntityBase extends TileEntity {
     @Override
     public final CompoundNBT write(@Nonnull CompoundNBT tag) {
         super.write(tag);
+        // Order shouldn't matter here
         this.syncedFields.values().forEach(field -> field.serialize(tag));
         this.writeTileNBT(tag);
         return tag;
@@ -89,6 +90,7 @@ public abstract class TileEntityBase extends TileEntity {
     @Override
     public final void read(@Nonnull BlockState state, @Nonnull CompoundNBT tag) {
         super.read(state, tag);
+        // Again, order doesn't matter
         this.syncedFields.values().forEach(field -> field.deserialize(tag));
         this.readTileNBT(state, tag);
     }
@@ -126,6 +128,7 @@ public abstract class TileEntityBase extends TileEntity {
 
     @SuppressWarnings("unchecked")
     public <F> AutoSyncedField<F> getField(int id) {
+        // Cast should not be an issue here
         return (AutoSyncedField<F>) this.syncedFields.get(id);
     }
 
@@ -156,6 +159,7 @@ public abstract class TileEntityBase extends TileEntity {
             }
         }
 
+        // Do not call this directly, called by the message handler to set the field on the client
         public void setClient(F value) {
             if(this.getSide().isClient()) {
                 this.setInternal(value);
