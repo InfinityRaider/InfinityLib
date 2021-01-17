@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.render;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
@@ -38,7 +37,7 @@ public interface IRenderUtilities {
     /**
      *
      */
-    default ITessellator getQuadTessellator() {
+    default TessellatorBakedQuad getQuadTessellator() {
         return new TessellatorBakedQuad();
     }
 
