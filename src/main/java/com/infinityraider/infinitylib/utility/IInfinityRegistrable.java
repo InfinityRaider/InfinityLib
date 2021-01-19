@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.utility;
 
-import com.sun.org.apache.bcel.internal.classfile.ClassFormatException;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
@@ -24,7 +23,7 @@ public interface IInfinityRegistrable<T extends IForgeRegistryEntry<T>> extends 
         try {
             return (T) this;
         } catch(Exception e) {}
-        throw new ClassFormatException("IInfinityObject must only be implemented in objects extending its parametric type");
+        throw new IllegalArgumentException("IInfinityObject must only be implemented in objects extending its parametric type");
     }
 
 }

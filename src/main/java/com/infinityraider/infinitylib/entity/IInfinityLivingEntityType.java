@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.entity;
 
-import com.sun.org.apache.bcel.internal.classfile.ClassFormatException;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
@@ -53,7 +52,7 @@ public interface IInfinityLivingEntityType extends IInfinityEntityType {
         try {
             return (EntityType<? extends LivingEntity>) this;
         } catch(Exception e) {
-            throw new ClassFormatException("IInfinityLivingEntityType must only be implemented in objects extending EntityType<? extends LivingEntity>");
+            throw new IllegalArgumentException("IInfinityLivingEntityType must only be implemented in objects extending EntityType<? extends LivingEntity>");
         }
     }
 

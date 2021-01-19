@@ -1,3 +1,13 @@
+// ====================================================================================================================
+// InfinityLib Buildscript
+// --------------------------------------------------------------------------------------------------------------------
+// Now without QuikMod.
+// ====================================================================================================================
+
+// --------------------------------------------------------------------------------------------------------------------
+// Buildscript Dependencies
+// --------------------------------------------------------------------------------------------------------------------
+
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
@@ -8,29 +18,72 @@ buildscript {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+// ForgeGradle Plugin
+// --------------------------------------------------------------------------------------------------------------------
 apply plugin: 'net.minecraftforge.gradle'
+
+// --------------------------------------------------------------------------------------------------------------------
+// Buildscript Plugins
+// --------------------------------------------------------------------------------------------------------------------
 apply plugin: 'idea'
+apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
+// --------------------------------------------------------------------------------------------------------------------
+// Mod Properties
+// --------------------------------------------------------------------------------------------------------------------
+
+// Load Mod Properties
 ext.configFile = file('mod.properties')
 ext.config = parseConfig(configFile)
 
+// Mod Properties Transcription
 version = "${config.version_major}.${config.version_minor}.${config.version_patch}"
 group = "${config.package}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = config.id
 
+// Set the source and target compatibility levels.
+// Required for eclipse task generates correctly.
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = "${config.version_java}"
 
-minecraft {
-    mappings channel: "${config.mapping_channel}", version: "${config.mapping_version}"
+// Mod Properties Loader
+def parseConfig(File config) {
+    config.withReader {
+        def prop = new Properties()
+        prop.load(it)
+        return (new ConfigSlurper().parse(prop))
+    }
+}
 
+// --------------------------------------------------------------------------------------------------------------------
+// Minecraft Task
+// --------------------------------------------------------------------------------------------------------------------
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+minecraft {
+    // The mappings can be changed at any time, and must be in the following format.
+    // snapshot_YYYYMMDD   Snapshot are built nightly.
+    // stable_#            Stables are built at the discretion of the MCP team.
+    // Use non-default mappings at your own risk. they may not always work.
+    // Simply re-run your setup task after changing the mappings to update your workspace.
+    mappings channel: "${config.mapping_channel}", version: "${config.mapping_version}"
+    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    
+    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
+    // Default run configurations.
+    // These can be tweaked, removed, or duplicated as needed.
     runs {
         client {
             workingDirectory project.file('run')
+
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
+
             mods {
                 infinitylib {
                     source sourceSets.main
@@ -40,10 +93,32 @@ minecraft {
 
         server {
             workingDirectory project.file('run')
+
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
+
+            mods {
+                infinitylib {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            args '--mod', 'infinitylib', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+
             mods {
                 infinitylib {
                     source sourceSets.main
@@ -53,44 +128,43 @@ minecraft {
     }
 }
 
+// Include resources generated by data generators.
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
 dependencies {
     minecraft "net.minecraftforge:forge:${config.version_minecraft}-${config.version_forge}"
 }
 
-processResources {
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'META-INF/mods.toml'
-
-        // replace version and mcversion
-        expand 'version': project.version
-    }
-
-    // copy everything else, thats not the mods.toml
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'META-INF/mods.toml', '**/psd/**'
-    }
-}
-
-def parseConfig(File config) {
-    config.withReader {
-        def prop = new Properties()
-        prop.load(it)
-        return (new ConfigSlurper().parse(prop))
-    }
-}
-
+// Example for how to get properties into the manifest for reading by the runtime..
 jar {
-    archiveName = "${baseName} ${version}.${extension}"
     manifest {
         attributes([
-                "Specification-Title": "${config.id}",
-                "Specification-Vendor": "${config.author}",
-                "Specification-Version": "1", // We are version 1 of ourselves
-                "Implementation-Title": "${config.name}",
-                "Implementation-Version": "${config.version_major}.${config.version_minor}.${config.version_patch}",
-                "Implementation-Vendor" :"${config.author}",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            "Specification-Title": "examplemod",
+            "Specification-Vendor": "examplemodsareus",
+            "Specification-Version": "1", // We are version 1 of ourselves
+            "Implementation-Title": project.name,
+            "Implementation-Version": "${version}",
+            "Implementation-Vendor" :"examplemodsareus",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
+    }
+}
+
+// Example configuration to allow publishing using the maven-publish task
+// This is the preferred method to reobfuscate your jar file
+jar.finalizedBy('reobfJar') 
+// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing
+publish.dependsOn('reobfJar')
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        maven {
+            url "file:///${project.projectDir}/mcmodsrepo"
+        }
     }
 }
