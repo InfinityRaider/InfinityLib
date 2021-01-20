@@ -169,7 +169,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public void addScaledVertexWithUV(float x, float y, float z, float u, float v) {
-        addVertexWithUV(x * Constants.UNIT, y * Constants.UNIT, z * Constants.UNIT, u * Constants.UNIT, v * Constants.UNIT);
+        addVertexWithUV(x * Constants.UNIT, y * Constants.UNIT, z * Constants.UNIT, u, v);
     }
 
     @Override

@@ -52,17 +52,24 @@ public class VertexData {
 
     public void applyVertexData(BakedQuadBuilder builder) {
         for (int index = 0; index < this.format.getElements().size(); index++) {
-            applyVertexDataForType(index, this.format.getElements().get(index).getUsage(), builder);
+            applyVertexDataForType(index, this.format.getElements().get(index), builder);
         }
     }
 
-    private void applyVertexDataForType(int index, VertexFormatElement.Usage type, BakedQuadBuilder builder) {
-        switch (type) {
+    private void applyVertexDataForType(int index, VertexFormatElement element, BakedQuadBuilder builder) {
+        switch (element.getUsage()) {
             case POSITION:
                 builder.put(index, x, y, z, 1);
                 break;
             case UV:
-                builder.put(index, u, v, 0, 1);
+                // UV exists for two different VertexFormatElements; one is texture, another light map
+                if(element.getType() == VertexFormatElement.Type.FLOAT) {
+                    // We are certain this is texture, put the UV's
+                    builder.put(index, u, v, 0, 1);
+                } else {
+                    // This is for light map, put (0, 0) for automatic light map
+                    builder.put(index, 0, 0);
+                }
                 break;
             case COLOR:
                 builder.put(index, r, g, b, a);
@@ -70,12 +77,8 @@ public class VertexData {
             case NORMAL:
                 builder.put(index, nX, nY, nZ, 0);
                 break;
-            case PADDING:
-                //TODO: figure this one out
-                builder.put(index);
-                break;
-            case GENERIC:
-                //TODO: figure this one out
+            default:
+                //We don't care about PADDING or other elements
                 builder.put(index);
         }
     }
