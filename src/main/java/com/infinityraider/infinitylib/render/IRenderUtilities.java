@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.ItemModelGenerator;
 import net.minecraft.client.renderer.model.ModelManager;
 import net.minecraft.client.renderer.texture.*;
 import net.minecraft.client.settings.PointOfView;
@@ -191,6 +192,13 @@ public interface IRenderUtilities {
     }
 
     /**
+     * @return an ItemModelGenerator object
+     */
+    default ItemModelGenerator getItemModelGenerator() {
+        return Objects.ITEM_MODEL_GENERATOR;
+    }
+
+    /**
      * Fetches Minecraft's Entity Rendering Manager
      *
      * @return the EntityRendererManager object
@@ -246,5 +254,7 @@ public interface IRenderUtilities {
         private static TextureAtlasSprite missingSprite;
 
         private static final BlockPos DEFAULT_POS = new BlockPos(0,0,0);
+
+        private static final ItemModelGenerator ITEM_MODEL_GENERATOR = new ItemModelGenerator();
     }
 }
