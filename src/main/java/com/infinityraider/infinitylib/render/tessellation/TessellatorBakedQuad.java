@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 /**
  * Helper class to construct vertices
  */
@@ -46,6 +48,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     /**
      * Face being drawn
      */
+    @Nullable
     private Direction face;
     /**
      * Icon currently drawing with
@@ -125,7 +128,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         if (drawMode != DRAW_MODE_NOT_DRAWING) {
             for (BakedQuad quad : quads) {
                 final BakedQuad trans = transformQuads(quad);
-                if (trans.getFace() == this.face) {
+                if (this.face == null || this.face == trans.getFace()) {
                     this.quads.add(trans);
                 }
             }
@@ -182,7 +185,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         
         if (this.vertexData.size() == this.drawMode) {
             final Direction dir = Direction.getFacingFromVector(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());
-            if (dir == this.face) {
+            if (this.face == null || this.face == dir) {
                 BakedQuadBuilder builder = new BakedQuadBuilder();
                 builder.setQuadTint(this.getTintIndex());
                 builder.setApplyDiffuseLighting(this.getApplyDiffuseLighting());
@@ -199,7 +202,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     @Override
     public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
-        if (this.face == face) {
+        if (this.face == null || this.face == face) {
             super.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset);
         }
     }
@@ -222,7 +225,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         return this;
     }
 
-    public TessellatorBakedQuad setCurrentFace(Direction face) {
+    public TessellatorBakedQuad setCurrentFace(@Nullable Direction face) {
         this.face = face;
         return this;
     }
