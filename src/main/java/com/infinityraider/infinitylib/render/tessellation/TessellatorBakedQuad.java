@@ -13,7 +13,9 @@ import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -48,8 +50,8 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     /**
      * Face being drawn
      */
-    @Nullable
-    private Direction face;
+    @Nonnull
+    private Face face;
     /**
      * Icon currently drawing with
      */
@@ -67,6 +69,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         this.quads = new ArrayList<>();
         this.vertexData = new ArrayList<>();
         this.drawMode = DRAW_MODE_NOT_DRAWING;
+        this.face = Face.NONE;
     }
 
     /**
@@ -112,7 +115,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
             vertexData.clear();
             this.drawMode = DRAW_MODE_NOT_DRAWING;
             this.textureFunction = null;
-            this.face = null;
+            this.face = Face.NONE;
         } else {
             throw new RuntimeException("NOT CONSTRUCTING VERTICES");
         }
@@ -128,7 +131,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         if (drawMode != DRAW_MODE_NOT_DRAWING) {
             for (BakedQuad quad : quads) {
                 final BakedQuad trans = transformQuads(quad);
-                if (this.face == null || this.face == trans.getFace()) {
+                if (this.face.accepts(trans.getFace())) {
                     this.quads.add(trans);
                 }
             }
@@ -185,7 +188,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         
         if (this.vertexData.size() == this.drawMode) {
             final Direction dir = Direction.getFacingFromVector(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());
-            if (this.face == null || this.face == dir) {
+            if (this.face.accepts(dir)) {
                 BakedQuadBuilder builder = new BakedQuadBuilder();
                 builder.setQuadTint(this.getTintIndex());
                 builder.setApplyDiffuseLighting(this.getApplyDiffuseLighting());
@@ -202,7 +205,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     @Override
     public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
-        if (this.face == null || this.face == face) {
+        if (this.face.accepts(face)) {
             super.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset);
         }
     }
@@ -226,7 +229,48 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     }
 
     public TessellatorBakedQuad setCurrentFace(@Nullable Direction face) {
+        return this.setCurrentFace(Face.fromDirection(face));
+    }
+
+    public TessellatorBakedQuad setCurrentFace(@Nonnull Face face) {
         this.face = face;
         return this;
+    }
+
+    public enum Face {
+        NONE(false),
+        GENERAL(true),
+        DOWN(Direction.DOWN),
+        UP(Direction.UP),
+        NORTH(Direction.NORTH),
+        SOUTH(Direction.SOUTH),
+        WEST(Direction.WEST),
+        EAST(Direction.EAST);
+
+        private final Predicate<Direction> test;
+
+        Face(boolean general) {
+            this(dir -> general);
+        }
+
+        Face(Direction direction) {
+            this(dir -> dir == direction);
+        }
+
+        Face(Predicate<Direction> test) {
+            this.test = test;
+        }
+
+        public boolean accepts(@Nullable Direction direction) {
+            return this.test.test(direction);
+        }
+
+        @Nonnull
+        public static Face fromDirection(@Nullable Direction direction) {
+            if(direction == null) {
+                return GENERAL;
+            }
+            return values()[direction.ordinal() + 2];
+        }
     }
 }
