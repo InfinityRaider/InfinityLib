@@ -17,10 +17,12 @@ import com.infinityraider.infinitylib.render.model.ModelLoaderRegistrar;
 import com.infinityraider.infinitylib.render.tile.ITileRenderer;
 import com.infinityraider.infinitylib.render.tile.TileEntityRendererWrapper;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.item.ItemModelsProperties;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -133,5 +135,10 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
                 RenderingRegistry.registerEntityRenderingHandler(object.cast(), object.getRenderFactory());
             }
         });
+    }
+
+    @Override
+    public void forceClientRenderUpdate(BlockPos pos) {
+        Minecraft.getInstance().worldRenderer.markBlockRangeForRenderUpdate(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
 }

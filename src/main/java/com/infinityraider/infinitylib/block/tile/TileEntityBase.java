@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.block.tile;
 import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.MessageAutoSyncTileField;
+import com.infinityraider.infinitylib.network.MessageRenderUpdate;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
@@ -115,6 +116,16 @@ public abstract class TileEntityBase extends TileEntity {
         World world = this.getWorld();
         if(world != null && !this.getWorld().isRemote) {
             new MessageSyncTile(this, renderUpdate).sendToAllAround(this.getWorld(), this.xCoord(), this.yCoord(), this.zCoord(), 128);
+        }
+    }
+
+    public void forceRenderUpdate() {
+        if(this.isRemote()) {
+            InfinityLib.instance.proxy().forceClientRenderUpdate(this.getPos());
+        } else {
+            if(this.getWorld() != null) {
+                new MessageRenderUpdate(this.getPos()).sendToDimension(this.getWorld());
+            }
         }
     }
 

@@ -21,6 +21,7 @@ import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -62,6 +63,8 @@ public interface IProxy extends IProxyBase<Config> {
         Module.getActiveModules().forEach(Module::init);
         FallbackIngredient.registerSerializer();
     }
+
+    default void forceClientRenderUpdate(BlockPos pos) {}
 
     /**
      * -------------------
