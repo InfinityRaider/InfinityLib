@@ -18,7 +18,7 @@ public class MessageAutoSyncTileField<F> extends MessageBase {
         this();
         this.tile = field.getTile();
         this.id = field.getId();
-        this.tag = field.serialize(new CompoundNBT());
+        this.tag = field.serialize();
     }
 
     @Override

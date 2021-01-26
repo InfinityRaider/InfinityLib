@@ -5,6 +5,7 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.MessageAutoSyncTileField;
 import com.infinityraider.infinitylib.network.MessageRenderUpdate;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
+import com.infinityraider.infinitylib.reference.Names;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -18,6 +19,7 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")
@@ -83,7 +85,7 @@ public abstract class TileEntityBase extends TileEntity {
     public final CompoundNBT write(@Nonnull CompoundNBT tag) {
         super.write(tag);
         // Order shouldn't matter here
-        this.syncedFields.values().forEach(field -> field.serialize(tag));
+        this.syncedFields.values().forEach(field -> tag.put(Names.NBT.FIELD + "_" + field.getId(), field.serialize()));
         this.writeTileNBT(tag);
         return tag;
     }
@@ -92,7 +94,12 @@ public abstract class TileEntityBase extends TileEntity {
     public final void read(@Nonnull BlockState state, @Nonnull CompoundNBT tag) {
         super.read(state, tag);
         // Again, order doesn't matter
-        this.syncedFields.values().forEach(field -> field.deserialize(tag));
+        this.syncedFields.values().forEach(field -> {
+            String key = Names.NBT.FIELD + "_" + field.getId();
+            if(tag.contains(key)) {
+                field.deserialize(tag.getCompound(key));
+            }
+        });
         this.readTileNBT(state, tag);
     }
 
@@ -129,10 +136,43 @@ public abstract class TileEntityBase extends TileEntity {
         }
     }
 
+    /**
+     * Method to create fields which are automatically synced between server and the client, as well as saved to disk
+     * Only call set method on the server
+     *
+     * @param value The initial value of the field (will not be synced initially, must match server and client)
+     * @param serializer The serializer used to write the value to NBT
+     * @param deserializer The deserializer used to read the value from NBT
+     * @param <F> The type of the field
+     * @return a new AutoSyncedField object, wrapping the desired value
+     */
     protected <F> AutoSyncedField<F> createField(
             F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
 
         AutoSyncedField<F> field = new AutoSyncedField<>(value, this.syncedFields.size(), this, serializer, deserializer);
+        this.syncedFields.put(field.getId(), field);
+        return field;
+    }
+
+    /**
+     * Method to create fields which are automatically synced between server and the client, as well as saved to disk
+     * Only call set method on the server
+     *
+     * This method differs with the above one in that it allows for fields to be read from disk with a delay,
+     * For instance if other tasks need to finish first during serverStarting or serverAboutToStart.
+     *
+     * @param value The initial value of the field (will not be synced initially, must match server and client)
+     * @param serializer The serializer used to write the value to NBT
+     * @param deserializer The deserializer used to read the value from NBT
+     * @param checker Checks if the data is ready to be read from disk
+     * @param fallback The value to be returned while data has not yet been read from disk
+     * @param <F> The type of the field
+     * @return a new AutoSyncedField object, wrapping the desired value
+     */
+    protected <F> AutoSyncedField<F> createField(
+            F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer, BooleanSupplier checker, F fallback) {
+
+        AutoSyncedField<F> field = new AutoSyncedFieldDelayed<>(value, this.syncedFields.size(), this, serializer, deserializer, checker, fallback);
         this.syncedFields.put(field.getId(), field);
         return field;
     }
@@ -177,7 +217,7 @@ public abstract class TileEntityBase extends TileEntity {
             }
         }
 
-        private void setInternal(F value) {
+        protected void setInternal(F value) {
             this.value = value;
         }
 
@@ -197,7 +237,8 @@ public abstract class TileEntityBase extends TileEntity {
             return this.side;
         }
 
-        public CompoundNBT serialize(CompoundNBT tag) {
+        public CompoundNBT serialize() {
+            CompoundNBT tag = new CompoundNBT();
             this.serializer.accept(this.get(), tag);
             return tag;
         }
@@ -209,6 +250,69 @@ public abstract class TileEntityBase extends TileEntity {
         protected void sync() {
             new MessageAutoSyncTileField<>(this).sendToAll();
         }
+    }
 
+    protected static class AutoSyncedFieldDelayed<F> extends AutoSyncedField<F> {
+        private final BooleanSupplier checker;
+        private final F fallback;
+
+        private CompoundNBT data;
+
+        private AutoSyncedFieldDelayed(F value, int id, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer,
+                                       BooleanSupplier checker, F fallback) {
+            super(value, id, tile, serializer, deserializer);
+            this.checker = checker;
+            this.fallback = fallback;
+        }
+
+        @Override
+        protected void setInternal(F value) {
+            this.data = null;
+            super.setInternal(value);
+        }
+
+        @Override
+        public F get() {
+            if(this.data == null) {
+                return super.get();
+            } else {
+                if(this.isReady()) {
+                    this.deserialize(this.data);
+                    this.data = null;
+                    if(this.getSide().isServer()) {
+                        this.sync();
+                    }
+                    return this.get();
+                } else {
+                    return this.fallback;
+                }
+            }
+        }
+
+        @Override
+        public void deserialize(CompoundNBT tag) {
+            if(this.isReady()) {
+                super.deserialize(tag);
+            } else {
+                this.data = tag.copy();
+            }
+        }
+
+        @Override
+        public CompoundNBT serialize() {
+            if(this.data == null) {
+                return super.serialize();
+            }
+            if(this.isReady()) {
+                super.deserialize(this.data);
+                this.data = null;
+                return super.serialize();
+            }
+            return this.data;
+        }
+
+        protected boolean isReady() {
+            return this.checker.getAsBoolean();
+        }
     }
 }
