@@ -69,8 +69,4 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
         }
         return state;
     }
-
-    public final void spawnItem(World world, BlockPos pos, ItemStack stack) {
-        world.addEntity(new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack));
-    }
 }

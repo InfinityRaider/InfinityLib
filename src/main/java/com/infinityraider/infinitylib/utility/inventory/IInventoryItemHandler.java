@@ -24,7 +24,7 @@ public interface IInventoryItemHandler extends IInventory, IItemHandler {
     @Nonnull
     default ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
         if(!isValidSlot(slot) || stack.isEmpty() || stack.getCount() <= 0) {
-            return ItemStack.EMPTY;
+            return stack;
         }
         ItemStack inSlot = this.getStackInSlot(slot);
         if(inSlot.isEmpty() || inSlot.getCount() <= 0) {

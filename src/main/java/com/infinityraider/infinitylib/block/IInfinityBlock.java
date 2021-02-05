@@ -4,7 +4,11 @@ import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -22,6 +26,13 @@ public interface IInfinityBlock extends IInfinityRegistrable<Block> {
     @Nonnull
     default <T extends BlockItem & IInfinityItem> Optional<T> getBlockItem() {
         return Optional.empty();
+    }
+
+    default void spawnItem(World world, BlockPos pos, ItemStack stack) {
+        if(world == null || world.isRemote()) {
+            return;
+        }
+        world.addEntity(new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack));
     }
 
     @OnlyIn(Dist.CLIENT)
