@@ -88,6 +88,13 @@ public interface IInventoryItemHandler extends IInventory, IItemHandler {
         return true;
     }
 
+
+
+    @Override
+    default boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        return this.isItemValidForSlot(slot, stack);
+    }
+
     default boolean isValidSlot(int slot) {
         return slot >= 0 && slot < this.getSlots();
     }
