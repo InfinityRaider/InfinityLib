@@ -226,12 +226,51 @@ public interface IRenderUtilities {
     }
 
     /**
+     * @return The width in pixels of the Minecraft window
+     */
+    default int getScaledWindowWidth() {
+        return Minecraft.getInstance().getMainWindow().getScaledWidth();
+    }
+    /**
+     * @return The height in pixels of the Minecraft window
+     */
+    default int getScaledWindowHeight() {
+        return Minecraft.getInstance().getMainWindow().getScaledHeight();
+    }
+
+    /**
+     * @return The render type buffer implementation
+     */
+    default IRenderTypeBuffer.Impl getRenderTypeBuffer() {
+        return  Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
+    }
+
+    /**
+     * Fetches a vertex builder for a RenderType, fetches the IRenderTypeBuffer internally
+     * @param renderType the RenderType
+     * @return an IVertexBuilder
+     */
+    default IVertexBuilder getVertexBuilder(RenderType renderType) {
+        return this.getVertexBuilder(this.getRenderTypeBuffer(), renderType);
+    }
+
+    /**
+     * Fetches a vertex builder from an IRenderTypeBuffer for a RenderType
+     * @param buffer the IRenderTypeBuffer
+     * @param renderType the RenderType
+     * @return an IVertexBuilder
+     */
+    default IVertexBuilder getVertexBuilder(IRenderTypeBuffer buffer, RenderType renderType) {
+        return buffer.getBuffer(renderType);
+    }
+
+    /**
      * Method to render the coordinate system for the current matrix. Renders three lines with
      * length 1 starting from (0, 0, 0): red line along x axis, green line along y axis and blue
      * line along z axis.
      */
     default void renderCoordinateSystem(MatrixStack transforms, IRenderTypeBuffer buffer) {
-        IVertexBuilder builder = buffer.getBuffer(RenderType.getLines());
+        IVertexBuilder builder = this.getVertexBuilder(buffer, RenderType.getLines());
         Matrix4f matrix = transforms.getLast().getMatrix();
         // X-axis
         builder.pos(matrix, 0, 0, 0).color(255, 0, 0, 255).endVertex();
