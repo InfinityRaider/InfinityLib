@@ -20,4 +20,8 @@ public final class Names {
         public static final String LIST = "IL_LIST";
         public static final String EFFECTS = "IL_EFFECTS";
     }
+
+    public static final class Entities {
+        public static final String CAMERA = "infinity_dyn_camera";
+    }
 }

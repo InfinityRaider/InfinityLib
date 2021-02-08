@@ -10,6 +10,8 @@ import com.infinityraider.infinitylib.entity.EmptyEntityRenderFactory;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
+import com.infinityraider.infinitylib.modules.dynamiccamera.EntityDynamicCamera;
+import com.infinityraider.infinitylib.modules.dynamiccamera.IDynamicCameraController;
 import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
 import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
 import com.infinityraider.infinitylib.render.model.TransformingFaceBakery;
@@ -78,8 +80,8 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         }
     }
 
-    @Override
     /** Called on the client to register renderers */
+    @Override
     public void registerRenderers(InfinityMod<?,?> mod) {
         this.registerBlockRenderers(mod.getModBlockRegistry());
         this.registerTileRenderers(mod.getModTileRegistry());
@@ -140,5 +142,30 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     @Override
     public void forceClientRenderUpdate(BlockPos pos) {
         Minecraft.getInstance().worldRenderer.markBlockRangeForRenderUpdate(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    @Override
+    public void startControllingCamera(IDynamicCameraController controller) {
+        EntityDynamicCamera.startControllingCamera(controller);
+    }
+
+    @Override
+    public void stopControllingCamera() {
+        EntityDynamicCamera.stopControllingCamera();
+    }
+
+    @Override
+    public void tickCamera() {
+        EntityDynamicCamera.tickCamera();
+    }
+
+    @Override
+    public void resetCamera() {
+        EntityDynamicCamera.resetCamera();
+    }
+
+    @Override
+    public boolean isCameraActive() {
+        return EntityDynamicCamera.isCameraActive();
     }
 }

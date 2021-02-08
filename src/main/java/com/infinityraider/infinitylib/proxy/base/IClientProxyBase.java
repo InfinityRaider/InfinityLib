@@ -5,6 +5,7 @@ import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.RegistryKey;
@@ -13,6 +14,15 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig> extends IProxyBase<C> {
+    @Override
+    default Entity getRenderViewEntity() {
+        return Minecraft.getInstance().getRenderViewEntity();
+    }
+
+    default void setRenderViewEntity(Entity entity) {
+        Minecraft.getInstance().setRenderViewEntity(entity);
+    }
+
     @Override
     default PlayerEntity getClientPlayer() {
         return Minecraft.getInstance().player;

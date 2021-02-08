@@ -13,6 +13,7 @@ import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.entity.IInfinityLivingEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
+import com.infinityraider.infinitylib.modules.dynamiccamera.IDynamicCameraController;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.sound.IInfinitySoundEvent;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
@@ -65,6 +66,18 @@ public interface IProxy extends IProxyBase<Config> {
     }
 
     default void forceClientRenderUpdate(BlockPos pos) {}
+
+    default void startControllingCamera(IDynamicCameraController controller) {}
+
+    default void stopControllingCamera() {}
+
+    default void tickCamera() {}
+
+    default void resetCamera() {}
+
+    default boolean isCameraActive() {
+        return false;
+    }
 
     /**
      * -------------------

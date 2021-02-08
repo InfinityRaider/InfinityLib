@@ -23,6 +23,7 @@ import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.event.server.*;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
@@ -140,6 +141,19 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     default Entity getEntityById(RegistryKey<World> dimension, int id) {
         return this.getEntityById(this.getWorldFromDimension(dimension), id);
     }
+
+    /**
+     *  @return the render view entity on the client, null on the server
+     */
+    @Nullable
+    default Entity getRenderViewEntity() {
+        return null;
+    }
+
+    /**
+     *  Sets the render view entity on the client
+     */
+    default void setRenderViewEntity(Entity entity) {}
 
     /**
      *  @return the World object ofr a given dimension key
