@@ -168,4 +168,9 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     public boolean isCameraActive() {
         return EntityDynamicCamera.isCameraActive();
     }
+
+    @Override
+    public void onCameraFieldOfViewChange(float fov) {
+        EntityDynamicCamera.onFieldOfViewUpdate(fov);
+    }
 }

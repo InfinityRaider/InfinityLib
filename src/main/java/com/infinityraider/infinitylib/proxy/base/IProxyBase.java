@@ -160,12 +160,18 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
      */
     World getWorldFromDimension(RegistryKey<World> dimension);
 
-
     /**
      *  @return the sound delegate for the relevant side
      */
     default SidedSoundDelegate getSoundDelegate() {
         return new SoundDelegateServer();
+    }
+
+    /**
+     * @return the fov setting on the client, 70 on the server
+     */
+    default double getFieldOfView() {
+        return 70;
     }
 
     /** Queues a task to be executed on this side */

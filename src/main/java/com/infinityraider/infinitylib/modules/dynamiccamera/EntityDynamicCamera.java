@@ -75,6 +75,13 @@ public class EntityDynamicCamera extends Entity {
         return camera != null && camera.getStatus().isActive();
     }
 
+    public static void onFieldOfViewUpdate(float fov) {
+        EntityDynamicCamera camera = getInstance();
+        if(camera != null) {
+            camera.onFieldOfViewChange(fov);
+        }
+    }
+
     private Status status;
 
     private IDynamicCameraController controller;
@@ -102,6 +109,12 @@ public class EntityDynamicCamera extends Entity {
         this.status = status;
     }
 
+    public void onFieldOfViewChange(float fov) {
+        if(this.controller != null) {
+            this.controller.onFieldOfViewChanged(fov);
+        }
+    }
+
     public void startObserving(IDynamicCameraController controller) {
         if(this.controller != null) {
             this.controller.setObserving(InfinityLib.instance.getClientPlayer(), false);
@@ -111,7 +124,7 @@ public class EntityDynamicCamera extends Entity {
         this.originalCamera = InfinityLib.instance.proxy().getRenderViewEntity();
         Entity prevCamera = this.getOriginalRenderViewEntity();
         this.originalPosition = prevCamera.getEyePosition(1);
-        this.originalOrientation = prevCamera.getPitchYaw();
+        this.originalOrientation = new Vector2f(prevCamera.getPitch(1), prevCamera.getYaw(1));
         this.setPositionAndRotation(
                 this.originalPosition.getX(), this.originalPosition.getY(), this.originalPosition.getZ(),
                 this.originalOrientation.x, this.originalOrientation.y);
@@ -148,7 +161,8 @@ public class EntityDynamicCamera extends Entity {
     }
 
     public Vector2f getReturnOrientation() {
-        return this.getOriginalRenderViewEntity().getPitchYaw();
+        Entity original = this.getOriginalRenderViewEntity();
+        return new Vector2f(original.getPitch(1), original.getYaw(1));
     }
 
     protected Entity getOriginalRenderViewEntity() {
@@ -176,12 +190,23 @@ public class EntityDynamicCamera extends Entity {
             this.setPositionAndRotation(endPos, endOri);
             return true;
         } else {
+            // calculate interpolation ratio (both as double and as float)
             double ratioD = (this.counter + 0.0) / duration;
             float ratioF = (this.counter + 0.0F) / duration;
+            // specific yaw handling to avoid making full rotations
+            float targetYaw = endOri.y % 360;
+            float startYaw = startOri.y % 360;
+            if(targetYaw - startYaw > 180) {
+                targetYaw = targetYaw - 360;
+            }
+            else if(targetYaw - startYaw < -180) {
+                startYaw = startYaw - 360;
+            }
+            // set position and angles
             this.setPositionAndRotation(
                     startPos.add(endPos.subtract(startPos).scale(ratioD)),
                     startOri.x + (endOri.x - startOri.x) * ratioF,
-                    startOri.y + (endOri.y - startOri.y) * ratioF
+                    startYaw + (targetYaw - startYaw) * ratioF
             );
             return false;
         }

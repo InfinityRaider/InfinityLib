@@ -5,6 +5,7 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.modules.Module;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.FOVUpdateEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.event.TickEvent;
@@ -74,5 +75,12 @@ public class ModuleDynamicCamera extends Module {
                 this.stopObserving();
             }
         }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @SuppressWarnings("unused")
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onFieldOfViewUpdate(FOVUpdateEvent event) {
+        InfinityLib.instance.proxy().onCameraFieldOfViewChange(event.getNewfov());
     }
 }

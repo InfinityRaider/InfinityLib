@@ -79,6 +79,8 @@ public interface IProxy extends IProxyBase<Config> {
         return false;
     }
 
+    default void onCameraFieldOfViewChange(float fov) {}
+
     /**
      * -------------------
      * REGISTERING METHODS

@@ -14,4 +14,6 @@ public interface IDynamicCameraController {
     Vector3d getObserverPosition();
 
     Vector2f getObserverOrientation();
+
+    void onFieldOfViewChanged(float fov);
 }

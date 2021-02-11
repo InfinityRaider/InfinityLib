@@ -57,6 +57,14 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
         return new SoundDelegateClient(Minecraft.getInstance().getSoundHandler());
     }
 
+    /**
+     * @return the fov setting on the client, 90 on the server
+     */
+    @Override
+    default double getFieldOfView() {
+        return Minecraft.getInstance().gameSettings.fov;
+    }
+
     @Override
     default Item.Properties setItemRenderer(Item.Properties properties) {
         return properties.setISTER(InfItemRendererRegistry.getInstance().getISTER());
