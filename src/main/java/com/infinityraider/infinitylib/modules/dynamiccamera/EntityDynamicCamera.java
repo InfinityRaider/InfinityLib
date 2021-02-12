@@ -115,9 +115,9 @@ public class EntityDynamicCamera extends Entity {
         }
     }
 
-    public void startObserving(IDynamicCameraController controller) {
+    public boolean startObserving(IDynamicCameraController controller) {
         if(this.controller != null) {
-            this.controller.setObserving(InfinityLib.instance.getClientPlayer(), false);
+            return false;
         }
         this.setStatus(Status.POSITIONING);
         this.controller = controller;
@@ -130,14 +130,16 @@ public class EntityDynamicCamera extends Entity {
                 this.originalOrientation.x, this.originalOrientation.y);
         this.status = Status.POSITIONING;
         InfinityLib.instance.proxy().setRenderViewEntity(this);
+        return true;
     }
 
     public void stopObserving() {
+        this.controller.onObservationEnd();
         this.setStatus(Status.RETURNING);
     }
 
     public boolean shouldContinueObserving() {
-        return this.controller.continueObserving();
+        return this.controller.shouldContinueObserving();
     }
 
     public Vector3d getOriginalPosition() {
@@ -185,7 +187,7 @@ public class EntityDynamicCamera extends Entity {
     }
 
     protected boolean moveIncrement(Vector3d startPos, Vector2f startOri, Vector3d endPos, Vector2f endOri) {
-        int duration = this.controller.getTransitionDuration();
+        int duration = this.getTransitionDuration();
         if (this.counter >= duration) {
             this.setPositionAndRotation(endPos, endOri);
             return true;
@@ -210,6 +212,10 @@ public class EntityDynamicCamera extends Entity {
             );
             return false;
         }
+    }
+
+    protected int getTransitionDuration() {
+        return this.controller.getTransitionDuration();
     }
 
     // Holds the camera in place, preventing jerking back and forth
@@ -242,9 +248,7 @@ public class EntityDynamicCamera extends Entity {
 
     public void reset() {
         if (this.controller != null) {
-            IDynamicCameraController controller = this.controller;
             this.controller = null;
-            controller.setObserving(InfinityLib.instance.getClientPlayer(), false);
         }
         InfinityLib.instance.proxy().setRenderViewEntity(this.originalCamera);
         super.setDead();
@@ -268,25 +272,43 @@ public class EntityDynamicCamera extends Entity {
     private static final Function<EntityDynamicCamera, Status> IDLE_TICK = (camera) -> Status.IDLE;
 
     private static final Function<EntityDynamicCamera, Status> POSITIONING_TICK = (camera) -> {
+        if(camera.counter <= 0) {
+            camera.controller.onCameraActivated();
+            camera.counter = 0;
+        }
         camera.counter += 1;
-        if (camera.moveIncrement(
-                camera.getOriginalPosition(), camera.getOriginalOrientation(),
-                camera.getTargetPosition(), camera.getTargetOrientation())) {
-            return Status.OBSERVING;
+        if(camera.shouldContinueObserving()) {
+            if (camera.moveIncrement(
+                    camera.getOriginalPosition(), camera.getOriginalOrientation(),
+                    camera.getTargetPosition(), camera.getTargetOrientation())) {
+                camera.controller.onObservationStart();
+                return Status.OBSERVING;
+            } else {
+                return Status.POSITIONING;
+            }
         } else {
-            return Status.POSITIONING;
+            camera.counter = camera.getTransitionDuration() - camera.counter;
+            return Status.RETURNING;
         }
     };
 
     private static final Function<EntityDynamicCamera, Status> OBSERVING_TICK = (camera) -> {
-        if (camera.counter != 0) {
-            camera.counter = 0;
+        if(camera.shouldContinueObserving()) {
+            if (camera.counter != 0) {
+                camera.counter = 0;
+            }
+            camera.holdPositionAndOrientation(camera.getTargetPosition(), camera.getTargetOrientation());
+            return Status.OBSERVING;
+        } else {
+            camera.controller.onObservationEnd();
+            return Status.RETURNING;
         }
-        camera.holdPositionAndOrientation(camera.getTargetPosition(), camera.getTargetOrientation());
-        return camera.shouldContinueObserving() ? Status.RETURNING : Status.OBSERVING;
     };
 
     private static final Function<EntityDynamicCamera, Status> RETURNING_TICK = (camera) -> {
+        if(camera.counter <= 0) {
+            camera.counter = 0;
+        }
         camera.counter += 1;
         if (camera.moveIncrement(
                 camera.getTargetPosition(), camera.getTargetOrientation(),
@@ -301,6 +323,7 @@ public class EntityDynamicCamera extends Entity {
         if (camera.counter != 0) {
             camera.counter = 0;
         }
+        camera.controller.onCameraDeactivated();
         camera.reset();
         return Status.IDLE;
     };
