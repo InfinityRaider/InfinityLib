@@ -22,44 +22,55 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
- * We set this entity as the render view entity, but we do not need to register it as we never spawn it.
+ * We need to extend Entity in order to be able to set it as the render view entity,
+ * but we will never spawn it, therefore we do not need to register it.
  * We also only need only one instance of this entity per client
  */
 @OnlyIn(Dist.CLIENT)
-public class EntityDynamicCamera extends Entity {
-    private static final EntityType<EntityDynamicCamera> TYPE =
+public class DynamicCamera extends Entity {
+    private static final EntityType<DynamicCamera> TYPE =
             EntityTypeBase.entityTypeBuilder(
-                    Names.Entities.CAMERA, EntityDynamicCamera.class, SpawnFactory.getInstance(), EntityClassification.MISC,
+                    Names.Entities.CAMERA, DynamicCamera.class, SpawnFactory.getInstance(), EntityClassification.MISC,
                     EntitySize.fixed(Constants.UNIT, Constants.UNIT)
             ).build();
 
-    private static EntityDynamicCamera INSTANCE;
+    private static DynamicCamera INSTANCE;
 
     // Tick logic gets called before the world is initialized, therefore we must wait to instantiate the camera
     @Nullable
-    private static EntityDynamicCamera getInstance() {
+    private static DynamicCamera getInstance() {
         if (INSTANCE == null && InfinityLib.instance.getClientWorld() != null) {
-            INSTANCE = new EntityDynamicCamera(InfinityLib.instance.getClientWorld());
+            INSTANCE = new DynamicCamera(InfinityLib.instance.getClientWorld());
         }
         return INSTANCE;
     }
 
     public static void startControllingCamera(IDynamicCameraController controller) {
-        EntityDynamicCamera camera = getInstance();
+        DynamicCamera camera = getInstance();
         if(camera != null) {
             camera.startObserving(controller);
         }
     }
 
     public static void stopControllingCamera() {
-        EntityDynamicCamera camera = getInstance();
+        DynamicCamera camera = getInstance();
         if(camera != null) {
             camera.stopObserving();
         }
     }
 
+    public static Status getCameraStatus() {
+        DynamicCamera camera = getInstance();
+        return camera == null ? Status.IDLE : camera.getStatus();
+    }
+
+    public static int getCameraAnimationFrame() {
+        DynamicCamera camera = getInstance();
+        return camera == null ? 0 : camera.counter;
+    }
+
     public static void tickCamera() {
-        EntityDynamicCamera camera = getInstance();
+        DynamicCamera camera = getInstance();
         if(camera != null) {
             camera.tick();
         }
@@ -71,12 +82,12 @@ public class EntityDynamicCamera extends Entity {
     }
 
     public static boolean isCameraActive() {
-        EntityDynamicCamera camera = getInstance();
+        DynamicCamera camera = getInstance();
         return camera != null && camera.getStatus().isActive();
     }
 
     public static void onFieldOfViewUpdate(float fov) {
-        EntityDynamicCamera camera = getInstance();
+        DynamicCamera camera = getInstance();
         if(camera != null) {
             camera.onFieldOfViewChange(fov);
         }
@@ -92,11 +103,11 @@ public class EntityDynamicCamera extends Entity {
 
     private int counter;
 
-    public EntityDynamicCamera(World world) {
+    public DynamicCamera(World world) {
         this(TYPE, world);
     }
 
-    public EntityDynamicCamera(EntityType<EntityDynamicCamera> type, World world) {
+    public DynamicCamera(EntityType<DynamicCamera> type, World world) {
         super(type, world);
         this.status = Status.IDLE;
     }
@@ -269,9 +280,9 @@ public class EntityDynamicCamera extends Entity {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
-    private static final Function<EntityDynamicCamera, Status> IDLE_TICK = (camera) -> Status.IDLE;
+    private static final Function<DynamicCamera, Status> IDLE_TICK = (camera) -> Status.IDLE;
 
-    private static final Function<EntityDynamicCamera, Status> POSITIONING_TICK = (camera) -> {
+    private static final Function<DynamicCamera, Status> POSITIONING_TICK = (camera) -> {
         if(camera.counter <= 0) {
             camera.controller.onCameraActivated();
             camera.counter = 0;
@@ -292,7 +303,7 @@ public class EntityDynamicCamera extends Entity {
         }
     };
 
-    private static final Function<EntityDynamicCamera, Status> OBSERVING_TICK = (camera) -> {
+    private static final Function<DynamicCamera, Status> OBSERVING_TICK = (camera) -> {
         if(camera.shouldContinueObserving()) {
             if (camera.counter != 0) {
                 camera.counter = 0;
@@ -305,7 +316,7 @@ public class EntityDynamicCamera extends Entity {
         }
     };
 
-    private static final Function<EntityDynamicCamera, Status> RETURNING_TICK = (camera) -> {
+    private static final Function<DynamicCamera, Status> RETURNING_TICK = (camera) -> {
         if(camera.counter <= 0) {
             camera.counter = 0;
         }
@@ -319,7 +330,7 @@ public class EntityDynamicCamera extends Entity {
         }
     };
 
-    private static final Function<EntityDynamicCamera, Status> FINISHED_TICK = (camera) -> {
+    private static final Function<DynamicCamera, Status> FINISHED_TICK = (camera) -> {
         if (camera.counter != 0) {
             camera.counter = 0;
         }
@@ -336,9 +347,9 @@ public class EntityDynamicCamera extends Entity {
         FINISHED(false, FINISHED_TICK);
 
         private final boolean active;
-        private final Function<EntityDynamicCamera, Status> tickLogic;
+        private final Function<DynamicCamera, Status> tickLogic;
 
-        Status(boolean active, Function<EntityDynamicCamera, Status> tickLogic) {
+        Status(boolean active, Function<DynamicCamera, Status> tickLogic) {
             this.active = active;
             this.tickLogic = tickLogic;
         }
@@ -347,12 +358,12 @@ public class EntityDynamicCamera extends Entity {
             return this.active;
         }
 
-        private Status tick(EntityDynamicCamera camera) {
+        private Status tick(DynamicCamera camera) {
             return this.tickLogic.apply(camera);
         }
     }
 
-    public static class SpawnFactory implements EntityType.IFactory<EntityDynamicCamera> {
+    public static class SpawnFactory implements EntityType.IFactory<DynamicCamera> {
         private static final SpawnFactory INSTANCE = new SpawnFactory();
 
         public static SpawnFactory getInstance() {
@@ -364,8 +375,8 @@ public class EntityDynamicCamera extends Entity {
 
         @Override
         @Nonnull
-        public EntityDynamicCamera create(@Nonnull EntityType<EntityDynamicCamera> type, @Nonnull World world) {
-            return new EntityDynamicCamera(type, world);
+        public DynamicCamera create(@Nonnull EntityType<DynamicCamera> type, @Nonnull World world) {
+            return new DynamicCamera(type, world);
         }
     }
 }

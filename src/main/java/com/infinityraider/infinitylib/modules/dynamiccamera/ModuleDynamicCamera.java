@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.modules.dynamiccamera;
 
 import com.google.common.collect.ImmutableList;
-import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.modules.Module;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -20,6 +19,7 @@ import java.util.List;
 /**
  * Module allowing dynamic control of Minecraft's camera.
  */
+@OnlyIn(Dist.CLIENT)
 public class ModuleDynamicCamera extends Module {
     private static final ModuleDynamicCamera INSTANCE = new ModuleDynamicCamera();
 
@@ -29,17 +29,24 @@ public class ModuleDynamicCamera extends Module {
 
     private ModuleDynamicCamera() {}
 
-    @OnlyIn(Dist.CLIENT)
     public List<Object> getClientEventHandlers() {
         return ImmutableList.of(this);
     }
 
     public void startObserving(IDynamicCameraController controller) {
-        InfinityLib.instance.proxy().startControllingCamera(controller);
+        DynamicCamera.startControllingCamera(controller);
     }
 
     public void stopObserving() {
-        InfinityLib.instance.proxy().stopControllingCamera();
+        DynamicCamera.stopControllingCamera();
+    }
+
+    public DynamicCamera.Status getCameraStatus() {
+        return DynamicCamera.getCameraStatus();
+    }
+
+    public int getCameraAnimationFrame() {
+        return DynamicCamera.getCameraAnimationFrame();
     }
 
     @SubscribeEvent
@@ -48,39 +55,37 @@ public class ModuleDynamicCamera extends Module {
         if(event.phase != TickEvent.Phase.START) {
             return;
         }
-        InfinityLib.instance.proxy().tickCamera();
+        DynamicCamera.tickCamera();
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onWorldUnloaded(WorldEvent.Unload event) {
-        InfinityLib.instance.proxy().resetCamera();
+        DynamicCamera.resetCamera();
     }
 
     @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onRenderHand(RenderHandEvent event) {
-        if(InfinityLib.instance.proxy().isCameraActive()) {
+        if(DynamicCamera.isCameraActive()) {
             event.setResult(Event.Result.DENY);
             event.setCanceled(true);
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
     public void onKeyInput(InputEvent.KeyInputEvent event) {
-        if(InfinityLib.instance.proxy().isCameraActive()) {
+        if(DynamicCamera.isCameraActive()) {
             if(event.getKey() == GLFW.GLFW_KEY_ESCAPE) {
                 this.stopObserving();
             }
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onFieldOfViewUpdate(FOVUpdateEvent event) {
-        InfinityLib.instance.proxy().onCameraFieldOfViewChange(event.getNewfov());
+        DynamicCamera.onFieldOfViewUpdate(event.getNewfov());
     }
 }
