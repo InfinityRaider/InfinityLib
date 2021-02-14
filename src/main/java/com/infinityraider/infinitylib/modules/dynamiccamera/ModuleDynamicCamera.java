@@ -14,6 +14,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -39,6 +40,15 @@ public class ModuleDynamicCamera extends Module {
 
     public void stopObserving() {
         DynamicCamera.stopControllingCamera();
+    }
+
+    public boolean toggleObserving(IDynamicCameraController controller, boolean status) {
+        return DynamicCamera.toggleCameraControl(controller, status);
+    }
+
+    @Nullable
+    public IDynamicCameraController getCameraController() {
+        return DynamicCamera.getCameraController();
     }
 
     public DynamicCamera.Status getCameraStatus() {

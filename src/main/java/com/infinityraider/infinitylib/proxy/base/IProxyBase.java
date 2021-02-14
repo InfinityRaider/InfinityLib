@@ -4,6 +4,7 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.capability.CapabilityHandler;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
+import com.infinityraider.infinitylib.modules.dynamiccamera.IDynamicCameraController;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateServer;
 import net.minecraft.entity.Entity;
@@ -58,7 +59,6 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
         InfinityLib.instance.getLogger().debug("Registering event handler: " + handler.getClass().getName());
         MinecraftForge.EVENT_BUS.register(handler);
     }
-
 
     /** Registers a capability */
     @SuppressWarnings("unchecked")
@@ -180,5 +180,16 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     /** Sets the ItemStackTileEntityRenderer in the properties on the client side */
     default Item.Properties setItemRenderer(Item.Properties properties) {
         return properties;
+    }
+
+    /**
+     * Enables or disables the dynamic camera for the given controller, only works client side
+     *
+     * @param controller the controller
+     * @param status true to enable, false to disable
+     * @return true if successful
+     */
+    default boolean toggleDynamicCamera(IDynamicCameraController controller, boolean status) {
+        return false;
     }
 }

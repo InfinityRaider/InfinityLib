@@ -45,18 +45,44 @@ public class DynamicCamera extends Entity {
         return INSTANCE;
     }
 
-    public static void startControllingCamera(IDynamicCameraController controller) {
+    public static boolean startControllingCamera(IDynamicCameraController controller) {
         DynamicCamera camera = getInstance();
         if(camera != null) {
-            camera.startObserving(controller);
+            return camera.startObserving(controller);
         }
+        return false;
     }
 
-    public static void stopControllingCamera() {
+    public static boolean stopControllingCamera() {
         DynamicCamera camera = getInstance();
         if(camera != null) {
             camera.stopObserving();
+            return true;
         }
+        return false;
+    }
+
+    public static boolean toggleCameraControl(IDynamicCameraController controller, boolean status) {
+        if(isCameraActive()) {
+            if(status) {
+                return false;
+            }
+            if(getCameraController() == controller) {
+                return stopControllingCamera();
+            }
+            return false;
+        } else {
+            return status && startControllingCamera(controller);
+        }
+    }
+
+    @Nullable
+    public static IDynamicCameraController getCameraController() {
+        DynamicCamera camera = getInstance();
+        if(camera != null) {
+            return camera.controller;
+        }
+        return null;
     }
 
     public static Status getCameraStatus() {

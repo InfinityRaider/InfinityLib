@@ -1,6 +1,8 @@
 package com.infinityraider.infinitylib.proxy.base;
 
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
+import com.infinityraider.infinitylib.modules.dynamiccamera.IDynamicCameraController;
+import com.infinityraider.infinitylib.modules.dynamiccamera.ModuleDynamicCamera;
 import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
@@ -68,5 +70,10 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
     @Override
     default Item.Properties setItemRenderer(Item.Properties properties) {
         return properties.setISTER(InfItemRendererRegistry.getInstance().getISTER());
+    }
+
+    @Override
+    default boolean toggleDynamicCamera(IDynamicCameraController controller, boolean status) {
+            return ModuleDynamicCamera.getInstance().toggleObserving(controller, status);
     }
 }
