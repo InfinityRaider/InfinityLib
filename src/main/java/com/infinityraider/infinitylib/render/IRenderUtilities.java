@@ -6,6 +6,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -20,6 +21,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.text.Color;
 import net.minecraft.world.IBlockDisplayReader;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -207,6 +210,16 @@ public interface IRenderUtilities {
         return Minecraft.getInstance().getRenderManager();
     }
 
+
+    /**
+     * Fetches Minecraft's Font Renderer
+     *
+     * @return the FontRenderer object
+     */
+    default FontRenderer getFontRenderer() {
+        return Minecraft.getInstance().fontRenderer;
+    }
+
     /**
      * Fetches the Player's current Camera Orientation
      *
@@ -262,6 +275,22 @@ public interface IRenderUtilities {
      */
     default IVertexBuilder getVertexBuilder(IRenderTypeBuffer buffer, RenderType renderType) {
         return buffer.getBuffer(renderType);
+    }
+
+    default Color convertColor(Vector3f color) {
+        return Color.fromInt(this.calculateColor(color));
+    }
+
+    default int calculateColor(Vector3f color) {
+        return this.calculateColor(color.getX(), color.getX(), color.getZ());
+    }
+
+    default int calculateColor(float r, float g, float b) {
+        return this.calculateColor((int) (255 * r), (int) (255 * g),(int) (255 * b));
+    }
+
+    default int calculateColor(int r, int g, int b) {
+        return (65536 * r) + (256 * g) + b;
     }
 
     /**
