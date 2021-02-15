@@ -4,6 +4,8 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.entity.EntityTypeBase;
 import com.infinityraider.infinitylib.reference.Constants;
 import com.infinityraider.infinitylib.reference.Names;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.PointOfView;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntitySize;
@@ -126,6 +128,7 @@ public class DynamicCamera extends Entity {
     private Entity originalCamera;
     private Vector3d originalPosition;
     private Vector2f originalOrientation;
+    private PointOfView originalPov;
 
     private int counter;
 
@@ -166,13 +169,19 @@ public class DynamicCamera extends Entity {
                 this.originalPosition.getX(), this.originalPosition.getY(), this.originalPosition.getZ(),
                 this.originalOrientation.x, this.originalOrientation.y);
         this.status = Status.POSITIONING;
+        this.originalPov = Minecraft.getInstance().gameSettings.getPointOfView();
+        Minecraft.getInstance().gameSettings.setPointOfView(PointOfView.FIRST_PERSON);
         InfinityLib.instance.proxy().setRenderViewEntity(this);
         return true;
     }
 
     public void stopObserving() {
-        this.controller.onObservationEnd();
-        this.setStatus(Status.RETURNING);
+        if(this.controller != null) {
+            this.controller.onObservationEnd();
+        }
+        if(this.getStatus().isActive()) {
+            this.setStatus(Status.RETURNING);
+        }
     }
 
     public boolean shouldContinueObserving() {
@@ -276,7 +285,7 @@ public class DynamicCamera extends Entity {
     public void baseTick() {
         // If analyzer or player is null, this is invalid
         if (this.controller == null) {
-            this.setDead();
+            this.reset();
             return;
         }
         // Forward tick logic to the status
@@ -284,11 +293,18 @@ public class DynamicCamera extends Entity {
     }
 
     public void reset() {
+        this.status = Status.IDLE;
         if (this.controller != null) {
             this.controller = null;
         }
         InfinityLib.instance.proxy().setRenderViewEntity(this.originalCamera);
-        super.setDead();
+        if (this.originalPov != null) {
+            Minecraft.getInstance().gameSettings.setPointOfView(this.originalPov);
+        }
+        this.originalCamera = null;
+        this.originalPosition = null;
+        this.originalOrientation = null;
+        this.originalPov = null;
     }
 
     @Override
@@ -396,8 +412,7 @@ public class DynamicCamera extends Entity {
             return INSTANCE;
         }
 
-        private SpawnFactory() {
-        }
+        private SpawnFactory() {}
 
         @Override
         @Nonnull
