@@ -23,15 +23,19 @@ public class DynamicTextureIngredient extends Ingredient {
     public static final ResourceLocation ID = new ResourceLocation(InfinityLib.instance.getModId(), "dynamic_texture");
     public static final Serializer SERIALIZER = new Serializer();
 
-    private final ITag<Block> tag;
+    private final BlockTagList tagList;
 
     protected DynamicTextureIngredient(ITag<Block> tag) {
-        super(Stream.of(new BlockTagList(tag)));
-        this.tag = tag;
+        this(new BlockTagList(tag));
+    }
+
+    protected DynamicTextureIngredient(BlockTagList tagList) {
+        super(Stream.of(tagList));
+        this.tagList = tagList;
     }
 
     public ITag<Block> getTag() {
-        return this.tag;
+        return this.tagList.getTag();
     }
 
     private static final class Serializer implements IInfIngredientSerializer<DynamicTextureIngredient> {
@@ -48,7 +52,7 @@ public class DynamicTextureIngredient extends Ingredient {
                 ResourceLocation rl = buffer.readResourceLocation();
                 tag = BlockTags.getCollection().getTagByID(rl);
             }
-            return new DynamicTextureIngredient(tag);
+            return tag == null ? null : new DynamicTextureIngredient(tag);
         }
 
         @Override
@@ -79,10 +83,14 @@ public class DynamicTextureIngredient extends Ingredient {
             this.tag = tag;
         }
 
+        public ITag<Block> getTag() {
+            return this.tag;
+        }
+
         @Nonnull
         @Override
         public Collection<ItemStack> getStacks() {
-            return tag.getAllElements().stream()
+            return this.getTag().getAllElements().stream()
                     .map(Block::asItem)
                     .map(ItemStack::new)
                     .collect(Collectors.toList());
@@ -92,7 +100,7 @@ public class DynamicTextureIngredient extends Ingredient {
         public JsonObject serialize() {
             JsonObject jsonobject = new JsonObject();
             jsonobject.addProperty("material", TagCollectionManager.getManager().getBlockTags()
-                    .getValidatedIdFromTag(this.tag)
+                    .getValidatedIdFromTag(this.getTag())
                     .toString());
             return jsonobject;
         }

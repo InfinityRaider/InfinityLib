@@ -56,8 +56,7 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
     public static class Serializer extends ForgeRegistryEntry<IRecipeSerializer<?>>
             implements IRecipeSerializer<ShapelessDynamicTextureRecipe>, IInfRecipeSerializer {
 
-        private Serializer() {
-        }
+        private Serializer() {}
 
         @Nonnull
         @Override
