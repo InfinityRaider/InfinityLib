@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.crafting.dynamictexture;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.infinityraider.infinitylib.InfinityLib;
@@ -10,23 +11,23 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
-import net.minecraft.tags.TagCollectionManager;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DynamicTextureIngredient extends Ingredient {
-    public static final ResourceLocation ID = new ResourceLocation(InfinityLib.instance.getModId(), "dynamic_texture");
+    public static final ResourceLocation ID = new ResourceLocation(InfinityLib.instance.getModId(), "dynamic_material");
     public static final Serializer SERIALIZER = new Serializer();
 
     private final BlockTagList tagList;
 
-    protected DynamicTextureIngredient(ITag<Block> tag) {
-        this(new BlockTagList(tag));
+    protected DynamicTextureIngredient(ResourceLocation tagId) {
+        this(new BlockTagList((tagId)));
     }
 
     protected DynamicTextureIngredient(BlockTagList tagList) {
@@ -34,8 +35,19 @@ public class DynamicTextureIngredient extends Ingredient {
         this.tagList = tagList;
     }
 
+    public ResourceLocation getTagId() {
+        return this.tagList.getTagId();
+    }
+
     public ITag<Block> getTag() {
         return this.tagList.getTag();
+    }
+
+    @Override
+    public boolean test(@Nullable ItemStack stack) {
+        return stack != null && !stack.isEmpty() && this.getTag().getAllElements().stream()
+                .map(Block::asItem)
+                .anyMatch(item -> stack.getItem().equals(item));
     }
 
     private static final class Serializer implements IInfIngredientSerializer<DynamicTextureIngredient> {
@@ -46,13 +58,7 @@ public class DynamicTextureIngredient extends Ingredient {
 
         @Override
         public DynamicTextureIngredient parse(PacketBuffer buffer) {
-            boolean flag = buffer.readBoolean();
-            ITag<Block> tag = null;
-            if(flag) {
-                ResourceLocation rl = buffer.readResourceLocation();
-                tag = BlockTags.getCollection().getTagByID(rl);
-            }
-            return tag == null ? null : new DynamicTextureIngredient(tag);
+            return new DynamicTextureIngredient(buffer.readResourceLocation());
         }
 
         @Override
@@ -60,49 +66,57 @@ public class DynamicTextureIngredient extends Ingredient {
             if(!json.has("material")) {
                 throw new JsonParseException("com.infinityraider.infinitylib.crafting.DynamicTextureIngredient requires a material element");
             }
-            ResourceLocation rl = new ResourceLocation(JSONUtils.getString(json, "material"));
-            ITag<Block> tag = BlockTags.getCollection().getTagByID(rl);
-            return new DynamicTextureIngredient(tag);
+            return new DynamicTextureIngredient(new ResourceLocation(JSONUtils.getString(json, "material")));
         }
 
         @Override
         public void write(PacketBuffer buffer, DynamicTextureIngredient ingredient) {
-            ResourceLocation rl = BlockTags.getCollection().getDirectIdFromTag(ingredient.getTag());
-            boolean flag = rl != null;
-            buffer.writeBoolean(flag);
-            if(flag) {
-                buffer.writeResourceLocation(rl);
-            }
+            buffer.writeResourceLocation(ingredient.getTagId());
         }
     }
 
     private static final class BlockTagList implements Ingredient.IItemList {
-        private final ITag<Block> tag;
+        private final ResourceLocation tagId;
 
-        public BlockTagList(ITag<Block> tag) {
-            this.tag = tag;
+        private ITag<Block> tag;
+        private Collection<ItemStack> stacks;
+
+        public BlockTagList(ResourceLocation tagId) {
+            this.tagId = tagId;
+        }
+
+        public ResourceLocation getTagId() {
+            return tagId;
         }
 
         public ITag<Block> getTag() {
+            if(this.tag == null) {
+                this.tag = BlockTags.getCollection().get(this.getTagId());
+            }
             return this.tag;
         }
 
         @Nonnull
         @Override
         public Collection<ItemStack> getStacks() {
-            return this.getTag().getAllElements().stream()
-                    .map(Block::asItem)
-                    .map(ItemStack::new)
-                    .collect(Collectors.toList());
+            if(this.stacks == null) {
+                ITag<Block> tag = this.getTag();
+                if(tag == null) {
+                    return ImmutableList.of();
+                }
+                this.stacks = tag.getAllElements().stream()
+                        .map(Block::asItem)
+                        .map(ItemStack::new)
+                        .collect(Collectors.toList());
+            }
+            return this.stacks;
         }
 
         @Override
         public JsonObject serialize() {
-            JsonObject jsonobject = new JsonObject();
-            jsonobject.addProperty("material", TagCollectionManager.getManager().getBlockTags()
-                    .getValidatedIdFromTag(this.getTag())
-                    .toString());
-            return jsonobject;
+            JsonObject json = new JsonObject();
+            json.addProperty("material", this.getTagId().toString());
+            return json;
         }
     }
 }

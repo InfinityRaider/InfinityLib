@@ -52,7 +52,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     @Override
     @Nonnull
     public ItemStack getCraftingResult(@Nonnull CraftingInventory inv) {
-        ItemStack result = super.getCraftingResult(inv);
+        ItemStack result = super.getRecipeOutput();
         ItemStack material = this.checkMaterial(inv);
         if((result.getItem() instanceof BlockItemDynamicTexture) && (material != null)) {
             ((BlockItemDynamicTexture) result.getItem()).setMaterial(result, material);
@@ -63,7 +63,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     @Nullable
     protected ItemStack checkMaterial(@Nonnull CraftingInventory inv) {
         // Mostly copied with vanilla, with an additional check if all dynamic texture ingredients are equivalent
-        ItemStack material = null;
+        ItemStack material;
         for(int i = 0; i <= inv.getWidth() - this.getRecipeWidth(); ++i) {
             for(int j = 0; j <= inv.getHeight() - this.getRecipeHeight(); ++j) {
                 material = this.checkMaterialWithOffset(inv, i, j, true);
@@ -104,7 +104,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                     if(material == null) {
                         material = stackInSlot;
                     } else {
-                        if(ItemStack.areItemsEqual(material, stackInSlot)) {
+                        if(!ItemStack.areItemsEqual(material, stackInSlot)) {
                             return null;
                         }
                     }
