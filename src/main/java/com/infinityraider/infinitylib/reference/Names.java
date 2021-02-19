@@ -19,6 +19,7 @@ public final class Names {
         public static final String FLAG = "IL_FLAG";
         public static final String LIST = "IL_LIST";
         public static final String EFFECTS = "IL_EFFECTS";
+        public static final String MATERIAL = "IL_MATERIAL";
     }
 
     public static final class Entities {

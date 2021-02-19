@@ -105,11 +105,11 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         return this.networkWrapper;
     }
 
-    public P proxy() {
+    public final P proxy() {
         return this.proxy;
     }
 
-    public C getConfig() {
+    public final C getConfig() {
         return this.config.getConfig();
     }
 
@@ -146,10 +146,12 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      */
     public void initializeAPI() {}
 
-
     /**
      * Used to register all of the mod's Blocks.
-     * The object returned by this should have a field for each of its blocks
+     * The object returned by this should have a field for each of its Blocks
+     *
+     * Note: for this to work, the Blocks must implement IInfinityBlock
+     *
      * @return Block registry object or class
      */
     public Object getModBlockRegistry() {
@@ -157,8 +159,11 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register all of the mod's TileEntities.
-     * The object returned by this should have a field for each of its TileEntities
+     * Used to register all of the mod's TileEntity Types.
+     * The object returned by this should have a field for each of its TileEntity Types
+     *
+     * Note: for this to work, the TileEntity Types must implement IInfinityTileEntityType
+     *
      * @return TileEntity registry object or class
      */
     public Object getModTileRegistry() {
@@ -167,7 +172,10 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
 
     /**
      * Used to register all of the mod's Items.
-     * The object returned by this should have a field for each of its items
+     * The object returned by this should have a field for each of its Items
+     *
+     * Note: for this to work, the Items must implement IInfinityItem
+     *
      * @return Item registry object or class
      */
     public Object getModItemRegistry() {
@@ -176,7 +184,10 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
 
     /**
      * Used to register all of the mod's Biomes.
-     * The object returned by this should have a field for each of its biomes
+     * The object returned by this should have a field for each of its Biomes
+     *
+     * Note: currently not implemented, will not work
+     *
      * @return Biome registry object or class
      */
     public Object getModBiomeRegistry() {
@@ -185,7 +196,10 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
 
     /**
      * Used to register all of the mod's Enchantments.
-     * The object returned by this should have a field for each of its enchantments
+     * The object returned by this should have a field for each of its Enchantments
+     *
+     * Note: for this to work, the Enchantments must implement IInfinityEnchantment
+     *
      * @return Enchantment registry object or class
      */
     public  Object getModEnchantmentRegistry() {
@@ -193,8 +207,11 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
-     * Used to register all of the mod's Entities.
-     * The object returned by this should have a field for each of its entities
+     * Used to register all of the mod's Entity Types.
+     * The object returned by this should have a field for each of its Entity Types
+     *
+     * Note: for this to work, the Entity Types must implement IInfinityEntityType
+     *
      * @return Entity registry object or class
      */
     public  Object getModEntityRegistry() {
@@ -203,7 +220,10 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
 
     /**
      * Used to register all of the mod's Effects.
-     * The object returned by this should have a field for each of its Potions
+     * The object returned by this should have a field for each of its Effects
+     *
+     * Note: for this to work, the Effects must implement IInfinityEffect
+     *
      * @return Potion registry object or class
      */
     public Object getModEffectRegistry() {
@@ -213,6 +233,9 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     /**
      * Used to register all of the mod's PotionTypes.
      * The object returned by this should have a field for each of its PotionTypes
+     *
+     * Note: currently not implemented, will not work
+     *
      * @return PotionType registry object or class
      */
     public Object getModPotionTypeRegistry() {
@@ -222,6 +245,9 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     /**
      * Used to register all of the mod's SoundEvents.
      * The object returned by this should have a field for each of its SoundEvents
+     *
+     * Note: for this to work, the SoundEvents must implement IInfinitySoundEvent
+     *
      * @return SoundEvent registry object or class
      */
     public Object getModSoundRegistry() {
@@ -231,6 +257,9 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     /**
      * Used to register all of the mod's ContainerTypes.
      * The object returned by this should have a field for each of its ContainerTypes
+     *
+     * Note: for this to work, the ContainerTypes must implement IInfinityContainerType
+     *
      * @return ContainerType registry object or class
      */
     public Object getModContainerRegistry() {
@@ -238,8 +267,24 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
+     * Used to register all of the mod's Recipe and/or Ingredient Serializers.
+     * The object returned by this should have a field for each of its Recipe and/or Ingredient Serializers
+     *
+     * Note: for this to work, the Recipe and/or Ingredient Serializers must implement IInfRecipeSerializer
+     *       and IInfIngredientSerializer respectively.
+     *
+     * @return IRecipeSerializer registry object or class
+     */
+    public Object getModRecipeSerializerRegistry() {
+        return null;
+    }
+
+    /**
      * Used to register all of the mod's VillagerProfessions.
      * The object returned by this should have a field for each of its VillagerProfessions
+     *
+     * Note: currently not implemented, will not work
+     *
      * @return VillagerProfession registry object or class
      */
     public Object getModVillagerProfessionRegistry() {

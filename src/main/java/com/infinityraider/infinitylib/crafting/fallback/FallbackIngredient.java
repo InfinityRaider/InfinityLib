@@ -1,9 +1,10 @@
-package com.infinityraider.infinitylib.crafting;
+package com.infinityraider.infinitylib.crafting.fallback;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,6 +21,9 @@ import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
 public class FallbackIngredient extends Ingredient {
+    public static final ResourceLocation ID = new ResourceLocation(InfinityLib.instance.getModId(), "fallback");
+    public static final Serializer SERIALIZER = new Serializer();
+
     private final ITag<Item> tag;
     private final Ingredient fallback;
 
@@ -100,12 +104,13 @@ public class FallbackIngredient extends Ingredient {
     }
 
     public static void registerSerializer() {
-        CraftingHelper.register(new ResourceLocation(InfinityLib.instance.getModId(), "fallback"), SERIALIZER);
     }
 
-    private static final Serializer SERIALIZER = new Serializer();
-
-    private static final class Serializer implements IIngredientSerializer<FallbackIngredient> {
+    private static final class Serializer implements IInfIngredientSerializer<FallbackIngredient> {
+        @Override
+        public ResourceLocation getId() {
+            return ID;
+        }
 
         @Override
         public FallbackIngredient parse(PacketBuffer buffer) {

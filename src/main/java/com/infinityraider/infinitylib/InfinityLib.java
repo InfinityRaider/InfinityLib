@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.config.Config;
+import com.infinityraider.infinitylib.crafting.RecipeSerializers;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.network.*;
 import com.infinityraider.infinitylib.proxy.ClientProxy;
@@ -57,6 +58,11 @@ public class InfinityLib extends InfinityMod<IProxy, Config> {
         wrapper.registerMessage(MessagePlaySound.class);
         wrapper.registerMessage(MessageStopSound.class);
         Module.getActiveModules().stream().sorted().forEach(m -> m.registerMessages(wrapper));
+    }
+
+    @Override
+    public RecipeSerializers getModRecipeSerializerRegistry() {
+        return RecipeSerializers.getInstance();
     }
 
     @Override

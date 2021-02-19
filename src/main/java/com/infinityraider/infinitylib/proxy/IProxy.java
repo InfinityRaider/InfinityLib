@@ -5,7 +5,9 @@ import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
 import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.container.IInfinityContainerType;
-import com.infinityraider.infinitylib.crafting.FallbackIngredient;
+import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
+import com.infinityraider.infinitylib.crafting.RecipeSerializers;
+import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
 import com.infinityraider.infinitylib.effect.IInfinityEffect;
 import com.infinityraider.infinitylib.enchantment.IInfinityEnchantment;
 import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
@@ -61,7 +63,7 @@ public interface IProxy extends IProxyBase<Config> {
     @Override
     default void onCommonSetupEvent(FMLCommonSetupEvent event) {
         Module.getActiveModules().forEach(Module::init);
-        FallbackIngredient.registerSerializer();
+        RecipeSerializers.getInstance().registerSerializers();
     }
 
     default void forceClientRenderUpdate(BlockPos pos) {}
@@ -81,6 +83,7 @@ public interface IProxy extends IProxyBase<Config> {
         this.registerSounds(mod);
         this.registerEffects(mod);
         this.registerContainers(mod);
+        this.registerRecipeSerializers(mod);
     }
 
     default void registerBlocks(InfinityMod<?,?> mod) {
@@ -152,6 +155,23 @@ public interface IProxy extends IProxyBase<Config> {
                 this.registerGuiContainer((IInfinityContainerType) containerType);
             }
         });
+    }
+
+    default void registerRecipeSerializers(InfinityMod<?,?> mod) {
+        // Register recipe serializers
+        this.registerObjects(mod, mod.getModRecipeSerializerRegistry(), IInfRecipeSerializer.class, ForgeRegistries.RECIPE_SERIALIZERS, recipe -> {
+            if (recipe instanceof IInfRecipeSerializer) {
+                // Also register the recipe's ingredient serializers
+                ((IInfRecipeSerializer) recipe).getIngredientSerializers().forEach(serializer ->
+                        RecipeSerializers.getInstance().registerSerializer(serializer));
+            }
+        });
+        // Register ingredient serializers
+        if(mod.getModRecipeSerializerRegistry() != null) {
+            ReflectionHelper.forEachValueIn(mod.getModRecipeSerializerRegistry(), IInfIngredientSerializer.class, serializer ->
+                    RecipeSerializers.getInstance().registerSerializer(serializer)
+            );
+        }
     }
 
     default void registerGuiContainer(IInfinityContainerType containerType) {}
