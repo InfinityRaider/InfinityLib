@@ -41,7 +41,7 @@ public final class CapabilityProvider<C> implements ICapabilitySerializable<Comp
 
     @Override
     @Nonnull
-    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
         if (capability == this.capability) {
             return valueHolder.cast();
         }

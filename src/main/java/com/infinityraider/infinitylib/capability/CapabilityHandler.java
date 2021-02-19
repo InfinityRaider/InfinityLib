@@ -33,15 +33,21 @@ public class CapabilityHandler {
     }
 
     protected <T extends ICapabilityProvider, C extends ISerializable> void addCapability(
-            AttachCapabilitiesEvent event, ICapabilityImplementation<T , C> implementation, T carrier) {
-        C value = implementation.createNewValue(carrier);
-        event.addCapability(implementation.getCapabilityKey(), new CapabilityProvider<>(implementation.getCapability(), value));
+            AttachCapabilitiesEvent<?> event, ICapabilityImplementation<T , C> implementation, T carrier) {
+        if(implementation.getCapability() == null) {
+            // Safety check in case someone fucks up by core modding wrongly
+            InfinityLib.instance.getLogger().error("[SEVERE] Capability not injected in " + implementation.getClass().getName());
+            InfinityLib.instance.getLogger().error("[SEVERE] Someone fucked up badly, things might not work correctly.");
+            InfinityLib.instance.getLogger().printStackTrace(new RuntimeException("Capability requested before injection"));
+        } else {
+            C value = implementation.createNewValue(carrier);
+            event.addCapability(implementation.getCapabilityKey(), new CapabilityProvider<>(implementation.getCapability(), value));
+        }
     }
 
     @SuppressWarnings("unchecked")
     protected  <T extends ICapabilityProvider> void addCapabilities(AttachCapabilitiesEvent<T> event) {
-        Object object = event.getObject();
-        T carrier = (T) object;
+        T carrier = event.getObject();
         Class<T> clazz = (Class<T>) carrier.getClass();
         this.capabilityImplementations.stream()
                 .filter(impl -> impl.getCarrierClass().isAssignableFrom(clazz))
@@ -50,7 +56,7 @@ public class CapabilityHandler {
     }
 
     @SubscribeEvent
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "unchecked"})
     public void addEntityCapabilitiesRaw(AttachCapabilitiesEvent event) {
         if(event.getObject() instanceof ICapabilityProvider) {
             this.addCapabilities(event);
@@ -65,13 +71,11 @@ public class CapabilityHandler {
         if(oldPlayer != null && newPlayer != null && !oldPlayer.getEntityWorld().isRemote) {
             this.capabilityImplementations.stream()
                     .filter(impl -> PlayerEntity.class.isAssignableFrom(impl.getCarrierClass()))
-                    .forEach(impl -> {
-                        oldPlayer.getCapability(impl.getCapability(), null).ifPresent(oldProps -> {
-                            newPlayer.getCapability(impl.getCapability(), null).ifPresent(newProps -> {
-                                newProps.readFromNBT(oldProps.writeToNBT());
-                            });
-                        });
-                    });
+                    .forEach(impl ->
+                            oldPlayer.getCapability(impl.getCapability(), null).ifPresent(oldProps ->
+                                    newPlayer.getCapability(impl.getCapability(), null).ifPresent(newProps ->
+                                            newProps.readFromNBT(oldProps.writeToNBT())
+                                    )));
         }
     }
 }
