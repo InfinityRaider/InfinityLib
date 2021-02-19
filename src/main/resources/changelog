@@ -1,5 +1,14 @@
 Changelog
 ---------
+"2.0.1"
+- FIXED: Capability NPE in case CapabilityImplementations are instantiated before Capability has been injected
+- FIXED: Inventory bugs
+- FIXED: BakedQuad tessellation
+- ADDED: EnumHelper
+- ADDED: Dynamic Camera Module
+- ADDED: More rendering utility Methods
+- ADDED: Automatically synced fields to TileEntities
+
 2.0.0
 - CHANGE: ported to 1.16.4
 
