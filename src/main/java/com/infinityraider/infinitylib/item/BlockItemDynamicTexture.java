@@ -6,6 +6,7 @@ import com.infinityraider.infinitylib.reference.Names;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -16,13 +17,14 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class BlockItemDynamicTexture extends BlockItemBase {
     public BlockItemDynamicTexture(BlockDynamicTexture<?> block, Properties properties) {
         super(block, properties);
     }
 
-    public void setMaterial(ItemStack stack, ItemStack material) {
+    public final void setMaterial(ItemStack stack, ItemStack material) {
         CompoundNBT tag = stack.getTag();
         if(tag == null) {
             tag = new CompoundNBT();
@@ -31,7 +33,7 @@ public class BlockItemDynamicTexture extends BlockItemBase {
         tag.put(Names.NBT.MATERIAL, material.write(new CompoundNBT()));
     }
 
-    public ItemStack getMaterial(ItemStack stack) {
+    public final ItemStack getMaterial(ItemStack stack) {
         CompoundNBT tag = stack.getTag();
         if(tag == null || !tag.contains(Names.NBT.MATERIAL)) {
             return ItemStack.EMPTY;
@@ -39,26 +41,26 @@ public class BlockItemDynamicTexture extends BlockItemBase {
         return ItemStack.read(tag.getCompound(Names.NBT.MATERIAL));
     }
 
-    private static final TranslationTextComponent TOOLTIP = new TranslationTextComponent(InfinityLib.instance.getModId() + ".tooltip.material");
-    private static final StringTextComponent COLON = new StringTextComponent(": ");
-    private static final TranslationTextComponent UNKNOWN = new TranslationTextComponent(InfinityLib.instance.getModId() + ".tooltip.unknown");
+    private static final ITextComponent TOOLTIP = new TranslationTextComponent(InfinityLib.instance.getModId() + ".tooltip.material");
+    private static final ITextComponent COLON = new StringTextComponent(": ");
+    private static final ITextComponent UNKNOWN = new TranslationTextComponent(InfinityLib.instance.getModId() + ".tooltip.unknown");
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public final void addInformation(@Nonnull ItemStack stack, @Nullable World world, @Nonnull List<ITextComponent> tooltip, @Nonnull ITooltipFlag advanced) {
+    public final void addInformation(@Nonnull ItemStack stack, @Nullable World world, @Nonnull List<ITextComponent> tooltips, @Nonnull ITooltipFlag advanced) {
         ItemStack material = this.getMaterial(stack);
-        tooltip.clear();
+        IFormattableTextComponent tooltip = new StringTextComponent("").append(TOOLTIP).append(COLON);
         if(stack.isEmpty()) {
-            tooltip.add(TOOLTIP.append(COLON).append(UNKNOWN));
+            tooltips.add(tooltip.append(UNKNOWN));
         } else {
-            tooltip.add(TOOLTIP.append(COLON).append(material.getDisplayName()));
+            tooltips.add(tooltip.append(material.getDisplayName()));
         }
-        this.addMoreInformation(stack, world, tooltip, advanced);
+        this.addInformation(stack, world, tooltips::add, advanced);
     }
 
-    @OnlyIn(Dist.CLIENT)
     @SuppressWarnings("unused")
-    protected void addMoreInformation (@Nonnull ItemStack stack, @Nullable World world, @Nonnull List<ITextComponent> tooltip, @Nonnull ITooltipFlag advanced) {
+    @OnlyIn(Dist.CLIENT)
+    protected void addInformation (@Nonnull ItemStack stack, @Nullable World world, @Nonnull Consumer<ITextComponent> tooltip, @Nonnull ITooltipFlag advanced) {
         // NOOP (for sub classes)
     }
 }
