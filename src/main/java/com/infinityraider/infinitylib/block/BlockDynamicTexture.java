@@ -23,7 +23,9 @@ public abstract class BlockDynamicTexture<T extends TileEntityDynamicTexture> ex
         TileEntity tile = world.getTileEntity(pos);
         if((!world.isRemote()) && (stack.getItem() instanceof BlockItemDynamicTexture)) {
             if(tile instanceof TileEntityDynamicTexture) {
-                ((TileEntityDynamicTexture) tile).setMaterial(((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack));
+                TileEntityDynamicTexture dynTile = (TileEntityDynamicTexture) tile;
+                dynTile.setMaterial(((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack));
+                dynTile.forceRenderUpdate();
             }
         }
         this.onBlockPlacedBy(world, pos, state, placer, stack, tile);

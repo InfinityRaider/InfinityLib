@@ -8,6 +8,8 @@ import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 
@@ -15,6 +17,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
 
+@OnlyIn(Dist.CLIENT)
 public class InfModelLoaderTessellated implements InfModelLoader<InfModelLoaderTessellated.TessellatedGeometry> {
     public static final InfModelLoaderTessellated INSTANCE = new InfModelLoaderTessellated();
 

@@ -9,10 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.model.ItemModelGenerator;
-import net.minecraft.client.renderer.model.ModelManager;
+import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.*;
 import net.minecraft.client.settings.PointOfView;
 import net.minecraft.inventory.container.PlayerContainer;
@@ -103,6 +100,33 @@ public interface IRenderUtilities {
      */
     default TextureAtlasSprite getSprite(ResourceLocation location) {
         return this.getTextureAtlas().getSprite(location);
+    }
+
+    /**
+     * Converts a string to a ResourceLocation
+     * @param string the String
+     * @return the ResourceLocation
+     */
+    default ResourceLocation getResourceLocation(String string) {
+        return new ResourceLocation(string);
+    }
+
+    /**
+     * Converts a String to a RenderMaterial for the Block Atlas
+     * @param string the String
+     * @return the RenderMaterial
+     */
+    default RenderMaterial getRenderMaterial(String string) {
+        return this.getRenderMaterial(this.getResourceLocation(string));
+    }
+
+    /**
+     * Converts a ResourceLocation to a RenderMaterial for the Block Atlas
+     * @param texture the ResourceLocation
+     * @return the RenderMaterial
+     */
+    default RenderMaterial getRenderMaterial(ResourceLocation texture) {
+        return new RenderMaterial(this.getTextureAtlasLocation(), texture);
     }
 
     /**
@@ -324,5 +348,9 @@ public interface IRenderUtilities {
         private static final BlockPos DEFAULT_POS = new BlockPos(0,0,0);
 
         private static final ItemModelGenerator ITEM_MODEL_GENERATOR = new ItemModelGenerator();
+
+        public static boolean equals(Object a, Object b) {
+            return java.util.Objects.equals(a, b);
+        }
     }
 }

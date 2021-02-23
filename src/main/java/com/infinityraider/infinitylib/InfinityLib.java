@@ -11,6 +11,7 @@ import com.infinityraider.infinitylib.proxy.ServerProxy;
 import com.infinityraider.infinitylib.reference.Reference;
 import com.infinityraider.infinitylib.render.model.InfModelLoader;
 import com.infinityraider.infinitylib.render.model.InfModelLoaderComposite;
+import com.infinityraider.infinitylib.render.model.InfModelLoaderDynamicTexture;
 import com.infinityraider.infinitylib.sound.MessagePlaySound;
 import com.infinityraider.infinitylib.sound.MessageStopSound;
 import net.minecraftforge.api.distmarker.Dist;
@@ -69,7 +70,8 @@ public class InfinityLib extends InfinityMod<IProxy, Config> {
     @OnlyIn(Dist.CLIENT)
     public List<InfModelLoader<?>> getModModelLoaders() {
         return ImmutableList.of(
-                InfModelLoaderComposite.getInstance()
+                InfModelLoaderComposite.getInstance(),
+                InfModelLoaderDynamicTexture.getInstance()
         );
     }
 }
