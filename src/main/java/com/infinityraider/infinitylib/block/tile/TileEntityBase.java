@@ -7,6 +7,7 @@ import com.infinityraider.infinitylib.network.MessageRenderUpdate;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
 import com.infinityraider.infinitylib.reference.Names;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -18,9 +19,7 @@ import net.minecraftforge.fml.LogicalSide;
 import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Random;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
+import java.util.function.*;
 
 @SuppressWarnings("unused")
 public abstract class TileEntityBase extends TileEntity {
@@ -136,6 +135,12 @@ public abstract class TileEntityBase extends TileEntity {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <F> AutoSyncedField<F> getField(int id) {
+        // Cast should not be an issue here
+        return (AutoSyncedField<F>) this.syncedFields.get(id);
+    }
+
     /**
      * Method to create fields which are automatically synced between server and the client, as well as saved to disk
      * Only call set method on the server
@@ -146,12 +151,9 @@ public abstract class TileEntityBase extends TileEntity {
      * @param <F> The type of the field
      * @return a new AutoSyncedField object, wrapping the desired value
      */
-    protected <F> AutoSyncedField<F> createField(
+    protected <F> AutoSyncedField<F> createAutoSyncedField(
             F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
-
-        AutoSyncedField<F> field = new AutoSyncedField<>(value, this.syncedFields.size(), this, serializer, deserializer);
-        this.syncedFields.put(field.getId(), field);
-        return field;
+        return this.getAutoSyncedFieldBuilder(value, serializer, deserializer).build();
     }
 
     /**
@@ -169,18 +171,131 @@ public abstract class TileEntityBase extends TileEntity {
      * @param <F> The type of the field
      * @return a new AutoSyncedField object, wrapping the desired value
      */
-    protected <F> AutoSyncedField<F> createField(
+    protected <F> AutoSyncedField<F> createAutoSyncedField(
             F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer, BooleanSupplier checker, F fallback) {
-
-        AutoSyncedField<F> field = new AutoSyncedFieldDelayed<>(value, this.syncedFields.size(), this, serializer, deserializer, checker, fallback);
-        this.syncedFields.put(field.getId(), field);
-        return field;
+        return this.getAutoSyncedFieldBuilder(value, serializer, deserializer).withDelay(checker, fallback).build();
     }
 
-    @SuppressWarnings("unchecked")
-    public <F> AutoSyncedField<F> getField(int id) {
-        // Cast should not be an issue here
-        return (AutoSyncedField<F>) this.syncedFields.get(id);
+    public <F> AutoSyncedFieldBuilder<F> getAutoSyncedFieldBuilder(
+            F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer, BooleanSupplier checker, F fallback) {
+        return new AutoSyncedFieldBuilder<>(value, this, serializer, deserializer).withDelay(checker, fallback);
+    }
+
+    public <F> AutoSyncedFieldBuilder<F> getAutoSyncedFieldBuilder(
+            F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
+        return new AutoSyncedFieldBuilder<>(value, this, serializer, deserializer);
+    }
+
+    public AutoSyncedFieldBuilder<Boolean> getAutoSyncedFieldBuilder(boolean value) {
+        return new AutoSyncedFieldBuilder<>(
+                value, this,
+                (b, tag) -> tag.putBoolean(Names.NBT.VALUE, b),
+                (tag) -> tag.getBoolean(Names.NBT.VALUE)
+        );
+    }
+
+    public AutoSyncedFieldBuilder<Integer> getAutoSyncedFieldBuilder(int value) {
+        return new AutoSyncedFieldBuilder<>(
+                value, this,
+                (i, tag) -> tag.putInt(Names.NBT.VALUE, i),
+                (tag) -> tag.getInt(Names.NBT.VALUE)
+        );
+    }
+
+    public AutoSyncedFieldBuilder<Float> getAutoSyncedFieldBuilder(float value) {
+        return new AutoSyncedFieldBuilder<>(
+                value, this,
+                (f, tag) -> tag.putFloat(Names.NBT.VALUE, f),
+                (tag) -> tag.getFloat(Names.NBT.VALUE)
+        );
+    }
+
+    public AutoSyncedFieldBuilder<Double> getAutoSyncedFieldBuilder(double value) {
+        return new AutoSyncedFieldBuilder<>(
+                value, this,
+                (d, tag) -> tag.putDouble(Names.NBT.VALUE, d),
+                (tag) -> tag.getDouble(Names.NBT.VALUE)
+        );
+    }
+
+    public AutoSyncedFieldBuilder<String> getAutoSyncedFieldBuilder(String value) {
+        return new AutoSyncedFieldBuilder<>(
+                value, this,
+                (s, tag) -> tag.putString(Names.NBT.VALUE, s),
+                (tag) -> tag.getString(Names.NBT.VALUE)
+        );
+    }
+
+    public AutoSyncedFieldBuilder<ItemStack> getAutoSyncedFieldBuilder(ItemStack value) {
+        return new AutoSyncedFieldBuilder<>(
+                value, this,
+                ItemStack::write,
+                ItemStack::read
+        );
+    }
+
+    public static class AutoSyncedFieldBuilder<F> {
+        // Required fields
+        private final F value;
+        private final TileEntityBase tile;
+        private final BiConsumer<F, CompoundNBT> serializer;
+        private final Function<CompoundNBT, F> deserializer;
+
+        // Callback
+        private Consumer<F> callback;
+
+        // Render update
+        private Predicate<F> renderUpdateChecker;
+
+        // Delay
+        private boolean delayed;
+        private BooleanSupplier delayedCheck;
+        private F fallbackValue;
+
+        private AutoSyncedFieldBuilder(F value, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
+            // Required fields
+            this.value = value;
+            this.tile = tile;
+            this.serializer = serializer;
+            this.deserializer = deserializer;
+            // Optional fields
+            this.callback = f -> {};
+            this.renderUpdateChecker = f -> false;
+            this.delayed = false;
+        }
+
+        public AutoSyncedFieldBuilder<F> withCallBack(Consumer<F> callback) {
+            this.callback = callback;
+            return this;
+        }
+
+        public AutoSyncedFieldBuilder<F> withRenderUpdate() {
+            return this.withRenderUpdate(f -> true);
+        }
+
+        public AutoSyncedFieldBuilder<F> withRenderUpdate(Predicate<F> renderUpdateChecker) {
+            this.renderUpdateChecker = renderUpdateChecker;
+            return this;
+        }
+
+        public AutoSyncedFieldBuilder<F> withDelay(BooleanSupplier isReady, F tempValue) {
+            this.delayed = true;
+            this.delayedCheck = isReady;
+            this.fallbackValue = tempValue;
+            return this;
+        }
+
+        public AutoSyncedField<F> build() {
+            if (this.delayed) {
+                return new AutoSyncedFieldDelayed<>(
+                        this.value, this.tile, this.serializer, this.deserializer, this.callback, this.renderUpdateChecker,
+                        this.delayedCheck, this.fallbackValue
+                );
+            }
+            return new AutoSyncedField<>(
+                    this.value, this.tile, this.serializer, this.deserializer, this.callback, this.renderUpdateChecker);
+        }
+
     }
 
     public static class AutoSyncedField<F> {
@@ -193,13 +308,22 @@ public abstract class TileEntityBase extends TileEntity {
         private final BiConsumer<F, CompoundNBT> serializer;
         private final Function<CompoundNBT, F> deserializer;
 
-        private AutoSyncedField(F value, final int id, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
+        private final Consumer<F> callback;
+        private final Predicate<F> renderUpdateChecker;
+
+        private AutoSyncedField(
+                F value, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer,
+                Consumer<F> callback, Predicate<F> renderUpdateChecker) {
+
             this.value = value;
-            this.id = id;
+            this.id = tile.syncedFields.size();
+            tile.syncedFields.put(this.getId(), this);
             this.tile = tile;
             this.side = InfinityLib.instance.proxy().getLogicalSide();
             this.serializer = serializer;
             this.deserializer = deserializer;
+            this.callback = callback;
+            this.renderUpdateChecker = renderUpdateChecker;
         }
 
         public void set(F value) {
@@ -211,14 +335,15 @@ public abstract class TileEntityBase extends TileEntity {
         }
 
         // Do not call this directly, called by the message handler to set the field on the client
-        public void setClient(F value) {
-            if(this.getSide().isClient()) {
-                this.setInternal(value);
-            }
-        }
-
         protected void setInternal(F value) {
+            if(this.value == value) {
+                return;
+            }
             this.value = value;
+            this.callback.accept(value);
+            if(this.getSide().isClient() && this.renderUpdateChecker.test(value)) {
+                this.getTile().forceRenderUpdate();
+            }
         }
 
         public F get() {
@@ -258,9 +383,9 @@ public abstract class TileEntityBase extends TileEntity {
 
         private CompoundNBT data;
 
-        private AutoSyncedFieldDelayed(F value, int id, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer,
-                                       BooleanSupplier checker, F fallback) {
-            super(value, id, tile, serializer, deserializer);
+        private AutoSyncedFieldDelayed(F value, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer,
+                                       Consumer<F> callback, Predicate<F> renderUpdateChecker, BooleanSupplier checker, F fallback) {
+            super(value, tile, serializer, deserializer, callback, renderUpdateChecker);
             this.checker = checker;
             this.fallback = fallback;
         }
