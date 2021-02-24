@@ -8,7 +8,9 @@ public abstract class TileEntityDynamicTexture extends TileEntityBase {
 
     public TileEntityDynamicTexture(TileEntityType<?> type) {
         super(type);
-        this.material = this.createField(ItemStack.EMPTY, ItemStack::write, ItemStack::read);
+        this.material = this.getAutoSyncedFieldBuilder(ItemStack.EMPTY)
+                .withRenderUpdate()
+                .build();
     }
 
     public ItemStack getMaterial() {
