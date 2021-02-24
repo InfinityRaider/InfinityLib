@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.render.model;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.*;
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.reference.Constants;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -19,6 +20,7 @@ import net.minecraftforge.client.model.*;
 import net.minecraftforge.client.model.geometry.IModelGeometryPart;
 import net.minecraftforge.client.model.geometry.IMultipartModelGeometry;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.Function;
 
@@ -86,13 +88,14 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
         Matrix4f matrix = new Matrix4f(new Quaternion(rotation.getX(), rotation.getY(), rotation.getZ(), true));
         // translation
         Vector3f translation = parseVector(json, "translation", TRANSLATION_DEFAULT);
-        translation.mul(0.0625F);
+        translation.mul(Constants.UNIT);
         matrix.mul(Matrix4f.makeTranslate(translation.getX(), translation.getY(), translation.getZ()));
         // scale
         Vector3f scale = parseVector(json, "scale", SCALE_DEFAULT);
         matrix.mul(Matrix4f.makeScale(scale.getX(), scale.getY(), scale.getZ()));
         TransformationMatrix transform = new TransformationMatrix(matrix);
         return new IModelTransform() {
+            @Nonnull
             @Override
             public TransformationMatrix getRotation() {
                 return transform;
