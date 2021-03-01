@@ -5,9 +5,11 @@ import com.google.gson.*;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.reference.Constants;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.IResourceManager;
+import net.minecraft.util.Direction;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -17,10 +19,12 @@ import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.*;
+import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.geometry.IModelGeometryPart;
 import net.minecraftforge.client.model.geometry.IMultipartModelGeometry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -56,16 +60,21 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
     }
 
     @Override
-    public void onResourceManagerReload(IResourceManager resourceManager) {
+    public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
     }
 
+    @Nonnull
     @Override
-    public Geometry read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
-        if (!modelContents.has("parts"))
+    public Geometry read(@Nonnull JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+        // Check if any parts are defined
+        if (!modelContents.has("parts")) {
             throw new RuntimeException("Composite model requires a \"parts\" element.");
+        }
+        // Fetch transformations
         Optional<JsonObject> transformations = modelContents.has("transformations") ?
                 Optional.of(modelContents.getAsJsonObject("transformations")) :
                 Optional.empty();
+        // Parse parts
         ImmutableMap.Builder<String, Submodel> parts = ImmutableMap.builder();
         for (Map.Entry<String, JsonElement> part : modelContents.get("parts").getAsJsonObject().entrySet()) {
             // This is where we modify the Forge code to allow custom transformations
@@ -79,7 +88,16 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
                     modelTransform
             ));
         }
-        return new Geometry(parts.build());
+        ImmutableMap<String, Submodel> partsMap = parts.build();
+        String particleParent = null;
+        // Check for parent particle
+        if(modelContents.has("particle")) {
+            particleParent = modelContents.get("particle").getAsString();
+            if(!partsMap.containsKey(particleParent)) {
+                throw new RuntimeException("Invalid particle inheritance in composite model: \"" + particleParent + "\"");
+            }
+        }
+        return new Geometry(parts.build(), particleParent);
     }
 
     private static IModelTransform readTransformation(JsonObject json) {
@@ -123,9 +141,11 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
     //Shamelessly copied from Forge as no changes are needed here
     public static class Geometry implements IMultipartModelGeometry<Geometry> {
         private final ImmutableMap<String, Submodel> parts;
+        private final String particlePart;
 
-        Geometry(ImmutableMap<String, Submodel> parts) {
+        Geometry(ImmutableMap<String, Submodel> parts, @Nullable String particlePart) {
             this.parts = parts;
+            this.particlePart = particlePart;
         }
 
         @Override
@@ -154,8 +174,8 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
                 bakedParts.put(part.getKey(), submodel.bakeModel(bakery, spriteGetter, modelTransform, modelLocation));
             }
 
-            return new CompositeModel(owner.isShadedInGui(), owner.isSideLit(), owner.useSmoothLighting(), particle,
-                    bakedParts.build(), owner.getCombinedTransform(), overrides);
+            return new BakedModel(owner.isShadedInGui(), owner.isSideLit(), owner.useSmoothLighting(), particle,
+                    bakedParts.build(), owner.getCombinedTransform(), overrides, this.particlePart);
         }
 
         @Override
@@ -167,6 +187,54 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
                 textures.addAll(part.getTextures(owner, modelGetter, missingTextureErrors));
             }
             return textures;
+        }
+    }
+
+    // Copied from Forge with a hack-y fix for extra data not being correctly loaded when embedded in a multipart model
+    private static class BakedModel extends CompositeModel {
+        private final ImmutableMap<String, IBakedModel> bakedParts;
+        private final String particleParent;
+
+        public BakedModel(boolean isGui3d, boolean isSideLit, boolean isAmbientOcclusion, TextureAtlasSprite particle,
+                          ImmutableMap<String, IBakedModel> bakedParts, IModelTransform combinedTransform,
+                          ItemOverrideList overrides, @Nullable String particleParent) {
+            super(isGui3d, isSideLit, isAmbientOcclusion, particle, bakedParts, combinedTransform, overrides);
+            this.bakedParts = bakedParts;
+            this.particleParent = particleParent;
+        }
+
+        @Nonnull
+        @Override
+        public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
+            if(extraData instanceof CompositeModelData) {
+                return super.getQuads(state, side, rand, extraData);
+            } else {
+                List<BakedQuad> quads = new ArrayList<>();
+                for(Map.Entry<String, IBakedModel> entry : bakedParts.entrySet()) {
+                    quads.addAll(entry.getValue().getQuads(state, side, rand, extraData));
+                }
+                return quads;
+            }
+        }
+
+        @Nonnull
+        @Override
+        @Deprecated
+        @SuppressWarnings("deprecation")
+        public TextureAtlasSprite getParticleTexture() {
+            if(this.particleParent == null) {
+                return super.getParticleTexture();
+            }
+            return this.bakedParts.get(this.particleParent).getParticleTexture();
+        }
+
+        @Nonnull
+        @Override
+        public TextureAtlasSprite getParticleTexture(@Nonnull IModelData extraData) {
+            if(this.particleParent == null) {
+                return super.getParticleTexture(extraData);
+            }
+            return this.bakedParts.get(this.particleParent).getParticleTexture(extraData);
         }
     }
 
