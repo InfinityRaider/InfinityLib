@@ -18,7 +18,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resources.IResourceManager;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
@@ -29,7 +28,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.IModelBuilder;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 
@@ -146,7 +144,7 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
     }
 
     public static class DynamicTextureModel implements IBakedModel, IRenderUtilities {
-        private static final ModelProperty<TextureAtlasSprite> PROPERTY_TEXTURE = new ModelProperty<>();
+        private static final ModelProperty<ItemStack> PROPERTY_MATERIAL = TileEntityDynamicTexture.PROPERTY_MATERIAL;
 
         private final Map<TextureAtlasSprite, IBakedModel> quadCache;
 
@@ -172,7 +170,6 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
             this.modelLocation = modelLocation;
             this.defaultSprite = this.spriteGetter.apply(this.getRenderMaterial(defaultTexture));
             this.defaultModel = this.bakeSubModel(this.getDefaultSprite());
-            boolean debug = true;
         }
 
         public IBakedModel getDefaultModel() {
@@ -186,13 +183,12 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
 
         @Nonnull
         @SuppressWarnings("deprecation")
-        protected TextureAtlasSprite getMaterialSprite(TileEntityDynamicTexture tile) {
-            ItemStack materialStack = tile.getMaterial();
-            if(materialStack.isEmpty()) {
+        protected TextureAtlasSprite getMaterialSprite(@Nullable ItemStack material) {
+            if(material == null || material.isEmpty()) {
                 return this.getDefaultSprite();
             }
-            if(materialStack.getItem() instanceof BlockItem) {
-                Block block = ((BlockItem) materialStack.getItem()).getBlock();
+            if(material.getItem() instanceof BlockItem) {
+                Block block = ((BlockItem) material.getItem()).getBlock();
                 return this.getModelForState(block.getDefaultState()).getParticleTexture();
             }
             return this.getDefaultSprite();
@@ -201,15 +197,7 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         @Nonnull
         @Override
         public IModelData getModelData(@Nonnull IBlockDisplayReader world, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull IModelData modelData) {
-            TileEntity tile = world.getTileEntity(pos);
-            if (!(tile instanceof TileEntityDynamicTexture)) {
-                return modelData;
-            }
-            TileEntityDynamicTexture dynTile = (TileEntityDynamicTexture) tile;
-            if (dynTile.getMaterial().isEmpty()) {
-                return modelData;
-            }
-            return new ModelDataMap.Builder().withInitial(PROPERTY_TEXTURE, this.getMaterialSprite((TileEntityDynamicTexture) tile)).build();
+            return modelData;
         }
 
         @Nonnull
@@ -221,14 +209,10 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         @Nonnull
         @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
-            if (!extraData.hasProperty(PROPERTY_TEXTURE)) {
+            if (!extraData.hasProperty(PROPERTY_MATERIAL)) {
                 return this.getQuads(state, side, rand);
             }
-            TextureAtlasSprite sprite = extraData.getData(PROPERTY_TEXTURE);
-            if (sprite == null) {
-                return this.getQuads(state, side, rand);
-
-            }
+            TextureAtlasSprite sprite = this.getMaterialSprite(extraData.getData(PROPERTY_MATERIAL));
             return this.getQuads(state, side, rand, sprite);
         }
 
@@ -272,7 +256,6 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
             }
             // Build the model
             return builder.build();
-
         }
 
         @Override
@@ -304,14 +287,10 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         @Nonnull
         @Override
         public TextureAtlasSprite getParticleTexture(@Nonnull IModelData extraData) {
-            if (!extraData.hasProperty(PROPERTY_TEXTURE)) {
+            if (!extraData.hasProperty(PROPERTY_MATERIAL)) {
                 return this.getParticleTexture();
             }
-            TextureAtlasSprite sprite = extraData.getData(PROPERTY_TEXTURE);
-            if (sprite == null) {
-                return this.getParticleTexture();
-            }
-            return sprite;
+            return this.getMaterialSprite(extraData.getData(PROPERTY_MATERIAL));
         }
 
         @Nonnull
