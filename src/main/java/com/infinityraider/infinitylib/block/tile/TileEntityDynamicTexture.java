@@ -2,7 +2,6 @@ package com.infinityraider.infinitylib.block.tile;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 
@@ -12,11 +11,14 @@ public abstract class TileEntityDynamicTexture extends TileEntityBase {
     public static final ModelProperty<ItemStack> PROPERTY_MATERIAL = new ModelProperty<>();
 
     private final AutoSyncedField<ItemStack> material;
+    private final ModelDataMap data;
 
     public TileEntityDynamicTexture(TileEntityType<?> type) {
         super(type);
+        this.data = new ModelDataMap.Builder().withInitial(PROPERTY_MATERIAL, ItemStack.EMPTY).build();
         this.material = this.getAutoSyncedFieldBuilder(ItemStack.EMPTY)
                 .withRenderUpdate()
+                .withCallBack(material -> this.getModelData().setData(PROPERTY_MATERIAL, material))
                 .build();
     }
 
@@ -30,11 +32,7 @@ public abstract class TileEntityDynamicTexture extends TileEntityBase {
 
     @Nonnull
     @Override
-    public IModelData getModelData() {
-        ModelDataMap.Builder builder = new ModelDataMap.Builder();
-        this.populateModelData(builder);
-        return builder.withInitial(PROPERTY_MATERIAL, this.getMaterial()).build();
+    public final ModelDataMap getModelData() {
+        return this.data;
     }
-
-    protected abstract void populateModelData(ModelDataMap.Builder modelDataBuilder);
 }
