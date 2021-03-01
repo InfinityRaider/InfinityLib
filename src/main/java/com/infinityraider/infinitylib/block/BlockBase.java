@@ -2,9 +2,11 @@ package com.infinityraider.infinitylib.block;
 
 import com.infinityraider.infinitylib.block.property.InfProperty;
 import com.infinityraider.infinitylib.block.property.InfPropertyConfiguration;
+import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
@@ -15,7 +17,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public abstract class BlockBase extends Block implements IInfinityBlock {
     private final String internalName;
 
@@ -34,17 +40,21 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
 
     @Override
     @Deprecated
+    @SuppressWarnings("deprecation")
     public final BlockState rotate(BlockState state, Rotation rot) {
         return this.getPropertyConfiguration().handleRotation(state, rot);
     }
 
     @Override
     @Deprecated
+    @SuppressWarnings("deprecation")
     public final BlockState mirror(BlockState state, Mirror mirror) {
         return this.getPropertyConfiguration().handleMirror(state, mirror);
     }
 
     @Override
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public final FluidState getFluidState(BlockState state) {
         return this.getPropertyConfiguration().isWaterLoggable() && InfProperty.Defaults.waterlogged().fetch(state)
                 ? Fluids.WATER.getStillFluidState(false)
@@ -68,5 +78,15 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
             state = InfProperty.Defaults.waterlogged().apply(state, fluid.getFluid() == Fluids.WATER);
         }
         return state;
+    }
+
+    public boolean addToInventoryOrDrop(ItemStack stack, World world, BlockPos pos, @Nullable PlayerEntity player) {
+        if(player != null) {
+            if(player.addItemStackToInventory(stack)) {
+                return true;
+            }
+        }
+        ItemEntity entity = new ItemEntity(world, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, stack);
+        return world.addEntity(entity);
     }
 }
