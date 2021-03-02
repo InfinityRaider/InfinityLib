@@ -8,10 +8,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.block.tile.TileEntityDynamicTexture;
+import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
 import com.infinityraider.infinitylib.render.IRenderUtilities;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.MissingTextureSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -297,6 +300,26 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         @Override
         public ItemOverrideList getOverrides() {
             return this.overrides;
+        }
+
+        @Override
+        public boolean isLayered() {
+            return true;
+        }
+
+        @Override
+        public List<Pair<IBakedModel, RenderType>> getLayerModels(ItemStack stack, boolean fabulous) {
+            return Collections.singletonList(Pair.of(
+                    this.getSubModel(this.getMaterialSprite(this.getMaterialFromStack(stack))),
+                    RenderTypeLookup.func_239219_a_(stack, fabulous)));
+        }
+
+        @Nullable
+        protected ItemStack getMaterialFromStack(ItemStack stack) {
+            if(stack.getItem() instanceof BlockItemDynamicTexture) {
+                return ((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack);
+            }
+            return null;
         }
     }
 }
