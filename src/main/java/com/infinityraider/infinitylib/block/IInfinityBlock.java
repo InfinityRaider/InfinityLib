@@ -4,6 +4,7 @@ import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
@@ -14,6 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public interface IInfinityBlock extends IInfinityRegistrable<Block> {
 
@@ -38,6 +40,12 @@ public interface IInfinityBlock extends IInfinityRegistrable<Block> {
     @OnlyIn(Dist.CLIENT)
     default RenderType getRenderType() {
         return RenderType.getSolid();
+    }
+
+    @Nullable
+    @OnlyIn(Dist.CLIENT)
+    default IBlockColor getColor() {
+        return null;
     }
 
 }

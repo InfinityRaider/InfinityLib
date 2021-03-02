@@ -20,6 +20,7 @@ import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.item.ItemModelsProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -94,6 +95,11 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         ReflectionHelper.forEachValueIn(blockRegistry, IInfinityBlock.class, object -> {
             // Set render type
             RenderTypeLookup.setRenderLayer(object.cast(), object.getRenderType());
+            // Register block color
+            IBlockColor color = object.getColor();
+            if(color != null) {
+                Minecraft.getInstance().getBlockColors().register(color, object.cast());
+            }
         });
     }
 
