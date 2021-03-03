@@ -52,7 +52,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     @Override
     @Nonnull
     public ItemStack getCraftingResult(@Nonnull CraftingInventory inv) {
-        ItemStack result = super.getRecipeOutput();
+        ItemStack result = super.getRecipeOutput().copy();
         ItemStack material = this.checkMaterial(inv);
         if((result.getItem() instanceof BlockItemDynamicTexture) && (material != null)) {
             ((BlockItemDynamicTexture) result.getItem()).setMaterial(result, material);
