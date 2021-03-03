@@ -5,11 +5,14 @@ import com.infinityraider.infinitylib.block.tile.TileEntityDynamicTexture;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
@@ -57,6 +60,18 @@ public abstract class BlockDynamicTexture<T extends TileEntityDynamicTexture> ex
             this.addDrops(drops::add, state, (T) tile, context);
         }
         return drops;
+    }
+
+    @Override
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
+        TileEntity tile = world.getTileEntity(pos);
+        if(tile instanceof TileEntityDynamicTexture) {
+            TileEntityDynamicTexture dynTile = (TileEntityDynamicTexture) tile;
+            ItemStack stack = new ItemStack(this.asItem(), 1);
+            this.asItem().setMaterial(stack, dynTile.getMaterial());
+            return stack;
+        }
+        return super.getPickBlock(state, target, world, pos, player);
     }
 
     public abstract void addDrops(Consumer<ItemStack> dropAcceptor, BlockState state, T tile, LootContext.Builder context);
