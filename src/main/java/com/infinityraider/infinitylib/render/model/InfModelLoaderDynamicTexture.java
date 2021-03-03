@@ -1,8 +1,6 @@
 package com.infinityraider.infinitylib.render.model;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -28,7 +26,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockDisplayReader;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.IModelBuilder;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
@@ -79,8 +76,14 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
                 parts.add(context.deserialize(jsonelement, BlockPart.class));
             }
         }
+        // Fetch Item Model transforms
+        ItemCameraTransforms itemCameraTransforms = ItemCameraTransforms.DEFAULT;
+        if (modelContents.has("display")) {
+            JsonObject transforms = JSONUtils.getJsonObject(modelContents, "display");
+            itemCameraTransforms = context.deserialize(transforms, ItemCameraTransforms.class);
+        }
         // Return geometry
-        return new Geometry(this.flagDynamicTextures(parts), defaultTexture);
+        return new Geometry(this.flagDynamicTextures(parts), defaultTexture, itemCameraTransforms);
     }
 
     private List<BlockPart> flagDynamicTextures(List<BlockPart> parts) {
@@ -103,16 +106,19 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
     public static class Geometry implements IModelGeometry<Geometry>, IRenderUtilities {
         private final List<BlockPart> parts;
         private final String defaultTexture;
+        private final ItemCameraTransforms transforms;
 
-        private Geometry(List<BlockPart> parts, String defaultTexture) {
+        private Geometry(List<BlockPart> parts, String defaultTexture, ItemCameraTransforms transforms) {
             this.parts = parts;
             this.defaultTexture = defaultTexture;
+            this.transforms = transforms;
         }
 
         @Override
         public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter,
                                 IModelTransform transform, ItemOverrideList overrides, ResourceLocation modelLocation) {
-            return new DynamicTextureModel(this.parts, owner, spriteGetter, transform, overrides, modelLocation, this.defaultTexture);
+            return new DynamicTextureModel(
+                    this.parts, owner, this.transforms, spriteGetter, transform, overrides, modelLocation, this.defaultTexture);
         }
 
         @Override
@@ -156,17 +162,19 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
 
         private final List<BlockPart> parts;
         private final IModelConfiguration owner;
+        private final ItemCameraTransforms transforms;
         private final Function<RenderMaterial, TextureAtlasSprite> spriteGetter;
         private final IModelTransform transform;
         private final ItemOverrideList overrides;
         private final ResourceLocation modelLocation;
 
-        private DynamicTextureModel(List<BlockPart> parts, IModelConfiguration owner,
+        private DynamicTextureModel(List<BlockPart> parts, IModelConfiguration owner, ItemCameraTransforms transforms,
                                     Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform transform,
                                     ItemOverrideList overrides, ResourceLocation modelLocation, String defaultTexture) {
             this.quadCache = Maps.newConcurrentMap();
             this.parts = parts;
             this.owner = owner;
+            this.transforms = transforms;
             this.spriteGetter = spriteGetter;
             this.transform = transform;
             this.overrides = overrides;
@@ -233,8 +241,10 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         }
 
         protected IBakedModel bakeSubModel(@Nonnull TextureAtlasSprite material) {
-            // Create a model builder
-            IModelBuilder<?> builder = IModelBuilder.of(owner, overrides, this.getParticleTexture());
+            // Initialize quad lists
+            List<BakedQuad> generalQuads = Lists.newArrayList();
+            Map<Direction, List<BakedQuad>> faceQuads = Maps.newEnumMap(Direction.class);
+            Arrays.stream(Direction.values()).forEach((dir) -> faceQuads.put(dir, Lists.newArrayList()));
             // Iterate over all parts
             for (BlockPart part : this.parts) {
                 // Iterate over the faces
@@ -249,16 +259,19 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
                     }
                     // Add the quad to the model builder
                     if (face.cullFace == null) {
-                        builder.addGeneralQuad(BlockModel.makeBakedQuad(part, face, sprite, direction, this.transform, this.modelLocation));
+                        generalQuads.add(BlockModel.makeBakedQuad(part, face, sprite, direction, this.transform, this.modelLocation));
                     } else {
-                        builder.addFaceQuad(
-                                this.transform.getRotation().rotateTransform(face.cullFace),
-                                BlockModel.makeBakedQuad(part, face, sprite, direction, this.transform, this.modelLocation));
+                        faceQuads.get(this.transform.getRotation().rotateTransform(face.cullFace))
+                                .add(BlockModel.makeBakedQuad(part, face, sprite, direction, this.transform, this.modelLocation));
                     }
                 }
             }
             // Build the model
-            return builder.build();
+            return new SimpleBakedModel(
+                    ImmutableList.copyOf(generalQuads),
+                    ImmutableMap.copyOf(Maps.transformValues(faceQuads, ImmutableList::copyOf)),
+                    this.owner.useSmoothLighting(), this.owner.isSideLit(), this.owner.isShadedInGui(),
+                    material, this.getItemCameraTransforms(), this.getOverrides());
         }
 
         @Override
@@ -298,6 +311,14 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
 
         @Nonnull
         @Override
+        @Deprecated
+        @SuppressWarnings("deprecation")
+        public ItemCameraTransforms getItemCameraTransforms() {
+            return this.transforms;
+        }
+
+        @Nonnull
+        @Override
         public ItemOverrideList getOverrides() {
             return this.overrides;
         }
@@ -314,12 +335,12 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
                     RenderTypeLookup.func_239219_a_(stack, fabulous)));
         }
 
-        @Nullable
-        protected ItemStack getMaterialFromStack(ItemStack stack) {
+        @Nonnull
+        protected ItemStack getMaterialFromStack(@Nonnull ItemStack stack) {
             if(stack.getItem() instanceof BlockItemDynamicTexture) {
                 return ((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack);
             }
-            return null;
+            return ItemStack.EMPTY;
         }
     }
 }
