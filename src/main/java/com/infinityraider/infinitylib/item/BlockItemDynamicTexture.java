@@ -50,7 +50,7 @@ public class BlockItemDynamicTexture extends BlockItemBase {
     public final void addInformation(@Nonnull ItemStack stack, @Nullable World world, @Nonnull List<ITextComponent> tooltips, @Nonnull ITooltipFlag advanced) {
         ItemStack material = this.getMaterial(stack);
         IFormattableTextComponent tooltip = new StringTextComponent("").append(TOOLTIP).append(COLON);
-        if(stack.isEmpty()) {
+        if(material.isEmpty()) {
             tooltips.add(tooltip.append(UNKNOWN));
         } else {
             tooltips.add(tooltip.append(material.getDisplayName()));

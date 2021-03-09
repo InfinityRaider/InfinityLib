@@ -108,6 +108,15 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                             return null;
                         }
                     }
+                } else if(ingredient instanceof DynamicTextureParentIngredient) {
+                    ItemStack materialStack = ((BlockItemDynamicTexture) stackInSlot.getItem()).getMaterial(stackInSlot);
+                    if(material == null) {
+                        material = materialStack;
+                    } else {
+                        if(!ItemStack.areItemsEqual(material, materialStack)) {
+                            return null;
+                        }
+                    }
                 }
             }
         }
@@ -153,7 +162,10 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
 
         @Override
         public ImmutableList<IInfIngredientSerializer<?>> getIngredientSerializers() {
-            return ImmutableList.of(DynamicTextureIngredient.SERIALIZER);
+            return ImmutableList.of(
+                    DynamicTextureIngredient.SERIALIZER,
+                    DynamicTextureParentIngredient.SERIALIZER
+            );
         }
     }
 }

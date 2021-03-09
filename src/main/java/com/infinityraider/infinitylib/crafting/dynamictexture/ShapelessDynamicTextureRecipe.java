@@ -92,7 +92,10 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
 
         @Override
         public ImmutableList<IInfIngredientSerializer<?>> getIngredientSerializers() {
-            return ImmutableList.of(DynamicTextureIngredient.SERIALIZER);
+            return ImmutableList.of(
+                    DynamicTextureIngredient.SERIALIZER,
+                    DynamicTextureParentIngredient.SERIALIZER
+            );
         }
     }
 }
