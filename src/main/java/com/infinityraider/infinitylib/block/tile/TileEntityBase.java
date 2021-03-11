@@ -13,6 +13,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.LogicalSide;
 
@@ -190,7 +191,7 @@ public abstract class TileEntityBase extends TileEntity {
         return new AutoSyncedFieldBuilder<>(
                 value, this,
                 (b, tag) -> tag.putBoolean(Names.NBT.VALUE, b),
-                (tag) -> tag.getBoolean(Names.NBT.VALUE)
+                (tag) -> tag.contains(Names.NBT.VALUE) ? tag.getBoolean(Names.NBT.VALUE) : value
         );
     }
 
@@ -198,7 +199,7 @@ public abstract class TileEntityBase extends TileEntity {
         return new AutoSyncedFieldBuilder<>(
                 value, this,
                 (i, tag) -> tag.putInt(Names.NBT.VALUE, i),
-                (tag) -> tag.getInt(Names.NBT.VALUE)
+                (tag) -> tag.contains(Names.NBT.VALUE) ? tag.getInt(Names.NBT.VALUE) : value
         );
     }
 
@@ -206,7 +207,7 @@ public abstract class TileEntityBase extends TileEntity {
         return new AutoSyncedFieldBuilder<>(
                 value, this,
                 (f, tag) -> tag.putFloat(Names.NBT.VALUE, f),
-                (tag) -> tag.getFloat(Names.NBT.VALUE)
+                (tag) -> tag.contains(Names.NBT.VALUE) ? tag.getFloat(Names.NBT.VALUE) : value
         );
     }
 
@@ -214,7 +215,7 @@ public abstract class TileEntityBase extends TileEntity {
         return new AutoSyncedFieldBuilder<>(
                 value, this,
                 (d, tag) -> tag.putDouble(Names.NBT.VALUE, d),
-                (tag) -> tag.getDouble(Names.NBT.VALUE)
+                (tag) -> tag.contains(Names.NBT.VALUE) ? tag.getDouble(Names.NBT.VALUE) : value
         );
     }
 
@@ -222,7 +223,7 @@ public abstract class TileEntityBase extends TileEntity {
         return new AutoSyncedFieldBuilder<>(
                 value, this,
                 (s, tag) -> tag.putString(Names.NBT.VALUE, s),
-                (tag) -> tag.getString(Names.NBT.VALUE)
+                (tag) -> tag.contains(Names.NBT.VALUE) ? tag.getString(Names.NBT.VALUE) : value
         );
     }
 
@@ -231,6 +232,20 @@ public abstract class TileEntityBase extends TileEntity {
                 value, this,
                 ItemStack::write,
                 ItemStack::read
+        );
+    }
+
+    public AutoSyncedFieldBuilder<BlockPos> getAutoSyncedFieldBuilder(BlockPos value) {
+        return new AutoSyncedFieldBuilder<>(
+                value, this,
+                (pos, tag) -> {tag.putInt(Names.NBT.X, pos.getX());tag.putInt(Names.NBT.Y, pos.getY());tag.putInt(Names.NBT.Z, pos.getZ());},
+                (tag) -> {
+                    if(tag.contains(Names.NBT.X) && tag.contains(Names.NBT.Y) && tag.contains(Names.NBT.Z)) {
+                        return new BlockPos(tag.getInt(Names.NBT.X), tag.getInt(Names.NBT.Y), tag.getInt(Names.NBT.Z));
+                    } else {
+                        return this.getPos();
+                    }
+                }
         );
     }
 
