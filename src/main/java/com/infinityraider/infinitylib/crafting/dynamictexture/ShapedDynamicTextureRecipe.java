@@ -102,7 +102,8 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                 // Dynamic texture check
                 if(ingredient instanceof DynamicTextureIngredient) {
                     if(material == null) {
-                        material = stackInSlot;
+                        material = stackInSlot.copy();
+                        material.setCount(1);
                     } else {
                         if(!ItemStack.areItemsEqual(material, stackInSlot)) {
                             return null;
@@ -111,7 +112,8 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                 } else if(ingredient instanceof DynamicTextureParentIngredient) {
                     ItemStack materialStack = ((BlockItemDynamicTexture) stackInSlot.getItem()).getMaterial(stackInSlot);
                     if(material == null) {
-                        material = materialStack;
+                        material = materialStack.copy();
+                        material.setCount(1);
                     } else {
                         if(!ItemStack.areItemsEqual(material, materialStack)) {
                             return null;
