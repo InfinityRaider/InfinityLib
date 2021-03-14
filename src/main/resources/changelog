@@ -1,6 +1,11 @@
 Changelog
 ---------
-"2.0.1"
+2.0.2
+- CHANGE: Ported to Minecraft version 1.16.5
+- ADDED:  Dynamic Texture Recipes
+- FIXED:  Various bugs with the Dynamic Camera module
+
+2.0.1
 - FIXED: Capability NPE in case CapabilityImplementations are instantiated before Capability has been injected
 - FIXED: Inventory bugs
 - FIXED: BakedQuad tessellation
