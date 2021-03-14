@@ -1,11 +1,11 @@
 modLoader="javafml"
-loaderVersion="[35,)"
+loaderVersion="[36,)"
 license="license.txt"
 issueTrackerURL="https://github.com/InfinityRaider/InfinityLib/issues/"
 
 [[mods]]
 modId="infinitylib"
-version="1.16.4-2.0.1"
+version="1.16.5-2.0.2"
 displayName="InfinityLib"
 updateJSONURL="https://www.curseforge.com/minecraft/mc-mods/infinitylib/files"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/infinitylib"
