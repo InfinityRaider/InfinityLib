@@ -4,7 +4,8 @@ Changelog
 - CHANGE: Ported to Minecraft version 1.16.5
 - ADDED:  Dynamic Texture Recipes
 - FIXED:  Various bugs with the Dynamic Camera module
-- FIXED:  Various bugs with the Capabilities
+- FIXED:  Crash related to capabilities
+- FIXED:  A bug in the Keyboard module
 
 2.0.1
 - FIXED: Capability NPE in case CapabilityImplementations are instantiated before Capability has been injected

@@ -81,24 +81,20 @@ public class KeyEventHandler {
         private final int key;
         private final Set<IKeyListener> listeners;
 
-        private KeyStatus status;
+        private boolean pressed;
+        private boolean repeated;
         private int modifier;
         private int count;
 
         private KeyTracker(int key) {
             this.key = key;
             this.listeners = Sets.newIdentityHashSet();
-            this.status = KeyStatus.UNPRESSED;
             this.modifier = -1;
             this.count = 0;
         }
 
         public int getKey() {
             return this.key;
-        }
-
-        public KeyStatus getStatus() {
-            return this.status;
         }
 
         public int getModifier() {
@@ -110,11 +106,11 @@ public class KeyEventHandler {
         }
 
         public boolean isPressed() {
-            return this.getStatus() == KeyStatus.PRESSED;
+            return this.pressed;
         }
 
         public boolean isRepeated() {
-            return this.getStatus() == KeyStatus.REPEATED;
+            return this.repeated;
         }
 
         public KeyTracker addListener(IKeyListener listener) {
@@ -125,45 +121,37 @@ public class KeyEventHandler {
         }
 
         public void onPress(int modifier) {
-            this.status = KeyStatus.PRESSED;
+            this.pressed = true;
             this.modifier = modifier;
             this.count = 0;
             this.listeners.forEach(l -> l.onKeyPress(this.getKey(), this.getModifier()));
         }
 
         public void onRelease(int modifier) {
-            this.status = KeyStatus.UNPRESSED;
+            this.pressed = false;
             this.modifier = modifier;
             this.listeners.forEach(l -> l.onKeyReleased(this.getKey(), this.getModifier(), this.getCount()));
         }
 
         public void onRepeat(int modifier) {
-            this.status = KeyStatus.REPEATED;
+            this.repeated = true;
             this.modifier = modifier;
             this.listeners.forEach(l -> l.onKeyRepeated(this.getKey(), this.getModifier()));
         }
 
         public void onTick() {
-            switch (this.getStatus()) {
-                case UNPRESSED:
-                    this.count = 0;
-                    this.modifier = -1;
-                    break;
-                case PRESSED:
-                    this.count++;
-                    this.listeners.forEach(l -> l.whileKeyHeld(this.getKey(), this.getModifier(), this.getCount()));
-                    break;
-                case REPEATED:
-                    this.status = KeyStatus.UNPRESSED;
-                    this.count = 0;
-                    this.modifier = -1;
+            if(this.isPressed()) {
+                this.count++;
+                this.listeners.forEach(l -> l.whileKeyHeld(this.getKey(), this.getModifier(), this.getCount()));
+            } else {
+                this.count = 0;
+                this.modifier = -1;
+            }
+            if(this.isRepeated()) {
+                this.repeated = false;
+                this.count = 0;
+                this.modifier = -1;
             }
         }
-    }
-
-    private enum KeyStatus {
-        UNPRESSED,
-        PRESSED,
-        REPEATED
     }
 }
