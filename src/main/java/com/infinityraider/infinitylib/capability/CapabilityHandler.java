@@ -2,7 +2,6 @@ package com.infinityraider.infinitylib.capability;
 
 import com.google.common.collect.Sets;
 import com.infinityraider.infinitylib.InfinityLib;
-import com.infinityraider.infinitylib.utility.ISerializable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -19,7 +18,7 @@ public class CapabilityHandler {
         return INSTANCE;
     }
 
-    private final Set<ICapabilityImplementation<ICapabilityProvider, ? extends ISerializable>> capabilityImplementations;
+    private final Set<ICapabilityImplementation<ICapabilityProvider, ?>> capabilityImplementations;
 
     private CapabilityHandler() {
         this.capabilityImplementations = Sets.newConcurrentHashSet();
@@ -27,22 +26,22 @@ public class CapabilityHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public void registerCapability(ICapabilityImplementation<ICapabilityProvider, ? extends ISerializable> implementation) {
+    public void registerCapability(ICapabilityImplementation<ICapabilityProvider, ?> implementation) {
         this.capabilityImplementations.add(implementation);
-        CapabilityManager.INSTANCE.register(implementation.getCapabilityClass(), new CapabilityStorage<>(), () -> null);
+        if(implementation instanceof IInfCapabilityImplementation) {
+            CapabilityManager.INSTANCE.register(
+                    ((IInfCapabilityImplementation<ICapabilityProvider, ?>) implementation).getCapabilityClass(),
+                    new CapabilityStorage<>(), () -> null
+            );
+        }
     }
 
-    protected <T extends ICapabilityProvider, C extends ISerializable> void addCapability(
+    protected <T extends ICapabilityProvider, C> void addCapability(
             AttachCapabilitiesEvent<?> event, ICapabilityImplementation<T , C> implementation, T carrier) {
-        if(implementation.getCapability() == null) {
-            // Safety check in case someone fucks up by core modding wrongly
-            InfinityLib.instance.getLogger().error("[SEVERE] Capability not injected in " + implementation.getClass().getName());
-            InfinityLib.instance.getLogger().error("[SEVERE] Someone fucked up badly, things might not work correctly.");
-            InfinityLib.instance.getLogger().printStackTrace(new RuntimeException("Capability requested before injection"));
-        } else {
-            C value = implementation.createNewValue(carrier);
-            event.addCapability(implementation.getCapabilityKey(), new CapabilityProvider<>(implementation.getCapability(), value));
-        }
+        event.addCapability(
+                implementation.getCapabilityKey(),
+                new CapabilityProvider<>(implementation::getCapability, implementation.createNewValue(carrier))
+        );
     }
 
     @SuppressWarnings("unchecked")
@@ -57,7 +56,7 @@ public class CapabilityHandler {
 
     @SubscribeEvent
     @SuppressWarnings({"unused", "unchecked"})
-    public void addEntityCapabilitiesRaw(AttachCapabilitiesEvent event) {
+    public void addCapabilitiesRaw(AttachCapabilitiesEvent event) {
         if(event.getObject() instanceof ICapabilityProvider) {
             this.addCapabilities(event);
         }
@@ -71,6 +70,8 @@ public class CapabilityHandler {
         if(oldPlayer != null && newPlayer != null && !oldPlayer.getEntityWorld().isRemote) {
             this.capabilityImplementations.stream()
                     .filter(impl -> PlayerEntity.class.isAssignableFrom(impl.getCarrierClass()))
+                    .filter(impl -> impl instanceof IInfCapabilityImplementation)
+                    .map(impl -> (IInfCapabilityImplementation<?, ?>) impl)
                     .forEach(impl ->
                             oldPlayer.getCapability(impl.getCapability(), null).ifPresent(oldProps ->
                                     newPlayer.getCapability(impl.getCapability(), null).ifPresent(newProps ->

@@ -1,11 +1,10 @@
 package com.infinityraider.infinitylib.capability;
 
-import com.infinityraider.infinitylib.utility.ISerializable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
-public interface ICapabilityImplementation<C extends ICapabilityProvider, V extends ISerializable> {
+public interface ICapabilityImplementation<C extends ICapabilityProvider, V> {
     Capability<V> getCapability();
 
     boolean shouldApplyCapability(C carrier);
@@ -15,6 +14,4 @@ public interface ICapabilityImplementation<C extends ICapabilityProvider, V exte
     ResourceLocation getCapabilityKey();
 
     Class<C> getCarrierClass();
-
-    Class<V> getCapabilityClass();
 }
