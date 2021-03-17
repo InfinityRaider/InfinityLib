@@ -15,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.LogicalSide;
 
 import javax.annotation.Nonnull;
@@ -43,6 +44,13 @@ public abstract class TileEntityBase extends TileEntity {
 
     public final int zCoord() {
         return this.getPos().getZ();
+    }
+
+    public final Chunk getChunk() {
+        if(this.getWorld() == null) {
+            return null;
+        }
+        return this.getWorld().getChunkAt(this.getPos());
     }
 
     public Random getRandom() {

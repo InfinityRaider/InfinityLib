@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.block.tile;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
@@ -28,6 +29,17 @@ public abstract class TileEntityDynamicTexture extends TileEntityBase {
 
     public void setMaterial(ItemStack material) {
         this.material.set(material);
+    }
+
+    public boolean isSameMaterial(TileEntity other) {
+        if(!(other instanceof TileEntityDynamicTexture)) {
+            return false;
+        }
+        return this.isSameMaterial(((TileEntityDynamicTexture) other).getMaterial());
+    }
+
+    public boolean isSameMaterial(ItemStack material) {
+        return ItemStack.areItemsEqual(this.getMaterial(), material);
     }
 
     @Nonnull
