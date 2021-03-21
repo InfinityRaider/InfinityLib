@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.modules.synchronizedeffects;
 
-import com.infinityraider.infinitylib.capability.IInfCapabilityImplementation;
+import com.infinityraider.infinitylib.capability.IInfSerializableCapabilityImplementation;
 import com.infinityraider.infinitylib.reference.Reference;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ResourceLocation;
@@ -9,7 +9,7 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 
 import javax.annotation.Nullable;
 
-public class CapabilityEffectTracker implements IInfCapabilityImplementation<LivingEntity, EffectTracker> {
+public class CapabilityEffectTracker implements IInfSerializableCapabilityImplementation<LivingEntity, EffectTracker> {
     private static final CapabilityEffectTracker INSTANCE = new CapabilityEffectTracker();
 
     public static CapabilityEffectTracker getInstance() {

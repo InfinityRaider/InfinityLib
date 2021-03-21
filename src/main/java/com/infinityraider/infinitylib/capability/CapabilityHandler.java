@@ -26,12 +26,14 @@ public class CapabilityHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public void registerCapability(ICapabilityImplementation<ICapabilityProvider, ?> implementation) {
-        this.capabilityImplementations.add(implementation);
+    public <T extends ICapabilityProvider, C> void registerCapability(ICapabilityImplementation<T, C> implementation) {
+        this.capabilityImplementations.add((ICapabilityImplementation<ICapabilityProvider, ?>) implementation);
         if(implementation instanceof IInfCapabilityImplementation) {
+            IInfCapabilityImplementation<T, C> infImpl = (IInfCapabilityImplementation<T, C>) implementation;
             CapabilityManager.INSTANCE.register(
-                    ((IInfCapabilityImplementation<ICapabilityProvider, ?>) implementation).getCapabilityClass(),
-                    new CapabilityStorage<>(), () -> null
+                    infImpl.getCapabilityClass(),
+                    new CapabilityStorage<>(infImpl.getSerializer()),
+                    infImpl.factory()
             );
         }
     }
@@ -55,9 +57,9 @@ public class CapabilityHandler {
     }
 
     @SubscribeEvent
-    @SuppressWarnings({"unused", "unchecked"})
-    public void addCapabilitiesRaw(AttachCapabilitiesEvent event) {
-        if(event.getObject() instanceof ICapabilityProvider) {
+    @SuppressWarnings("unused")
+    public void addCapabilitiesRaw(AttachCapabilitiesEvent<? extends ICapabilityProvider> event) {
+        if(event.getObject() != null) {
             this.addCapabilities(event);
         }
     }
@@ -75,8 +77,7 @@ public class CapabilityHandler {
                     .forEach(impl ->
                             oldPlayer.getCapability(impl.getCapability(), null).ifPresent(oldProps ->
                                     newPlayer.getCapability(impl.getCapability(), null).ifPresent(newProps ->
-                                            newProps.readFromNBT(oldProps.writeToNBT())
-                                    )));
+                                            impl.copyData(oldProps, newProps))));
         }
     }
 }

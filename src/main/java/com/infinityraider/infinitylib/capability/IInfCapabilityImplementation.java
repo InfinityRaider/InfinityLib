@@ -1,8 +1,24 @@
 package com.infinityraider.infinitylib.capability;
 
-import com.infinityraider.infinitylib.utility.ISerializable;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
-public interface IInfCapabilityImplementation<C extends ICapabilityProvider, V extends ISerializable> extends ICapabilityImplementation<C, V> {
+import java.util.concurrent.Callable;
+
+public interface IInfCapabilityImplementation<C extends ICapabilityProvider, V> extends ICapabilityImplementation<C, V> {
     Class<V> getCapabilityClass();
+
+    Serializer<V> getSerializer();
+
+    default Callable<? extends V> factory() {
+        return () -> null;
+    }
+
+    void copyData(V from, V to);
+
+   interface Serializer<V> {
+       CompoundNBT writeToNBT(V object);
+
+       void readFromNBT(V object, CompoundNBT nbt);
+   }
 }
