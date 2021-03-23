@@ -17,12 +17,13 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 
 public class WorldHelper {
 
-    public static <T> Optional<T> getBlock(World world, BlockPos pos, Class<T> type) {
+    public static <T> Optional<T> getBlock(IBlockReader world, BlockPos pos, Class<T> type) {
         return Optional.ofNullable(world)
                 .map(w -> w.getBlockState(pos))
                 .map(AbstractBlock.AbstractBlockState::getBlock)
@@ -30,14 +31,14 @@ public class WorldHelper {
                 .map(type::cast);
     }
 
-    public static <T> Optional<T> getTile(World world, BlockPos pos, Class<T> type) {
+    public static <T> Optional<T> getTile(IBlockReader world, BlockPos pos, Class<T> type) {
         return Optional.ofNullable(world)
                 .map(w -> w.getTileEntity(pos))
                 .filter(te -> type.isAssignableFrom(te.getClass()))
                 .map(type::cast);
     }
 
-    public static <T> Optional<T> getCapability(World world, BlockPos pos, Capability<T> capability, Class<T> type) {
+    public static <T> Optional<T> getCapability(IBlockReader world, BlockPos pos, Capability<T> capability, Class<T> type) {
         return Optional.ofNullable(world)
                 .map(w -> w.getTileEntity(pos))
                 .flatMap(tile -> {
@@ -49,31 +50,31 @@ public class WorldHelper {
                 });
     }
 
-    public static <T> List<T> collectBlocks(World world, BlockPos min, BlockPos max, Class<T> type) {
+    public static <T> List<T> collectBlocks(IBlockReader world, BlockPos min, BlockPos max, Class<T> type) {
         return streamBlocks(world, min, max, type).collect(Collectors.toList());
     }
 
-    public static <T> List<T> collectTiles(World world, BlockPos min, BlockPos max, Class<T> type) {
+    public static <T> List<T> collectTiles(IBlockReader world, BlockPos min, BlockPos max, Class<T> type) {
         return streamTiles(world, min, max, type).collect(Collectors.toList());
     }
 
-    public static <T> List<T> collectCapabilities(World world, BlockPos min, BlockPos max, Capability<T> capability, Class<T> type) {
+    public static <T> List<T> collectCapabilities(IBlockReader world, BlockPos min, BlockPos max, Capability<T> capability, Class<T> type) {
         return streamCapabilities(world, min, max, capability, type).collect(Collectors.toList());
     }
 
-    public static <T> Stream<T> streamBlocks(World world, BlockPos min, BlockPos max, Class<T> type) {
+    public static <T> Stream<T> streamBlocks(IBlockReader world, BlockPos min, BlockPos max, Class<T> type) {
         return streamRange(world, min, max, (w, pos) -> getBlock(w, pos, type));
     }
 
-    public static <T> Stream<T> streamTiles(World world, BlockPos min, BlockPos max, Class<T> type) {
+    public static <T> Stream<T> streamTiles(IBlockReader world, BlockPos min, BlockPos max, Class<T> type) {
         return streamRange(world, min, max, (w, pos) -> getTile(w, pos, type));
     }
 
-    public static <T> Stream<T> streamCapabilities(World world, BlockPos min, BlockPos max, Capability<T> capability, Class<T> type) {
+    public static <T> Stream<T> streamCapabilities(IBlockReader world, BlockPos min, BlockPos max, Capability<T> capability, Class<T> type) {
         return streamRange(world, min, max, (w, pos) -> getCapability(w, pos, capability, type));
     }
 
-    public static <T> Stream<T> streamRange(World world, BlockPos min, BlockPos max, BiFunction<World, BlockPos, Optional<T>> getter) {
+    public static <T> Stream<T> streamRange(IBlockReader world, BlockPos min, BlockPos max, BiFunction<IBlockReader, BlockPos, Optional<T>> getter) {
         BlockPos.Mutable mutable = new BlockPos.Mutable(0, 0, 0);
         return IntStream.rangeClosed(min.getX(), max.getX()).mapToObj(
                 x -> IntStream.rangeClosed(min.getY(), max.getY()).mapToObj(
@@ -87,11 +88,11 @@ public class WorldHelper {
                 .map(Optional::get);
     }
 	
-	public static <T> List<T> getTileNeighbors(World world, BlockPos pos, Class<T> type) {
+	public static <T> List<T> getTileNeighbors(IBlockReader world, BlockPos pos, Class<T> type) {
 		return getTileNeighbors(world, pos, type, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST);
 	}
 
-	public static <T> List<T> getTileNeighbors(World world, BlockPos pos, Class<T> type, Direction... dirs) {
+	public static <T> List<T> getTileNeighbors(IBlockReader world, BlockPos pos, Class<T> type, Direction... dirs) {
 		List<T> neighbours = new ArrayList<>();
 		for (Direction dir : dirs) {
 			TileEntity te = world.getTileEntity(pos.add(dir.getXOffset(), dir.getYOffset(), dir.getZOffset()));
@@ -102,13 +103,13 @@ public class WorldHelper {
 		return neighbours;
 	}
     
-    public static void spawnItemInWorld(World world, BlockPos pos, Collection<ItemStack> stacks) {
+    public static void spawnItemInWorld(IBlockReader world, BlockPos pos, Collection<ItemStack> stacks) {
         for (ItemStack stack : stacks) {
             spawnItemInWorld(world, pos, stack);
         }
     }
     
-    public static void spawnItemInWorld(World world, BlockPos pos, ItemStack... stacks) {
+    public static void spawnItemInWorld(IBlockReader world, BlockPos pos, ItemStack... stacks) {
         for (ItemStack stack : stacks) {
             spawnItemInWorld(world, pos, stack);
         }
