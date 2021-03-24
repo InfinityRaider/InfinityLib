@@ -57,8 +57,8 @@ public class CapabilityHandler {
     }
 
     @SubscribeEvent
-    @SuppressWarnings("unused")
-    public void addCapabilitiesRaw(AttachCapabilitiesEvent<? extends ICapabilityProvider> event) {
+    @SuppressWarnings({"unchecked","unused"})
+    public void addCapabilitiesRaw(AttachCapabilitiesEvent event) {
         if(event.getObject() != null) {
             this.addCapabilities(event);
         }
