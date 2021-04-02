@@ -84,7 +84,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
         tooltip.add(new StringTextComponent("Current debug mode: "  + (mode == null ? "null" : mode.debugName())));
     }
 
-    private DebugMode getDebugMode(ItemStack stack) {
+    public DebugMode getDebugMode(ItemStack stack) {
         CompoundNBT tag;
         if(!stack.hasTag()) {
             tag = new CompoundNBT();
@@ -98,7 +98,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
         return DEBUG_MODES.get(tag.getInt(Names.NBT.COUNT) % DEBUG_MODES.size());
     }
 
-    private DebugMode changeDebugMode(ItemStack stack) {
+    public DebugMode changeDebugMode(ItemStack stack) {
         CompoundNBT tag;
         if(!stack.hasTag()) {
             tag = new CompoundNBT();
