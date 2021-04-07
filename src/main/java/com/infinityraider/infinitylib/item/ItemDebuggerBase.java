@@ -11,22 +11,21 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("unused")
 /**
  * Base class for a debug item, allows a single item to have multiple debug modes
  */
+@SuppressWarnings("unused")
 public abstract class ItemDebuggerBase extends ItemBase {
     private final List<DebugMode> DEBUG_MODES;
 
@@ -43,8 +42,9 @@ public abstract class ItemDebuggerBase extends ItemBase {
 
     protected abstract List<DebugMode> getDebugModes();
 
+    @Nonnull
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
+    public ActionResult<ItemStack> onItemRightClick(@Nonnull World world, PlayerEntity player, @Nonnull Hand hand) {
         ItemStack stack = player.getHeldItem(hand);
         if (player.isSneaking()) {
             if (!world.isRemote) {
@@ -57,18 +57,19 @@ public abstract class ItemDebuggerBase extends ItemBase {
         return new ActionResult<>(ActionResultType.PASS, stack);
     }
 
-
+    @Nonnull
     @Override
     public ActionResultType onItemUse(ItemUseContext context) {
-        if(!context.getPlayer().isSneaking()) {
+        if(context.getPlayer() != null && !context.getPlayer().isSneaking()) {
             ItemStack stack = context.getItem();
             this.getDebugMode(stack).debugActionBlockClicked(stack, context);
         }
         return ActionResultType.PASS;
     }
 
+    @Nonnull
     @Override
-    public ActionResultType itemInteractionForEntity(ItemStack stack, PlayerEntity player, LivingEntity target, Hand hand) {
+    public ActionResultType itemInteractionForEntity(@Nonnull ItemStack stack, PlayerEntity player, @Nonnull LivingEntity target, @Nonnull Hand hand) {
         if(!player.isSneaking()) {
             this.getDebugMode(stack).debugActionEntityClicked(stack, player, target, hand);
         }
@@ -77,7 +78,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flag) {
+    public void addInformation(@Nonnull ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, @Nonnull ITooltipFlag flag) {
         DebugMode mode = getDebugMode(stack);
         tooltip.add(new StringTextComponent("Right Click to use the debugger in its current mode"));
         tooltip.add(new StringTextComponent("Shift + Right Click to cycle debug modes"));
@@ -86,7 +87,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
 
     public DebugMode getDebugMode(ItemStack stack) {
         CompoundNBT tag;
-        if(!stack.hasTag()) {
+        if(!stack.hasTag() || stack.getTag() == null) {
             tag = new CompoundNBT();
             stack.setTag(tag);
         } else {
@@ -100,7 +101,7 @@ public abstract class ItemDebuggerBase extends ItemBase {
 
     public DebugMode changeDebugMode(ItemStack stack) {
         CompoundNBT tag;
-        if(!stack.hasTag()) {
+        if(!stack.hasTag() || stack.getTag() == null) {
             tag = new CompoundNBT();
             stack.setTag(tag);
         } else {
