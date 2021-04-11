@@ -38,7 +38,7 @@ public class EntityHelper {
             Set<PrioritizedGoal> goals = (Set<PrioritizedGoal>) goalsField.get(selector);
             return goals.stream().filter(goal -> goal.getPriority() >= priority).allMatch(goal -> {
                 try {
-                    priorityField.set(selector, ((int) priorityField.get(selector)) + 1);
+                    priorityField.set(goal, ((int) priorityField.get(goal)) + 1);
                     return true;
                 } catch(Exception e) {
                     InfinityLib.instance.getLogger().error("Failed to increment priority");
