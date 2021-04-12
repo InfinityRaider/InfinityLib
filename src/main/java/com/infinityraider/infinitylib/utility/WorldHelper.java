@@ -75,6 +75,13 @@ public class WorldHelper {
     }
 
     public static <T> Stream<T> streamRange(IBlockReader world, BlockPos min, BlockPos max, BiFunction<IBlockReader, BlockPos, Optional<T>> getter) {
+        return streamPositions(min, max)
+                .map(pos -> getter.apply(world, pos))
+                .filter(Optional::isPresent)
+                .map(Optional::get);
+    }
+
+    public static Stream<BlockPos> streamPositions(BlockPos min, BlockPos max) {
         BlockPos.Mutable mutable = new BlockPos.Mutable(0, 0, 0);
         return IntStream.rangeClosed(min.getX(), max.getX()).mapToObj(
                 x -> IntStream.rangeClosed(min.getY(), max.getY()).mapToObj(
@@ -82,10 +89,7 @@ public class WorldHelper {
                                 z -> {
                                     mutable.setPos(x, y, z);
                                     return mutable;
-                                })).flatMap(stream -> stream)).flatMap(stream -> stream)
-                .map(pos -> getter.apply(world, pos))
-                .filter(Optional::isPresent)
-                .map(Optional::get);
+                                })).flatMap(stream -> stream)).flatMap(stream -> stream);
     }
 	
 	public static <T> List<T> getTileNeighbors(IBlockReader world, BlockPos pos, Class<T> type) {
