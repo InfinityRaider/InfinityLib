@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.item;
 
+import com.google.common.collect.Sets;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.block.BlockDynamicTexture;
 import com.infinityraider.infinitylib.reference.Names;
@@ -17,11 +18,19 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class BlockItemDynamicTexture extends BlockItemBase {
+    private static final Set<BlockItemDynamicTexture> ITEMS = Sets.newConcurrentHashSet();
+
+    public static Set<BlockItemDynamicTexture> getAll() {
+        return ITEMS;
+    }
+
     public BlockItemDynamicTexture(BlockDynamicTexture<?> block, Properties properties) {
         super(block, properties);
+        ITEMS.add(this);
     }
 
     public final void setMaterial(ItemStack stack, ItemStack material) {

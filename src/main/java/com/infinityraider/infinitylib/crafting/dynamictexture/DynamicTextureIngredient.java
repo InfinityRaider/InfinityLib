@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DynamicTextureIngredient extends Ingredient {
+public class DynamicTextureIngredient extends Ingredient implements IDynamicTextureIngredient {
     public static final ResourceLocation ID = new ResourceLocation(InfinityLib.instance.getModId(), "dynamic_material");
     public static final Serializer SERIALIZER = new Serializer();
 
@@ -35,12 +35,19 @@ public class DynamicTextureIngredient extends Ingredient {
         this.tagList = tagList;
     }
 
+    @Override
     public ResourceLocation getTagId() {
         return this.tagList.getTagId();
     }
 
+    @Override
     public ITag<Block> getTag() {
         return this.tagList.getTag();
+    }
+
+    @Override
+    public ItemStack asStackWithMaterial(ItemStack material) {
+        return material;
     }
 
     @Override
@@ -75,7 +82,7 @@ public class DynamicTextureIngredient extends Ingredient {
         }
     }
 
-    private static final class BlockTagList implements Ingredient.IItemList {
+    public static final class BlockTagList implements Ingredient.IItemList {
         private final ResourceLocation tagId;
 
         private ITag<Block> tag;

@@ -5,25 +5,44 @@ import com.google.gson.JsonObject;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
+import net.minecraft.block.Block;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipe;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.tags.ITag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     public static final String ID = "crafting_shaped_dynamic_texture";
     public static final IRecipeSerializer<ShapedDynamicTextureRecipe> SERIALIZER = new Serializer();
 
+    private List<Block> materials;
+
     public ShapedDynamicTextureRecipe(ShapedRecipe parent) {
         super(parent.getId(), parent.getGroup(), parent.getRecipeWidth(), parent.getRecipeHeight(), parent.getIngredients(), parent.getRecipeOutput());
+    }
+
+    public List<Block> getSuitableMaterials() {
+        if(this.materials == null) {
+            this.materials = this.getIngredients().stream()
+                    .filter(ingredient -> ingredient instanceof IDynamicTextureIngredient)
+                    .findFirst()
+                    .map(ingredient -> (IDynamicTextureIngredient) ingredient)
+                    .map(IDynamicTextureIngredient::getTag)
+                    .map(ITag::getAllElements)
+                    .map(ImmutableList::copyOf)
+                    .orElse(ImmutableList.of());
+        }
+        return this.materials;
     }
 
     @Override
@@ -36,6 +55,22 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     @Nonnull
     public ItemStack getRecipeOutput() {
         return ItemStack.EMPTY;
+    }
+
+    public ItemStack getResultWithoutMaterial() {
+        return super.getRecipeOutput().copy();
+    }
+
+    public ItemStack getResultWithMaterial(Block block) {
+        return this.getResultWithMaterial(new ItemStack(block));
+    }
+
+    public ItemStack getResultWithMaterial(ItemStack material) {
+        ItemStack stack = this.getResultWithoutMaterial();
+        if(stack.getItem() instanceof BlockItemDynamicTexture && material != null) {
+            ((BlockItemDynamicTexture) stack.getItem()).setMaterial(stack, material);
+        }
+        return stack;
     }
 
     @Override
@@ -52,12 +87,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     @Override
     @Nonnull
     public ItemStack getCraftingResult(@Nonnull CraftingInventory inv) {
-        ItemStack result = super.getRecipeOutput().copy();
-        ItemStack material = this.checkMaterial(inv);
-        if((result.getItem() instanceof BlockItemDynamicTexture) && (material != null)) {
-            ((BlockItemDynamicTexture) result.getItem()).setMaterial(result, material);
-        }
-        return result;
+        return this.getResultWithMaterial(this.checkMaterial(inv));
     }
 
     @Nullable
