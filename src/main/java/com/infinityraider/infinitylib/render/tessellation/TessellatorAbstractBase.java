@@ -179,109 +179,17 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset) {
-        float x1, x2, x3, x4;
-        float y1, y2, y3, y4;
-        float z1, z2, z3, z4;
-        float u1, u2, u3, u4;
-        float v1, v2, v3, v4;
-        final int uv = 17;
-        switch (face) {
-            case UP: {
-                x1 = x4 = maxX;
-                x2 = x3 = minX;
-                z1 = z2 = minY;
-                z3 = z4 = maxY;
-                y1 = y2 = y3 = y4 = offset;
-                u2 = u3 = (minX % uv);
-                u1 = u4 = (maxX % uv);
-                v3 = v4 = maxY % uv;
-                v1 = v2 = minY % uv;
-                break;
-            }
-            case DOWN: {
-                x1 = x2 = maxX;
-                x3 = x4 = minX;
-                z1 = z4 = minY;
-                z2 = z3 = maxY;
-                y1 = y2 = y3 = y4 = offset;
-                u1 = u2 = maxX % uv;
-                u3 = u4 = minX % uv;
-                v1 = v4 = 16 - (minY % uv);
-                v2 = v3 = 16 - (maxY % uv);
-                break;
-            }
-            case WEST: {
-                z1 = z2 = maxX;
-                z3 = z4 = minX;
-                y1 = y4 = minY;
-                y2 = y3 = maxY;
-                x1 = x2 = x3 = x4 = offset;
-                u1 = u2 = maxX % uv;
-                u3 = u4 = minX % uv;
-                v1 = v4 = (16 - minY % uv);
-                v2 = v3 = (16 - maxY % uv);
-                break;
-            }
-            case EAST: {
-                z1 = z2 = minX;
-                z3 = z4 = maxX;
-                y1 = y4 = minY;
-                y2 = y3 = maxY;
-                x1 = x2 = x3 = x4 = offset;
-                u1 = u2 = (16 - minX % uv);
-                u3 = u4 = (16 - maxX % uv);
-                v1 = v4 = (16 - minY % uv);
-                v2 = v3 = (16 - maxY % uv);
-                break;
-            }
-            case NORTH: {
-                x1 = x2 = maxX;
-                x3 = x4 = minX;
-                y1 = y4 = maxY;
-                y2 = y3 = minY;
-                z1 = z2 = z3 = z4 = offset;
-                u1 = u2 = (16 - maxX % uv);
-                u3 = u4 = (16 - minX % uv);
-                v1 = v4 = (16 - maxY % uv);
-                v2 = v3 = (16 - minY % uv);
-                break;
-            }
-            case SOUTH: {
-                x1 = x2 = maxX;
-                x3 = x4 = minX;
-                y1 = y4 = minY;
-                y2 = y3 = maxY;
-                z1 = z2 = z3 = z4 = offset;
-                u1 = u2 = maxX % uv;
-                u3 = u4 = minX % uv;
-                v1 = v4 = (16 - minY % uv);
-                v2 = v3 = (16 - maxY % uv);
-                break;
-            }
-            default:
-                return;
-        }
-        float rPrev = this.r;
-        float gPrev = this.g;
-        float bPrev = this.b;
-        float aPrev = this.a;
-        this.applyColorMultiplier(face);
-        this.setNormal(face.getXOffset(), face.getYOffset(), face.getZOffset());
-        addScaledVertexWithUV(x1, y1, z1, u1, v1);
-        addScaledVertexWithUV(x2, y2, z2, u2, v2);
-        addScaledVertexWithUV(x3, y3, z3, u3, v3);
-        addScaledVertexWithUV(x4, y4, z4, u4, v4);
-        this.setColorRGBA(rPrev, gPrev, bPrev, aPrev);
+
     }
 
     @Override
-    public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
+    public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset,
+                               float u1, float v1, float u2, float v2) {
         float x1, x2, x3, x4;
         float y1, y2, y3, y4;
         float z1, z2, z3, z4;
-        float u1, u2, u3, u4;
-        float v1, v2, v3, v4;
-        final int uv = 17;
+        float u1f, u2f, u3f, u4f;
+        float v1f, v2f, v3f, v4f;
         switch (face) {
             case UP: {
                 x1 = x4 = maxX;
@@ -289,10 +197,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 z1 = z2 = minY;
                 z3 = z4 = maxY;
                 y1 = y2 = y3 = y4 = offset;
-                u2 = u3 = (minX % uv);
-                u1 = u4 = (maxX % uv);
-                v3 = v4 = maxY % uv;
-                v1 = v2 = minY % uv;
+                u2f = u3f = u1;
+                u1f = u4f = u2;
+                v3f = v4f = v2;
+                v1f = v2f = v1;
                 break;
             }
             case DOWN: {
@@ -301,10 +209,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 z1 = z4 = minY;
                 z2 = z3 = maxY;
                 y1 = y2 = y3 = y4 = offset;
-                u1 = u2 = maxX % uv;
-                u3 = u4 = minX % uv;
-                v1 = v4 = 16 - (minY % uv);
-                v2 = v3 = 16 - (maxY % uv);
+                u1f = u2f = u2;
+                u3f = u4f = u1;
+                v1f = v4f = 16 - v1;
+                v2f = v3f = 16 - v2;
                 break;
             }
             case WEST: {
@@ -313,10 +221,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 y1 = y4 = minY;
                 y2 = y3 = maxY;
                 x1 = x2 = x3 = x4 = offset;
-                u1 = u2 = maxX % uv;
-                u3 = u4 = minX % uv;
-                v1 = v4 = (16 - minY % uv);
-                v2 = v3 = (16 - maxY % uv);
+                u1f = u2f = u2;
+                u3f = u4f = u1;
+                v1f = v4f = 16 - v1;
+                v2f = v3f = 16 - v2;
                 break;
             }
             case EAST: {
@@ -325,10 +233,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 y1 = y4 = minY;
                 y2 = y3 = maxY;
                 x1 = x2 = x3 = x4 = offset;
-                u1 = u2 = (16 - minX % uv);
-                u3 = u4 = (16 - maxX % uv);
-                v1 = v4 = (16 - minY % uv);
-                v2 = v3 = (16 - maxY % uv);
+                u1f = u2f = 16 - u1;
+                u3f = u4f = 16 - u2;
+                v1f = v4f = 16 - v1;
+                v2f = v3f = 16 - v2;
                 break;
             }
             case NORTH: {
@@ -337,10 +245,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 y1 = y4 = maxY;
                 y2 = y3 = minY;
                 z1 = z2 = z3 = z4 = offset;
-                u1 = u2 = (16 - maxX % uv);
-                u3 = u4 = (16 - minX % uv);
-                v1 = v4 = (16 - maxY % uv);
-                v2 = v3 = (16 - minY % uv);
+                u1f = u2f = 16 - u2;
+                u3f = u4f = 16 - u1;
+                v1f = v4f = 16 - v2;
+                v2f = v3f = 16 - v1;
                 break;
             }
             case SOUTH: {
@@ -349,10 +257,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
                 y1 = y4 = minY;
                 y2 = y3 = maxY;
                 z1 = z2 = z3 = z4 = offset;
-                u1 = u2 = maxX % uv;
-                u3 = u4 = minX % uv;
-                v1 = v4 = (16 - minY % uv);
-                v2 = v3 = (16 - maxY % uv);
+                u1f = u2f = u2;
+                u3f = u4f = u1;
+                v1f = v4f = 16 - v1;
+                v2f = v3f = 16 - v2;
                 break;
             }
             default:
@@ -364,10 +272,113 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         float aPrev = this.a;
         this.applyColorMultiplier(face);
         this.setNormal(face.getXOffset(), face.getYOffset(), face.getZOffset());
-        addScaledVertexWithUV(x1, y1, z1, icon, u1, v1);
-        addScaledVertexWithUV(x2, y2, z2, icon, u2, v2);
-        addScaledVertexWithUV(x3, y3, z3, icon, u3, v3);
-        addScaledVertexWithUV(x4, y4, z4, icon, u4, v4);
+        addScaledVertexWithUV(x1, y1, z1, u1f, v1f);
+        addScaledVertexWithUV(x2, y2, z2, u2f, v2f);
+        addScaledVertexWithUV(x3, y3, z3, u3f, v3f);
+        addScaledVertexWithUV(x4, y4, z4, u4f, v4f);
+        this.setColorRGBA(rPrev, gPrev, bPrev, aPrev);
+    }
+
+
+    @Override
+    public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
+        this.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset, minX % 17, minY % 17, maxX % 17, maxY % 17);
+    }
+
+    @Override
+    public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset,
+                               float u1, float v1, float u2, float v2) {
+        float x1, x2, x3, x4;
+        float y1, y2, y3, y4;
+        float z1, z2, z3, z4;
+        float u1f, u2f, u3f, u4f;
+        float v1f, v2f, v3f, v4f;
+        switch (face) {
+            case UP: {
+                x1 = x4 = maxX;
+                x2 = x3 = minX;
+                z1 = z2 = minY;
+                z3 = z4 = maxY;
+                y1 = y2 = y3 = y4 = offset;
+                u2f = u3f = u1;
+                u1f = u4f = u2;
+                v3f = v4f = v2;
+                v1f = v2f = v1;
+                break;
+            }
+            case DOWN: {
+                x1 = x2 = maxX;
+                x3 = x4 = minX;
+                z1 = z4 = minY;
+                z2 = z3 = maxY;
+                y1 = y2 = y3 = y4 = offset;
+                u1f = u2f = u2;
+                u3f = u4f = u1;
+                v1f = v4f = 16 - v1;
+                v2f = v3f = 16 - v2;
+                break;
+            }
+            case WEST: {
+                z1 = z2 = maxX;
+                z3 = z4 = minX;
+                y1 = y4 = minY;
+                y2 = y3 = maxY;
+                x1 = x2 = x3 = x4 = offset;
+                u1f = u2f = u2;
+                u3f = u4f = u1;
+                v1f = v4f = 16 - v1;
+                v2f = v3f = 16 - v2;
+                break;
+            }
+            case EAST: {
+                z1 = z2 = minX;
+                z3 = z4 = maxX;
+                y1 = y4 = minY;
+                y2 = y3 = maxY;
+                x1 = x2 = x3 = x4 = offset;
+                u1f = u2f = 16 - u1;
+                u3f = u4f = 16 - u2;
+                v1f = v4f = 16 - v1;
+                v2f = v3f = 16 - v2;
+                break;
+            }
+            case NORTH: {
+                x1 = x2 = maxX;
+                x3 = x4 = minX;
+                y1 = y4 = maxY;
+                y2 = y3 = minY;
+                z1 = z2 = z3 = z4 = offset;
+                u1f = u2f = 16 - u2;
+                u3f = u4f = 16 - u1;
+                v1f = v4f = 16 - v2;
+                v2f = v3f = 16 - v1;
+                break;
+            }
+            case SOUTH: {
+                x1 = x2 = maxX;
+                x3 = x4 = minX;
+                y1 = y4 = minY;
+                y2 = y3 = maxY;
+                z1 = z2 = z3 = z4 = offset;
+                u1f = u2f = u2;
+                u3f = u4f = u1;
+                v1f = v4f = 16 - v1;
+                v2f = v3f = 16 - v2;
+                break;
+            }
+            default:
+                return;
+        }
+        float rPrev = this.r;
+        float gPrev = this.g;
+        float bPrev = this.b;
+        float aPrev = this.a;
+        this.applyColorMultiplier(face);
+        this.setNormal(face.getXOffset(), face.getYOffset(), face.getZOffset());
+        addScaledVertexWithUV(x1, y1, z1, icon, u1f, v1f);
+        addScaledVertexWithUV(x2, y2, z2, icon, u2f, v2f);
+        addScaledVertexWithUV(x3, y3, z3, icon, u3f, v3f);
+        addScaledVertexWithUV(x4, y4, z4, icon, u4f, v4f);
         this.setColorRGBA(rPrev, gPrev, bPrev, aPrev);
     }
 
@@ -382,6 +393,17 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
+    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, float offset,
+                              float u1, float v1, float u2, float v2) {
+        if(face == null) {
+            return;
+        }
+        Direction opposite = face.getOpposite();
+        this.drawScaledFace(minX, minY, maxX, maxY, face, offset, u1, v1, u2, v2);
+        this.drawScaledFace(minX, minY, maxX, maxY, opposite, offset, u1, v1, u2, v2);
+    }
+
+    @Override
     public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
         if(face == null) {
             return;
@@ -389,6 +411,17 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         Direction opposite = face.getOpposite();
         this.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset);
         this.drawScaledFace(minX, minY, maxX, maxY, opposite, icon, offset);
+    }
+
+    @Override
+    public void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset,
+                                     float u1, float v1, float u2, float v2) {
+        if(face == null) {
+            return;
+        }
+        Direction opposite = face.getOpposite();
+        this.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset, u1, v1, u2, v2);
+        this.drawScaledFace(minX, minY, maxX, maxY, opposite, icon, offset, u1, v1, u2, v2);
     }
 
     @Override

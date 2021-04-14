@@ -114,6 +114,8 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * Adds a quad for a scaled face, the face is defined by minimum and maximum
      * coordinates
      *
+     * This method will define its UVs based on the coordinates
+     *
      * @param minX minimum 2D x-coordinate of the face
      * @param minY minimum 2D y-coordinate of the face
      * @param maxX maximum 2D x-coordinate of the face
@@ -127,6 +129,24 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * Adds a quad for a scaled face, the face is defined by minimum and maximum
      * coordinates
      *
+     * This method has its UVs defined explicitly
+     *
+     * @param minX minimum 2D x-coordinate of the face
+     * @param minY minimum 2D y-coordinate of the face
+     * @param maxX maximum 2D x-coordinate of the face
+     * @param maxY maximum 2D y-coordinate of the face
+     * @param face orientation of the face
+     * @param offset offset of the face along its normal
+     */
+    void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset,
+                        float u1, float v1, float u2, float v2);
+
+    /**
+     * Adds a quad for a scaled face, the face is defined by minimum and maximum
+     * coordinates
+     *
+     * This method will define its UVs based on the coordinates
+     *
      * @param minX minimum 2D x-coordinate of the face
      * @param minY minimum 2D y-coordinate of the face
      * @param maxX maximum 2D x-coordinate of the face
@@ -138,8 +158,31 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
     void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset);
 
     /**
+     * Adds a quad for a scaled face, the face is defined by minimum and maximum
+     * coordinates
+     *
+     * This method has its UVs defined explicitly
+     *
+     * @param minX minimum 2D x-coordinate of the face
+     * @param minY minimum 2D y-coordinate of the face
+     * @param maxX maximum 2D x-coordinate of the face
+     * @param maxY maximum 2D y-coordinate of the face
+     * @param face orientation of the face
+     * @param icon icon to render the face with
+     * @param offset offset of the face along its normal
+     * @param u1 minimum u value
+     * @param v1 minimum v value
+     * @param u2 maximum u value
+     * @param v2 maximum v value
+     */
+    void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset,
+                        float u1, float v1, float u2, float v2);
+
+    /**
      * Adds two quads for a scaled face, this face will have both sides drawn.
      * The face is defined by minimum and maximum coordinates
+     *
+     * This method will define its UVs based on the coordinates
      *
      * @param minX minimum 2D x-coordinate of the face
      * @param minY minimum 2D y-coordinate of the face
@@ -154,6 +197,28 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * Adds two quads for a scaled face, this face will have both sides drawn.
      * The face is defined by minimum and maximum coordinates
      *
+     * This method has its UVs defined explicitly
+     *
+     * @param minX minimum 2D x-coordinate of the face
+     * @param minY minimum 2D y-coordinate of the face
+     * @param maxX maximum 2D x-coordinate of the face
+     * @param maxY maximum 2D y-coordinate of the face
+     * @param face orientation of the face
+     * @param offset offset of the face along its normal
+     * @param u1 minimum u value
+     * @param v1 minimum v value
+     * @param u2 maximum u value
+     * @param v2 maximum v value
+     */
+    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, float offset,
+                              float u1, float v1, float u2, float v2);
+
+    /**
+     * Adds two quads for a scaled face, this face will have both sides drawn.
+     * The face is defined by minimum and maximum coordinates
+     *
+     * This method will define its UVs based on the coordinates
+     *
      * @param minX minimum 2D x-coordinate of the face
      * @param minY minimum 2D y-coordinate of the face
      * @param maxX maximum 2D x-coordinate of the face
@@ -163,6 +228,27 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param offset offset of the face along its normal
      */
     void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset);
+
+    /**
+     * Adds two quads for a scaled face, this face will have both sides drawn.
+     * The face is defined by minimum and maximum coordinates
+     *
+     * This method has its UVs defined explicitly
+     *
+     * @param minX minimum 2D x-coordinate of the face
+     * @param minY minimum 2D y-coordinate of the face
+     * @param maxX maximum 2D x-coordinate of the face
+     * @param maxY maximum 2D y-coordinate of the face
+     * @param face orientation of the face
+     * @param icon icon to render the face with
+     * @param offset offset of the face along its normal
+     * @param u1 minimum u value
+     * @param v1 minimum v value
+     * @param u2 maximum u value
+     * @param v2 maximum v value
+     */
+    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset,
+                              float u1, float v1, float u2, float v2);
 
     /**
      * Adds 6 quads for a scaled prism, the prism is defined by maximum and
