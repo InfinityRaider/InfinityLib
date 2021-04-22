@@ -1,7 +1,9 @@
 package com.infinityraider.infinitylib.render;
 
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
+import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.block.BlockState;
@@ -36,10 +38,17 @@ import java.util.Random;
 @OnlyIn(Dist.CLIENT)
 public interface IRenderUtilities {
     /**
-     *
+     * Returns a new tessellator object to tessellate baked quads with
      */
-    default TessellatorBakedQuad getQuadTessellator() {
+    default ITessellator getBakedQuadTessellator() {
         return new TessellatorBakedQuad();
+    }
+
+    /**
+     * Returns a new tessellator object to tessellate directly to the vertex buffer
+     */
+    default ITessellator getVertexBufferTessellator(IRenderTypeBuffer.Impl buffer, RenderType renderType) {
+        return new TessellatorVertexBuffer(buffer, renderType);
     }
 
     /**

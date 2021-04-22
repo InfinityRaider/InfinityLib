@@ -1,67 +1,46 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector4f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.lwjgl.opengl.GL11;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
 public class TessellatorVertexBuffer extends TessellatorAbstractBase {
+    private final IRenderTypeBuffer.Impl buffer;
+    private final RenderType renderType;
 
-    private static final Map<BufferBuilder, ThreadLocal<TessellatorVertexBuffer>> instances = new HashMap<>();
+    private IVertexBuilder builder;
 
-    private final Tessellator tessellator;
-    private final BufferBuilder buffer;
-
-    private TessellatorVertexBuffer(BufferBuilder buffer, Tessellator tessellator) {
+    public TessellatorVertexBuffer(IRenderTypeBuffer.Impl buffer, RenderType renderType) {
         this.buffer = buffer;
-        this.tessellator = tessellator;
-    }
-
-    public static TessellatorVertexBuffer getInstance() {
-        return getInstance(Tessellator.getInstance());
-    }
-
-    public static TessellatorVertexBuffer getInstance(Tessellator tessellator) {
-        return getInstance(tessellator.getBuffer(), tessellator);
-    }
-
-    public static TessellatorVertexBuffer getInstance(BufferBuilder buffer) {
-        return getInstance(buffer, null);
-    }
-
-    private static TessellatorVertexBuffer getInstance(BufferBuilder buffer, Tessellator tessellator) {
-        if (!instances.containsKey(buffer)) {
-            instances.put(buffer, new ThreadLocal<>());
-        }
-        ThreadLocal<TessellatorVertexBuffer> threadLocal = instances.get(buffer);
-        TessellatorVertexBuffer tess = threadLocal.get();
-        if (tess == null) {
-            tess = new TessellatorVertexBuffer(buffer, tessellator);
-            threadLocal.set(tess);
-        }
-        return tess;
+        this.renderType = renderType;
     }
 
     /**
-     * @return VertexBuffer object which this is currently tessellating vertices
-     * for
+     * @return IRenderTypeBuffer.Impl object which this is currently tessellating vertices for
      */
-    public BufferBuilder getVertexBuffer() {
-        return buffer;
+    public IRenderTypeBuffer.Impl getVertexBuffer() {
+        return this.buffer;
+    }
+
+    /**
+     * @return The RenderType this tessellator is currently drawing with
+     */
+    public RenderType getRenderType() {
+        return this.renderType;
     }
 
     /**
@@ -70,7 +49,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      */
     @Override
     protected void onStartDrawingQuadsCall() {
-        buffer.begin(GL11.GL_QUADS, getVertexFormat());
+        this.builder = this.getVertexBuffer().getBuffer(this.getRenderType());
     }
 
     /**
@@ -83,16 +62,20 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         return ImmutableList.of();
     }
 
+    @Override
+    public VertexFormat getVertexFormat() {
+        return this.getRenderType().getVertexFormat();
+    }
+
     /**
      * Sub delegated method call of the draw() method to ensure correct call
      * chain.
      */
     @Override
     protected void onDrawCall() {
-        if (tessellator != null) {
-            tessellator.draw();
-        } else {
-            buffer.finishDrawing();
+        if (this.builder != null) {
+            this.getVertexBuffer().finish(this.getRenderType());
+            this.builder = null;
         }
     }
 
@@ -102,9 +85,10 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      * @param quads list of quads
      */
     @Override
-    public void addQuads(List<BakedQuad> quads) {
-        this.transformQuads(quads).forEach(quad -> this.buffer.addQuad(
+    public TessellatorVertexBuffer addQuads(List<BakedQuad> quads) {
+        this.transformQuads(quads).forEach(quad -> this.builder.addQuad(
                 this.getMatrixStackEntry(), quad, this.getRed(), this.getBlue(), this.getGreen(), this.getBrightness(), OverlayTexture.NO_OVERLAY));
+        return this;
     }
 
     /**
@@ -117,23 +101,24 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      * @param v v value for the vertex
      */
     @Override
-    public void addVertexWithUV(float x, float y, float z, float u, float v) {
+    public TessellatorVertexBuffer addVertexWithUV(float x, float y, float z, float u, float v) {
         final Vector4f pos = new Vector4f(x, y, z, 1);
         this.transform(pos);
         List<VertexFormatElement> elements = this.getVertexFormat().getElements();
         if(elements.contains(DefaultVertexFormats.POSITION_3F)) {
-            buffer.pos(pos.getX(), pos.getY(), pos.getZ());
+            builder.pos(pos.getX(), pos.getY(), pos.getZ());
         }
         if(elements.contains(DefaultVertexFormats.TEX_2F)) {
-            buffer.tex(u, v);
+            builder.tex(u, v);
         }
         if(elements.contains(DefaultVertexFormats.COLOR_4UB)) {
-            buffer.color((int) (this.getRed() * 255), (int) (this.getGreen() * 255), (int) (this.getBlue() * 255), (int) (this.getAlpha() * 255));
+            builder.color((int) (this.getRed() * 255), (int) (this.getGreen() * 255), (int) (this.getBlue() * 255), (int) (this.getAlpha() * 255));
         }
         if(elements.contains(DefaultVertexFormats.NORMAL_3B)) {
-            buffer.normal(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());
+            builder.normal(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());
         }
-        buffer.endVertex();
+        builder.endVertex();
+        return this;
     }
 
     @Override

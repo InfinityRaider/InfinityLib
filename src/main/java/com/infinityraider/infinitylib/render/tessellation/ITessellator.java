@@ -7,15 +7,17 @@ import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.math.vector.Vector4f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
@@ -23,10 +25,8 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
 
     /**
      * Method to start constructing quads
-     *
-     * @param format vertex format
      */
-    void startDrawingQuads(VertexFormat format);
+    ITessellator startDrawingQuads();
 
     /**
      * Method to get all quads constructed
@@ -38,7 +38,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
     /**
      * Method to finalize drawing.
      */
-    void draw();
+    ITessellator draw();
 
     /**
      * Gets the current vertex format the tessellator is drawing with
@@ -52,17 +52,17 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      *
      * @param quads list of quads
      */
-    void addQuads(List<BakedQuad> quads);
+    ITessellator addQuads(List<BakedQuad> quads);
 
     /**
      * Pushes the current transformation matrix onto the stack.
      */
-    void pushMatrix();
+    ITessellator pushMatrix();
 
     /**
      * Pops the last matrix from the stack.
      */
-    void popMatrix();
+    ITessellator popMatrix();
 
     /**
      * Adds a vertex
@@ -73,7 +73,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param u u value for the vertex
      * @param v v value for the vertex
      */
-    void addVertexWithUV(float x, float y, float z, float u, float v);
+    ITessellator addVertexWithUV(float x, float y, float z, float u, float v);
 
     /**
      * Adds a vertex
@@ -85,7 +85,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param u u value for the vertex
      * @param v v value for the vertex
      */
-    void addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v);
+    ITessellator addVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v);
 
     /**
      * Adds a vertex scaled by 1/16th of a block
@@ -96,7 +96,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param u u value for the vertex
      * @param v v value for the vertex
      */
-    void addScaledVertexWithUV(float x, float y, float z, float u, float v);
+    ITessellator addScaledVertexWithUV(float x, float y, float z, float u, float v);
 
     /**
      * Adds a vertex scaled by 1/16th of a block
@@ -108,7 +108,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param u u value for the vertex
      * @param v v value for the vertex
      */
-    void addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v);
+    ITessellator addScaledVertexWithUV(float x, float y, float z, TextureAtlasSprite icon, float u, float v);
 
     /**
      * Adds a quad for a scaled face, the face is defined by minimum and maximum
@@ -123,7 +123,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param face orientation of the face
      * @param offset offset of the face along its normal
      */
-    void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset);
+    ITessellator drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset);
 
     /**
      * Adds a quad for a scaled face, the face is defined by minimum and maximum
@@ -138,7 +138,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param face orientation of the face
      * @param offset offset of the face along its normal
      */
-    void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset,
+    ITessellator drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, float offset,
                         float u1, float v1, float u2, float v2);
 
     /**
@@ -155,7 +155,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param icon icon to render the face with
      * @param offset offset of the face along its normal
      */
-    void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset);
+    ITessellator drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset);
 
     /**
      * Adds a quad for a scaled face, the face is defined by minimum and maximum
@@ -175,7 +175,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param u2 maximum u value
      * @param v2 maximum v value
      */
-    void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset,
+    ITessellator drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset,
                         float u1, float v1, float u2, float v2);
 
     /**
@@ -191,7 +191,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param face orientation of the face
      * @param offset offset of the face along its normal
      */
-    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, float offset);
+    ITessellator drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, float offset);
 
     /**
      * Adds two quads for a scaled face, this face will have both sides drawn.
@@ -210,7 +210,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param u2 maximum u value
      * @param v2 maximum v value
      */
-    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, float offset,
+    ITessellator drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, float offset,
                               float u1, float v1, float u2, float v2);
 
     /**
@@ -227,7 +227,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param icon icon to render the face with
      * @param offset offset of the face along its normal
      */
-    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset);
+    ITessellator drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset);
 
     /**
      * Adds two quads for a scaled face, this face will have both sides drawn.
@@ -247,7 +247,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param u2 maximum u value
      * @param v2 maximum v value
      */
-    void drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset,
+    ITessellator drawScaledFaceDouble(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset,
                               float u1, float v1, float u2, float v2);
 
     /**
@@ -261,7 +261,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param maxY maximum y-coordinate of the face
      * @param maxZ maximum z-coordinate of the face
      */
-    void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
+    ITessellator drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
 
     /**
      * Adds 6 quads for a scaled prism, the prism is defined by maximum and
@@ -275,7 +275,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param maxZ maximum z-coordinate of the face
      * @param icon icon to render the prism with
      */
-    void drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon);
+    ITessellator drawScaledPrism(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, TextureAtlasSprite icon);
 
     /**
      * Adds a specified number of quads to approximate a cylinder along the y axis
@@ -288,7 +288,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinder(float x, float y, float z, float r, float h, float vMax, int quads);
+    ITessellator drawScaledCylinder(float x, float y, float z, float r, float h, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate a cylinder along the y axis
@@ -302,7 +302,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinder(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
+    ITessellator drawScaledCylinder(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate the inside of a cylinder along the y axis
@@ -315,7 +315,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinderInside(float x, float y, float z, float r, float h, float vMax, int quads);
+    ITessellator drawScaledCylinderInside(float x, float y, float z, float r, float h, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate the inside of a cylinder along the y axis
@@ -329,7 +329,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
+    ITessellator drawScaledCylinderInside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate the outside of a cylinder along the y axis
@@ -342,7 +342,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinderOutside(float x, float y, float z, float r, float h, float vMax, int quads);
+    ITessellator drawScaledCylinderOutside(float x, float y, float z, float r, float h, float vMax, int quads);
 
     /**
      * Adds a specified number of quads to approximate the outside of a cylinder along the y axis
@@ -356,14 +356,14 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param vMax the maximum v-coordinate of the texture to use
      * @param quads the number of quads
      */
-    void drawScaledCylinderOutside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
+    ITessellator drawScaledCylinderOutside(float x, float y, float z, float r, float h, TextureAtlasSprite texture, float vMax, int quads);
 
     /**
      * Translates the matrix by a vector defined by a BlockPos
      *
      * @param pos the BlockPos
      */
-    void translate(BlockPos pos);
+    ITessellator translate(BlockPos pos);
 
     /**
      * Translates the matrix by a vector defined by 3 coordinates
@@ -372,7 +372,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param y the y coordinate
      * @param z the z coordinate
      */
-    void translate(float x, float y, float z);
+    ITessellator translate(float x, float y, float z);
 
     /**
      * Rotates the matrix by an angle around the given direction, rotation
@@ -383,7 +383,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param y the y direction
      * @param z the z direction
      */
-    void rotate(float angle, float x, float y, float z);
+    ITessellator rotate(float angle, float x, float y, float z);
 
     /**
      * Scales along each axis with the corresponding factor
@@ -392,7 +392,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param y the y-axis scale factor
      * @param z the z-axis scale factor
      */
-    void scale(float x, float y, float z);
+    ITessellator scale(float x, float y, float z);
 
     /**
      * Transforms a given point according to the currently active transformation
@@ -400,7 +400,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      *
      * @param pos the point to be transformed.
      */
-    void transform(Vector4f pos);
+    ITessellator transform(Vector4f pos);
 
     /**
      * Gets a TextureAtlasSprite icon from a ResourceLocation
@@ -411,11 +411,29 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
     TextureAtlasSprite getIcon(RenderMaterial source);
 
     /**
-     * Binds a texture to use when rendering
+     * Sets the current face being drawn.
+     * Will also set the appropriate normal if no specific normal is defined
      *
-     * @param location ResourceLocation pointing towards the texture
+     * @param face the face
+     * @return this
      */
-    void bindTexture(ResourceLocation location);
+    default ITessellator setFace(@Nullable Direction face) {
+        return this.setFace(Face.fromDirection(face));
+    }
+
+    /**
+     * Sets the current face being drawn.
+     * Will also set the appropriate normal if no specific normal is defined
+     *
+     * @param face the face
+     * @return this
+     */
+    ITessellator setFace(@Nonnull Face face);
+
+    /**
+     * @return The current face being drawn
+     */
+    Face getFace();
 
     /**
      * Sets the normal for the tessellator
@@ -424,14 +442,14 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param y the normal y direction
      * @param z the normal z direction
      */
-    void setNormal(float x, float y, float z);
+    ITessellator setNormal(float x, float y, float z);
 
     /**
      * Sets the normal for the tessellator
      *
      * @param vec the normal vector
      */
-    void setNormal(Vector3f vec);
+    ITessellator setNormal(Vector3f vec);
 
     /**
      * Gets the current normal for the tessellator
@@ -449,31 +467,39 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
 
     /**
      * Sets the current color value based on red, green and blue int values, all
-     * arguments should be between 0 and 255
+     * arguments should be between 0 and 1
+     *
+     * @param color vector containing the rgb color values
+     */
+    ITessellator setColorRGB(Vector3f color);
+
+    /**
+     * Sets the current color value based on red, green and blue int values, all
+     * arguments should be between 0 and 1
      *
      * @param red the rgb red value
      * @param green the rgb green value
      * @param blue the rgb blue value
      */
-    void setColorRGB(float red, float green, float blue);
+    ITessellator setColorRGB(float red, float green, float blue);
 
     /**
      * Sets the current color value based on red, green, blue and alpha values,
-     * all arguments should be between 0 and 255
+     * all arguments should be between 0 and 1
      *
      * @param red the rgb red value
      * @param green the rgb green value
      * @param blue the rgb blue value
      * @param alpha the rgb alpha value
      */
-    void setColorRGBA(float red, float green, float blue, float alpha);
+    ITessellator setColorRGBA(float red, float green, float blue, float alpha);
 
     /**
      * Sets the current color's alpha value.
      *
      * @param alpha the new alpha value to be used.
      */
-    void setAlpha(float alpha);
+    ITessellator setAlpha(float alpha);
 
     /**
      * @return current blue value as float, will be between 0 and 1
@@ -500,7 +526,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      *
      * @param value the brightness value
      */
-    void setBrightness(int value);
+    ITessellator setBrightness(int value);
 
     /**
      * Gets the brightness of the tessellator
@@ -514,7 +540,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      *
      * @param index the tint index
      */
-    void setTintIndex(int index);
+    ITessellator setTintIndex(int index);
 
     /**
      * Gets the current tint index value to use for the quads
@@ -528,7 +554,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      *
      * @param value the diffuse lighting setting
      */
-    void setApplyDiffuseLighting(boolean value);
+    ITessellator setApplyDiffuseLighting(boolean value);
 
     /**
      * Gets if diffuse lighting is applied to the quads
@@ -540,6 +566,67 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
     @Override
     default TextureAtlasSprite apply(RenderMaterial source) {
         return this.getIcon(source);
+    }
+
+    class Defaults {
+        /** Default color (white) */
+        public static final float COLOR = 1.0F;
+
+        /** Default brightness (max) */
+        public static final int BRIGHTNESS = 15 << 24;
+
+        /** Default normal (up) */
+        public static final Vector3f NORMAL = new Vector3f(0, 1, 0);
+
+        private Defaults() {}
+    }
+
+    /**
+     * Enum to indicate faces being tessellated,
+     * this differs with Vanilla's Direction enum as there is no ambiguity between none and general for null.
+     * Also, no NullPointerExceptions
+     */
+    enum Face {
+        NONE(false),
+        GENERAL(true),
+        DOWN(Direction.DOWN),
+        UP(Direction.UP),
+        NORTH(Direction.NORTH),
+        SOUTH(Direction.SOUTH),
+        WEST(Direction.WEST),
+        EAST(Direction.EAST);
+
+        private final Predicate<Direction> test;
+        private final Vector3f normal;
+
+        Face(boolean general) {
+            this(dir -> general, Defaults.NORMAL);
+        }
+
+        Face(Direction direction) {
+            this(dir -> dir == direction, direction.toVector3f());
+        }
+
+        Face(Predicate<Direction> test, Vector3f normal) {
+            this.test = test;
+            this.normal = normal;
+        }
+
+        public boolean accepts(@Nullable Direction direction) {
+            return this.test.test(direction);
+        }
+
+        public Vector3f getNormal() {
+            return this.normal;
+        }
+
+        @Nonnull
+        public static Face fromDirection(@Nullable Direction direction) {
+            if(direction == null) {
+                return GENERAL;
+            }
+            return values()[direction.ordinal() + 2];
+        }
     }
 
 }

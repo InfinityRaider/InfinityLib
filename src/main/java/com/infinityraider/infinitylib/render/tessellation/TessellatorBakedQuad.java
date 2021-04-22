@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector4f;
 import net.minecraftforge.api.distmarker.Dist;
@@ -13,10 +15,6 @@ import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Helper class to construct vertices
@@ -24,52 +22,35 @@ import javax.annotation.Nullable;
 @OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
 public class TessellatorBakedQuad extends TessellatorAbstractBase {
-
-    /**
-     * Draw mode when no vertices are being constructed
-     */
+    /** Draw mode when no vertices are being constructed */
     public static final int DRAW_MODE_NOT_DRAWING = -1;
-    /**
-     * Draw mode when vertices are being constructed for quads
-     */
+
+    /** Draw mode when vertices are being constructed for quads */
     public static final int DRAW_MODE_QUADS = 4;
 
-    /**
-     * Currently constructed quads
-     */
+    /** Currently constructed quads */
     private final List<BakedQuad> quads;
-    /**
-     * Currently constructed vertices
-     */
+
+    /** Currently constructed vertices */
     private final List<VertexData> vertexData;
 
-    /**
-     * Current drawing mode
-     */
+    /** Current drawing mode */
     private int drawMode;
-    /**
-     * Face being drawn
-     */
-    @Nonnull
-    private Face face;
-    /**
-     * Icon currently drawing with
-     */
+
+    /** Icon currently drawing with */
     private TextureAtlasSprite icon;
-    /**
-     * Texture function
-     */
+
+    /** Texture function */
     private Function<RenderMaterial, TextureAtlasSprite> textureFunction;
 
     /**
-     * Private constructor
+     * constructor
      */
     public TessellatorBakedQuad() {
         super();
         this.quads = new ArrayList<>();
         this.vertexData = new ArrayList<>();
         this.drawMode = DRAW_MODE_NOT_DRAWING;
-        this.face = Face.NONE;
     }
 
     /**
@@ -104,6 +85,11 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         return ImmutableList.copyOf(this.quads);
     }
 
+    @Override
+    public VertexFormat getVertexFormat() {
+        return DefaultVertexFormats.BLOCK;
+    }
+
     /**
      * Sub delegated method call of the draw() method to ensure correct call
      * chain
@@ -115,7 +101,6 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
             vertexData.clear();
             this.drawMode = DRAW_MODE_NOT_DRAWING;
             this.textureFunction = null;
-            this.face = Face.NONE;
         } else {
             throw new RuntimeException("NOT CONSTRUCTING VERTICES");
         }
@@ -127,17 +112,18 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
      * @param quads list of quads
      */
     @Override
-    public void addQuads(List<BakedQuad> quads) {
+    public TessellatorBakedQuad addQuads(List<BakedQuad> quads) {
         if (drawMode != DRAW_MODE_NOT_DRAWING) {
             for (BakedQuad quad : quads) {
                 final BakedQuad trans = transformQuads(quad);
-                if (this.face.accepts(trans.getFace())) {
+                if (this.getFace().accepts(trans.getFace())) {
                     this.quads.add(trans);
                 }
             }
         } else {
             throw new RuntimeException("NOT CONSTRUCTING VERTICES");
         }
+        return this;
     }
 
     /**
@@ -151,12 +137,12 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
      * @param v v value for the vertex
      */
     @Override
-    public void addVertexWithUV(float x, float y, float z, TextureAtlasSprite sprite, float u, float v) {
+    public TessellatorBakedQuad addVertexWithUV(float x, float y, float z, TextureAtlasSprite sprite, float u, float v) {
         if (sprite == null) {
             sprite = this.getMissingSprite();
         }
         this.icon = sprite;
-        this.addVertexWithUV(x, y, z, sprite.getInterpolatedU(u), sprite.getInterpolatedV(v));
+        return this.addVertexWithUV(x, y, z, sprite.getInterpolatedU(u), sprite.getInterpolatedV(v));
     }
 
     /**
@@ -169,7 +155,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
      * @param v v value for the vertex
      */
     @Override
-    public void addVertexWithUV(float x, float y, float z, float u, float v) {
+    public TessellatorBakedQuad addVertexWithUV(float x, float y, float z, float u, float v) {
         if (this.drawMode == DRAW_MODE_NOT_DRAWING) {
             throw new RuntimeException("NOT CONSTRUCTING VERTICES");
         }
@@ -188,7 +174,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         
         if (this.vertexData.size() == this.drawMode) {
             final Direction dir = Direction.getFacingFromVector(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());
-            if (this.face.accepts(dir)) {
+            if (this.getFace().accepts(dir)) {
                 BakedQuadBuilder builder = new BakedQuadBuilder();
                 builder.setQuadTint(this.getTintIndex());
                 builder.setApplyDiffuseLighting(this.getApplyDiffuseLighting());
@@ -201,13 +187,15 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
             }
             vertexData.clear();
         }
+        return this;
     }
 
     @Override
-    public void drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
-        if (this.face.accepts(face)) {
+    public TessellatorBakedQuad drawScaledFace(float minX, float minY, float maxX, float maxY, Direction face, TextureAtlasSprite icon, float offset) {
+        if (this.getFace().accepts(face)) {
             super.drawScaledFace(minX, minY, maxX, maxY, face, icon, offset);
         }
+        return this;
     }
 
     @Override
@@ -220,57 +208,10 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     }
 
     @Override
-    protected void applyColorMultiplier(Direction side) {
-    }
+    protected void applyColorMultiplier(Direction side) {}
 
     public TessellatorBakedQuad setTextureFunction(Function<RenderMaterial, TextureAtlasSprite> function) {
         this.textureFunction = function;
         return this;
-    }
-
-    public TessellatorBakedQuad setCurrentFace(@Nullable Direction face) {
-        return this.setCurrentFace(Face.fromDirection(face));
-    }
-
-    public TessellatorBakedQuad setCurrentFace(@Nonnull Face face) {
-        this.face = face;
-        return this;
-    }
-
-    public enum Face {
-        NONE(false),
-        GENERAL(true),
-        DOWN(Direction.DOWN),
-        UP(Direction.UP),
-        NORTH(Direction.NORTH),
-        SOUTH(Direction.SOUTH),
-        WEST(Direction.WEST),
-        EAST(Direction.EAST);
-
-        private final Predicate<Direction> test;
-
-        Face(boolean general) {
-            this(dir -> general);
-        }
-
-        Face(Direction direction) {
-            this(dir -> dir == direction);
-        }
-
-        Face(Predicate<Direction> test) {
-            this.test = test;
-        }
-
-        public boolean accepts(@Nullable Direction direction) {
-            return this.test.test(direction);
-        }
-
-        @Nonnull
-        public static Face fromDirection(@Nullable Direction direction) {
-            if(direction == null) {
-                return GENERAL;
-            }
-            return values()[direction.ordinal() + 2];
-        }
     }
 }
