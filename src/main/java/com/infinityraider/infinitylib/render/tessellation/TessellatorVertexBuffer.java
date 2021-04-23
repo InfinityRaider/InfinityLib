@@ -105,14 +105,21 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         final Vector4f pos = new Vector4f(x, y, z, 1);
         this.transform(pos);
         List<VertexFormatElement> elements = this.getVertexFormat().getElements();
+        // Note: the order this vertex data is defined is important
         if(elements.contains(DefaultVertexFormats.POSITION_3F)) {
             builder.pos(pos.getX(), pos.getY(), pos.getZ());
+        }
+        if(elements.contains(DefaultVertexFormats.COLOR_4UB)) {
+            builder.color((int) (this.getRed() * 255), (int) (this.getGreen() * 255), (int) (this.getBlue() * 255), (int) (this.getAlpha() * 255));
         }
         if(elements.contains(DefaultVertexFormats.TEX_2F)) {
             builder.tex(u, v);
         }
-        if(elements.contains(DefaultVertexFormats.COLOR_4UB)) {
-            builder.color((int) (this.getRed() * 255), (int) (this.getGreen() * 255), (int) (this.getBlue() * 255), (int) (this.getAlpha() * 255));
+        if(elements.contains(DefaultVertexFormats.TEX_2S)) {
+            builder.overlay(this.getOverlay());
+        }
+        if(elements.contains(DefaultVertexFormats.TEX_2SB)) {
+            builder.lightmap(this.getBrightness());
         }
         if(elements.contains(DefaultVertexFormats.NORMAL_3B)) {
             builder.normal(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());

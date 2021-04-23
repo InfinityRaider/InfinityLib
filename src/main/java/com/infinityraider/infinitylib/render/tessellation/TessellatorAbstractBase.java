@@ -36,6 +36,9 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     /** Current brightness value */
     private int l;
 
+    /** Current overlay value */
+    private int o;
+
     /** Current tint index for the quad */
     private int tintIndex;
 
@@ -49,11 +52,10 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         this.matrices = new MatrixStack();
         this.face = Face.NONE;
         this.normal = Defaults.NORMAL;
+        this.setColorRGBA(Defaults.COLOR, Defaults.COLOR, Defaults.COLOR, Defaults.COLOR);
+        this.setBrightness(Defaults.BRIGHTNESS);
+        this.setOverlay(Defaults.OVERLAY);
         this.tintIndex = -1;
-        this.r = Defaults.COLOR;
-        this.g = Defaults.COLOR;
-        this.b = Defaults.COLOR;
-        this.a = Defaults.COLOR;
         this.applyDiffuseLighting = false;
     }
 
@@ -100,6 +102,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         this.normal = Defaults.NORMAL;
         this.setColorRGBA(Defaults.COLOR, Defaults.COLOR, Defaults.COLOR, Defaults.COLOR);
         this.setBrightness(Defaults.BRIGHTNESS);
+        this.setOverlay(Defaults.OVERLAY);
         this.tintIndex = -1;
         this.applyDiffuseLighting = false;
         this.manipulateMatrixStack(MatrixStack::clear);
@@ -557,6 +560,15 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     }
 
     @Override
+    public TessellatorAbstractBase applyTransformation(Matrix4f matrix) {
+        this.manipulateMatrixStack(stack -> {
+            stack.getLast().getMatrix().mul(matrix);
+            stack.getLast().getNormal().mul(new Matrix3f(matrix));
+        });
+        return this;
+    }
+
+    @Override
     public TextureAtlasSprite getIcon(RenderMaterial source) {
         if (source != null) {
             return ModelLoader.defaultTextureGetter().apply(source);
@@ -651,14 +663,20 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         return this;
     }
 
-    /**
-     * Gets the brightness of the tessellator
-     *
-     * @return the brightness value
-     */
     @Override
     public int getBrightness() {
         return this.l;
+    }
+
+    @Override
+    public TessellatorAbstractBase setOverlay(int value) {
+        this.o = value;
+        return this;
+    }
+
+    @Override
+    public int getOverlay() {
+        return this.o;
     }
 
     @Override
