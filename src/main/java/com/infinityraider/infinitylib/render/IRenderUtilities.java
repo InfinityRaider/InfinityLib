@@ -326,6 +326,10 @@ public interface IRenderUtilities {
         return (65536 * r) + (256 * g) + b;
     }
 
+    default float getPartialTick() {
+        return Minecraft.getInstance().getRenderPartialTicks();
+    }
+
     /**
      * Method to render the coordinate system for the current matrix. Renders three lines with
      * length 1 starting from (0, 0, 0): red line along x axis, green line along y axis and blue
