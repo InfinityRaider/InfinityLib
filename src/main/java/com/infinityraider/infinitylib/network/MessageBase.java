@@ -234,14 +234,14 @@ public abstract class MessageBase {
 
     private static void compileFieldsList(Class<? extends MessageBase> clazz) {
         if (!ELEMENT_MAP.containsKey(clazz)) {
-            Field[] fields = clazz.getDeclaredFields();
-            List<MessageElement> elements = Lists.newArrayList();
+            ImmutableList<Field> fields = fetchFieldsRecursively(clazz, ImmutableList.builder());
+            List<MessageElement<?>> elements = Lists.newArrayList();
             List<Field> skippedFields = Lists.newArrayList();
             for (Field field : fields) {
                 if(Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-                Optional<MessageElement> element = MessageElement.createNewElement(field);
+                Optional<MessageElement<?>> element = MessageElement.createNewElement(field);
                 if (element.isPresent()) {
                     elements.add(element.get());
                 } else {
@@ -259,5 +259,19 @@ public abstract class MessageBase {
                 InfinityLib.instance.getLogger().error("this is done via INetworkWrapper.registerDataSerializer");
             }
         }
+    }
+
+    private static ImmutableList<Field> fetchFieldsRecursively(Class<?> clazz, ImmutableList.Builder<Field> builder) {
+        if(clazz == null) {
+            return builder.build();
+        }
+        if(!(MessageBase.class.isAssignableFrom(clazz))) {
+            return builder.build();
+        }
+        if(clazz == MessageBase.class) {
+            return builder.build();
+        }
+        builder.add(clazz.getDeclaredFields());
+        return fetchFieldsRecursively(clazz.getSuperclass(), builder);
     }
 }

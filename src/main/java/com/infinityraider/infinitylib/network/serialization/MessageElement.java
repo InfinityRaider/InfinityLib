@@ -54,7 +54,7 @@ public class MessageElement<T> {
         }
     }
 
-    public static Optional<MessageElement> createNewElement(Field field) {
+    public static Optional<MessageElement<?>> createNewElement(Field field) {
         field.setAccessible(true);
         Class clazz = field.getType();
         Optional<IMessageSerializer> serializer = MessageSerializerStore.getMessageSerializer(clazz);
