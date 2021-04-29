@@ -20,7 +20,7 @@ public interface ICapabilityImplementation<C extends ICapabilityProvider, V> {
     Class<C> getCarrierClass();
 
     default LazyOptional<V> getCapability(C carrier) {
-        return carrier.getCapability(this.getCapability());
+        return carrier == null ? LazyOptional.empty() : carrier.getCapability(this.getCapability());
     }
 
     default LazyOptional<V> getCapability(C carrier, @Nullable Direction dir) {
