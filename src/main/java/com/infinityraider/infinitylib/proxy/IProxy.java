@@ -9,6 +9,7 @@ import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.crafting.RecipeSerializers;
 import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
 import com.infinityraider.infinitylib.effect.IInfinityEffect;
+import com.infinityraider.infinitylib.enchantment.EnchantmentBase;
 import com.infinityraider.infinitylib.enchantment.IInfinityEnchantment;
 import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
@@ -103,7 +104,11 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerEnchantments(InfinityMod<?,?> mod) {
         // Register enchantments
-        this.registerObjects(mod, mod.getModEnchantmentRegistry(), IInfinityEnchantment.class, ForgeRegistries.ENCHANTMENTS);
+        this.registerObjects(mod, mod.getModEnchantmentRegistry(), IInfinityEnchantment.class, ForgeRegistries.ENCHANTMENTS, enchant -> {
+            if(enchant instanceof EnchantmentBase) {
+                ((EnchantmentBase) enchant).setDisplayName("enchantment." + mod.getModId() + "." + enchant.getInternalName());
+            }
+        });
     }
 
     default void registerEntities(InfinityMod<?,?> mod) {
