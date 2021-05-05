@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.modules.keyboard;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.modules.Module;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -19,6 +20,11 @@ public class ModuleKeyboard extends Module {
     @OnlyIn(Dist.CLIENT)
     public void registerKeyListener(IKeyListener listener) {
         KeyEventHandler.getInstance().registerListener(listener);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public boolean isKeyPressed(KeyBinding key) {
+        return this.isKeyPressed(key.getKey().getKeyCode());
     }
 
     @OnlyIn(Dist.CLIENT)
