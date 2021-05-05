@@ -70,7 +70,7 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
         if (this.getPropertyConfiguration().isWaterLoggable() && InfProperty.Defaults.waterlogged().fetch(ownState)) {
             world.getPendingFluidTicks().scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
         }
-        return super.updatePostPlacement(otherState, dir, otherState, world, pos, otherPos);
+        return super.updatePostPlacement(ownState, dir, otherState, world, pos, otherPos);
     }
 
     @Override
