@@ -60,6 +60,10 @@ public class InfProperty<T extends Comparable<T>> {
         return state.get(this.getProperty());
     }
 
+    public final BlockState mimic(BlockState from, BlockState to) {
+        return this.apply(to, this.fetch(from));
+    }
+
     public BlockState mirror(BlockState state, Mirror mirror) {
         return this.apply(state, this.mirrorHandler.handle(mirror, this.fetch(state)));
     }
