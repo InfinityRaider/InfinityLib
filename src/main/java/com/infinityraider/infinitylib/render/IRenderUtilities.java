@@ -52,6 +52,13 @@ public interface IRenderUtilities {
     }
 
     /**
+     * @return a RNG if none other are available
+     */
+    default Random getRandom() {
+        return Objects.RANDOM;
+    }
+
+    /**
      * Renders an item
      */
     default void renderItem(ItemStack stack, ItemCameraTransforms.TransformType perspective, int light,
@@ -381,6 +388,8 @@ public interface IRenderUtilities {
         private static final BlockPos DEFAULT_POS = new BlockPos(0,0,0);
 
         private static final ItemModelGenerator ITEM_MODEL_GENERATOR = new ItemModelGenerator();
+
+        private static final Random RANDOM = new Random();
 
         public static boolean equals(Object a, Object b) {
             return java.util.Objects.equals(a, b);
