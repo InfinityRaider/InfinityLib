@@ -112,6 +112,16 @@ public interface IRenderUtilities {
     }
 
     /**
+     * Fetches the sprite on a Texture Atlas related to a render material
+     *
+     * @param material the render material
+     * @return the sprite
+     */
+    default TextureAtlasSprite getSprite(RenderMaterial material) {
+        return this.getTextureAtlas(material.getTextureLocation()).getSprite(material.getTextureLocation());
+    }
+
+    /**
      * Converts a string to a ResourceLocation
      * @param string the String
      * @return the ResourceLocation
@@ -160,7 +170,17 @@ public interface IRenderUtilities {
      * @return the AtlasTexture object
      */
     default AtlasTexture getTextureAtlas() {
-        return this.getModelManager().getAtlasTexture(this.getTextureAtlasLocation());
+        return this.getTextureAtlas(this.getTextureAtlasLocation());
+    }
+
+    /**
+     * Fetches the AtlasTexture object representing the Texture Atlas
+     *
+     * @param location the location for the atlas
+     * @return the AtlasTexture object
+     */
+    default AtlasTexture getTextureAtlas(ResourceLocation location) {
+        return this.getModelManager().getAtlasTexture(location);
     }
 
     /**
