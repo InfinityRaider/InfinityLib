@@ -10,8 +10,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntitySize;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
@@ -119,6 +121,16 @@ public class DynamicCamera extends Entity {
         if(camera != null) {
             camera.onFieldOfViewChange(fov);
         }
+    }
+
+    public static boolean isCameraInPlayer(PlayerEntity player, float partialTick) {
+        if(isCameraActive()) {
+            DynamicCamera camera = getInstance();
+            if(camera != null) {
+                return player.getRenderBoundingBox().contains(camera.getPosition(partialTick));
+            }
+        }
+        return false;
     }
 
     private Status status;
@@ -258,6 +270,14 @@ public class DynamicCamera extends Entity {
             );
             return false;
         }
+    }
+
+    protected Vector3d getPosition(float partialTicks) {
+        return new Vector3d(
+                MathHelper.lerp(partialTicks, this.prevPosX, this.getPosX()),
+                MathHelper.lerp(partialTicks, this.prevPosY, this.getPosY()),
+                MathHelper.lerp(partialTicks, this.prevPosZ, this.getPosZ())
+        );
     }
 
     protected int getTransitionDuration() {
