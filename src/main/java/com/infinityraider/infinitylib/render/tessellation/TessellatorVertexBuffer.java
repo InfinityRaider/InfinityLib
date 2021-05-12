@@ -86,7 +86,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      */
     @Override
     public TessellatorVertexBuffer addQuads(List<BakedQuad> quads) {
-        this.transformQuads(quads).forEach(quad -> this.builder.addQuad(
+        quads.forEach(quad -> this.builder.addQuad(
                 this.getMatrixStackEntry(), quad, this.getRed(), this.getBlue(), this.getGreen(), this.getBrightness(), OverlayTexture.NO_OVERLAY));
         return this;
     }
