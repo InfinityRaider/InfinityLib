@@ -57,7 +57,7 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
     @Override
     @Deprecated
     @SuppressWarnings("deprecation")
-    public final FluidState getFluidState(BlockState state) {
+    public FluidState getFluidState(BlockState state) {
         return this.getPropertyConfiguration().isWaterLoggable() && InfProperty.Defaults.waterlogged().fetch(state)
                 ? Fluids.WATER.getStillFluidState(false)
                 : super.getFluidState(state);
