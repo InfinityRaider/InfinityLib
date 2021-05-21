@@ -11,6 +11,7 @@ import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
+import com.infinityraider.infinitylib.render.fluid.InfFluidRenderer;
 import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
 import com.infinityraider.infinitylib.render.model.TransformingFaceBakery;
 import com.infinityraider.infinitylib.render.model.ModelLoaderRegistrar;
@@ -48,6 +49,7 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         IProxy.super.onCommonSetupEvent(event);
         Module.getActiveModules().forEach(Module::initClient);
         TransformingFaceBakery.init();
+        InfFluidRenderer.init();
     }
 
     @Override

@@ -80,6 +80,7 @@ public interface IProxy extends IProxyBase<Config> {
         this.registerBlocks(mod);
         this.registerTiles(mod);
         this.registerItems(mod);
+        this.registerFluids(mod);
         this.registerEnchantments(mod);
         this.registerEntities(mod);
         this.registerSounds(mod);
