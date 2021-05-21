@@ -14,6 +14,7 @@ import com.infinityraider.infinitylib.enchantment.IInfinityEnchantment;
 import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.entity.IInfinityLivingEntityType;
+import com.infinityraider.infinitylib.fluid.IInfinityFluid;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
@@ -100,6 +101,11 @@ public interface IProxy extends IProxyBase<Config> {
     default void registerItems(InfinityMod<?,?> mod) {
         // Register items
         this.registerObjects(mod, mod.getModItemRegistry(), IInfinityItem.class, ForgeRegistries.ITEMS);
+    }
+
+    default void registerFluids(InfinityMod<?,?> mod) {
+        // Register fluids
+        this.registerObjects(mod, mod.getModFluidRegistry(), IInfinityFluid.class, ForgeRegistries.FLUIDS);
     }
 
     default void registerEnchantments(InfinityMod<?,?> mod) {

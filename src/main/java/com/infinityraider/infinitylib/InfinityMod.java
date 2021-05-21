@@ -183,6 +183,18 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
+     * Used to register all of the mod's Fluids.
+     * The object returned by this should have a field for each of its Fluids
+     *
+     * Note: for this to work, the Fluids must implement IInfinityFluid
+     *
+     * @return Fluid registry object or class
+     */
+    public Object getModFluidRegistry() {
+        return null;
+    }
+
+    /**
      * Used to register all of the mod's Biomes.
      * The object returned by this should have a field for each of its Biomes
      *
