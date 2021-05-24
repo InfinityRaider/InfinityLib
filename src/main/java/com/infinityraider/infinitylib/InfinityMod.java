@@ -267,6 +267,18 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
+     * Used to register all of the mod's ParticleTypes.
+     * The object returned by this should have a field for each of its ParticleTypes
+     *
+     * Note: for this to work, the ParticleTypes must implement IInfinityParticleType
+     *
+     * @return ParticleType registry object or class
+     */
+    public Object getModParticleRegistry() {
+        return null;
+    }
+
+    /**
      * Used to register all of the mod's ContainerTypes.
      * The object returned by this should have a field for each of its ContainerTypes
      *

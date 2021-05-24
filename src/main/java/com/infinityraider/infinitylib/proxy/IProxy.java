@@ -17,14 +17,28 @@ import com.infinityraider.infinitylib.entity.IInfinityLivingEntityType;
 import com.infinityraider.infinitylib.fluid.IInfinityFluid;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
+import com.infinityraider.infinitylib.particle.IInfinityParticleType;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.sound.IInfinitySoundEvent;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
+import com.mojang.brigadier.StringReader;
+import net.minecraft.block.Block;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.particles.IParticleData;
+import net.minecraft.particles.ParticleType;
+import net.minecraft.potion.Effect;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -34,6 +48,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
+import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -46,17 +61,13 @@ public interface IProxy extends IProxyBase<Config> {
 
     @Override
     default void registerEventHandlers() {
-        Module.getActiveModules().forEach(module -> {
-            module.getCommonEventHandlers().forEach(this::registerEventHandler);
-        });
+        Module.getActiveModules().forEach(module -> module.getCommonEventHandlers().forEach(this::registerEventHandler));
         this.registerEventHandler(AmbientSpawnHandler.getInstance());
     }
 
     @Override
     default void registerCapabilities() {
-        Module.getActiveModules().forEach(module -> {
-            module.getCapabilities().forEach(this::registerCapability);
-        });
+        Module.getActiveModules().forEach(module -> module.getCapabilities().forEach(this::registerCapability));
     }
 
     @Override
@@ -84,6 +95,7 @@ public interface IProxy extends IProxyBase<Config> {
         this.registerEnchantments(mod);
         this.registerEntities(mod);
         this.registerSounds(mod);
+        this.registerParticles(mod);
         this.registerEffects(mod);
         this.registerContainers(mod);
         this.registerRecipeSerializers(mod);
@@ -91,38 +103,39 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerBlocks(InfinityMod<?,?> mod) {
         // Register blocks
-        this.registerObjects(mod, mod.getModBlockRegistry(), IInfinityBlock.class, ForgeRegistries.BLOCKS);
+        this.registerObjects(mod, mod.getModBlockRegistry(), Classes.BLOCK, ForgeRegistries.BLOCKS);
     }
 
     default void registerTiles(InfinityMod<?,?> mod) {
         // Register tiles
-        this.registerObjects(mod, mod.getModTileRegistry(), IInfinityTileEntityType.class, ForgeRegistries.TILE_ENTITIES);
+        this.registerObjects(mod, mod.getModTileRegistry(), Classes.TILE_ENTITY_TYPE, ForgeRegistries.TILE_ENTITIES);
     }
 
     default void registerItems(InfinityMod<?,?> mod) {
         // Register items
-        this.registerObjects(mod, mod.getModItemRegistry(), IInfinityItem.class, ForgeRegistries.ITEMS);
+        this.registerObjects(mod, mod.getModItemRegistry(), Classes.ITEM, ForgeRegistries.ITEMS);
     }
 
     default void registerFluids(InfinityMod<?,?> mod) {
         // Register fluids
-        this.registerObjects(mod, mod.getModFluidRegistry(), IInfinityFluid.class, ForgeRegistries.FLUIDS);
+        this.registerObjects(mod, mod.getModFluidRegistry(), Classes.FLUID, ForgeRegistries.FLUIDS);
     }
 
     default void registerEnchantments(InfinityMod<?,?> mod) {
         // Register enchantments
-        this.registerObjects(mod, mod.getModEnchantmentRegistry(), IInfinityEnchantment.class, ForgeRegistries.ENCHANTMENTS, enchant -> {
+        this.registerObjects(mod, mod.getModEnchantmentRegistry(), Classes.ENCHANTMENT, ForgeRegistries.ENCHANTMENTS, enchant -> {
             if(enchant instanceof EnchantmentBase) {
                 ((EnchantmentBase) enchant).setDisplayName("enchantment." + mod.getModId() + "." + enchant.getInternalName());
             }
         });
     }
 
+    @SuppressWarnings("deprecation")
     default void registerEntities(InfinityMod<?,?> mod) {
         // Create a deferred item register for the spawn eggs
         DeferredRegister<Item> itemRegister = DeferredRegister.create(ForgeRegistries.ITEMS, mod.getModId());
         // Register entities
-        this.registerObjects(mod, mod.getModEntityRegistry(), IInfinityEntityType.class, ForgeRegistries.ENTITIES, entityType -> {
+        this.registerObjects(mod, mod.getModEntityRegistry(), Classes.ENTITY_TYPE, ForgeRegistries.ENTITIES, entityType -> {
             // Tasks for living entities registration:
             if (entityType instanceof IInfinityLivingEntityType) {
                 IInfinityLivingEntityType livingEntityType = (IInfinityLivingEntityType) entityType;
@@ -151,18 +164,25 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerSounds(InfinityMod<?,?> mod) {
         // Register enchantments
-        this.registerObjects(mod, mod.getModSoundRegistry(), IInfinitySoundEvent.class, ForgeRegistries.SOUND_EVENTS);
-
+        this.registerObjects(mod, mod.getModSoundRegistry(), Classes.SOUND_EVENT, ForgeRegistries.SOUND_EVENTS);
     }
+
+    default void registerParticles(InfinityMod<?,?> mod) {
+        // Register particles
+        this.registerObjects(mod, mod.getModParticleRegistry(), Classes.PARTICLE_TYPE, ForgeRegistries.PARTICLE_TYPES,
+                type -> this.onParticleRegistration((IInfinityParticleType<?>) type));
+    }
+
+    default <T extends IParticleData> void onParticleRegistration(IInfinityParticleType<T> particleType) {}
 
     default void registerEffects(InfinityMod<?,?> mod) {
         // Register effects
-        this.registerObjects(mod, mod.getModEffectRegistry(), IInfinityEffect.class, ForgeRegistries.POTIONS);
+        this.registerObjects(mod, mod.getModEffectRegistry(), Classes.EFFECT, ForgeRegistries.POTIONS);
     }
 
     default void registerContainers(InfinityMod<?,?> mod) {
         // Register containers
-        this.registerObjects(mod, mod.getModContainerRegistry(), IInfinityContainerType.class, ForgeRegistries.CONTAINERS, containerType -> {
+        this.registerObjects(mod, mod.getModContainerRegistry(), Classes.CONTAINER_TYPE, ForgeRegistries.CONTAINERS, containerType -> {
             if(containerType instanceof IInfinityContainerType) {
                 this.registerGuiContainer((IInfinityContainerType) containerType);
             }
@@ -171,7 +191,7 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerRecipeSerializers(InfinityMod<?,?> mod) {
         // Register recipe serializers
-        this.registerObjects(mod, mod.getModRecipeSerializerRegistry(), IInfRecipeSerializer.class, ForgeRegistries.RECIPE_SERIALIZERS, recipe -> {
+        this.registerObjects(mod, mod.getModRecipeSerializerRegistry(), Classes.RECIPE_SERIALIZER, ForgeRegistries.RECIPE_SERIALIZERS, recipe -> {
             if (recipe instanceof IInfRecipeSerializer) {
                 // Also register the recipe's ingredient serializers
                 ((IInfRecipeSerializer) recipe).getIngredientSerializers().forEach(serializer ->
@@ -220,4 +240,64 @@ public interface IProxy extends IProxyBase<Config> {
 
 
     default void registerRenderers(InfinityMod<?,?> mod) {}
+
+    @SuppressWarnings("unchecked")
+    final class Classes {
+        private static final Class<? extends IInfinityRegistrable<Block>> BLOCK = IInfinityBlock.class;
+
+        private static final Class<? extends IInfinityRegistrable<TileEntityType<?>>> TILE_ENTITY_TYPE = IInfinityTileEntityType.class;
+
+        private static final Class<? extends IInfinityRegistrable<Item>> ITEM = IInfinityItem.class;
+
+        private static final Class<? extends IInfinityRegistrable<Fluid>> FLUID = IInfinityFluid.class;
+
+        private static final Class<? extends  IInfinityRegistrable<Enchantment>> ENCHANTMENT = IInfinityEnchantment.class;
+
+        private static final Class<? extends IInfinityRegistrable<EntityType<?>>> ENTITY_TYPE = IInfinityEntityType.class;
+
+        private static final Class<? extends IInfinityRegistrable<SoundEvent>> SOUND_EVENT = IInfinitySoundEvent.class;
+
+        private static final Class<? extends IInfinityRegistrable<ParticleType<?>>> PARTICLE_TYPE;
+
+        private static final Class<? extends IInfinityRegistrable<Effect>> EFFECT = IInfinityEffect.class;
+
+        private static final Class<? extends IInfinityRegistrable<ContainerType<?>>> CONTAINER_TYPE = IInfinityContainerType.class;
+
+        private static final Class<? extends IInfinityRegistrable<IRecipeSerializer<?>>> RECIPE_SERIALIZER = IInfRecipeSerializer.class;
+
+        // DAMN GENERICS
+        // tldr: yes this is an ugly hack to get the generics to work, if you know a better way, PR pls
+        static {
+            PARTICLE_TYPE = (Class<? extends IInfinityRegistrable<ParticleType<?>>>) (new IInfinityParticleType<IParticleData>() {
+                @Override
+                public boolean isEnabled() {
+                    return false;
+                }
+
+                @Nonnull
+                @Override
+                public String getInternalName() {
+                    return "";
+                }
+
+                @Override
+                public IParticleData deserializeData(@Nonnull StringReader reader)  {
+                    return null;
+                }
+
+                @Override
+                public IParticleData readData(@Nonnull PacketBuffer buffer) {
+                    return null;
+                }
+
+                @Nonnull
+                @Override
+                public ParticleFactorySupplier<IParticleData> particleFactorySupplier() {
+                    return () -> null;
+                }
+            }).getClass().getInterfaces()[0];
+        }
+
+        private Classes() {}
+    }
 }

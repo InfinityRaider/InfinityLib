@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.utility;
 
+import com.infinityraider.infinitylib.InfinityLib;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
@@ -18,11 +19,13 @@ public interface IInfinityRegistrable<T extends IForgeRegistryEntry<T>> extends 
      * Method to self cast to Block
      * @return this, but typecast as Block
      */
-    @SuppressWarnings("Unchecked")
+    @SuppressWarnings("unchecked")
     default T cast() {
         try {
             return (T) this;
-        } catch(Exception e) {}
+        } catch(Exception e) {
+            InfinityLib.instance.getLogger().printStackTrace(e);
+        }
         throw new IllegalArgumentException("IInfinityObject must only be implemented in objects extending its parametric type");
     }
 

@@ -17,6 +17,7 @@ public abstract class FluidBase extends Fluid implements IInfinityFluid {
     }
 
     @Nonnull
+    @Override
     public String getInternalName() {
         return internalName;
     }

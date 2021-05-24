@@ -10,6 +10,8 @@ import com.infinityraider.infinitylib.entity.EmptyEntityRenderFactory;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
+import com.infinityraider.infinitylib.particle.IInfinityParticleType;
+import com.infinityraider.infinitylib.particle.ParticleHelper;
 import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
 import com.infinityraider.infinitylib.render.fluid.InfFluidRenderer;
 import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
@@ -23,6 +25,7 @@ import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.item.ItemModelsProperties;
+import net.minecraft.particles.IParticleData;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.api.distmarker.Dist;
@@ -62,6 +65,7 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     public void registerFMLEventHandlers(IEventBus bus) {
         IProxy.super.registerFMLEventHandlers(bus);
         bus.addListener(ModelLoaderRegistrar.getInstance()::registerModelLoaders);
+        bus.addListener(ParticleHelper.getInstance()::onFactoryRegistration);
     }
 
     @Override
@@ -79,6 +83,11 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         if(factory != null) {
             ScreenManager.registerFactory(containerType.cast(), IInfinityContainerType.castGuiFactory(factory));
         }
+    }
+
+    @Override
+    public <T extends IParticleData> void onParticleRegistration(IInfinityParticleType<T> particleType) {
+        ParticleHelper.getInstance().registerType(particleType);
     }
 
     /** Called on the client to register renderers */

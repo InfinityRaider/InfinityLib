@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.item;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
 import net.minecraft.item.BlockItem;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class BlockItemBase extends BlockItem implements IInfinityItem {
         return true;
     }
 
+    @Nonnull
     public String getInternalName() {
         return internalName;
     }
