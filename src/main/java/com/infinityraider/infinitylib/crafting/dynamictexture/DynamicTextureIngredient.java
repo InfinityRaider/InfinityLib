@@ -13,6 +13,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.crafting.IIngredientSerializer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,6 +56,11 @@ public class DynamicTextureIngredient extends Ingredient implements IDynamicText
         return stack != null && !stack.isEmpty() && this.getTag().getAllElements().stream()
                 .map(Block::asItem)
                 .anyMatch(item -> stack.getItem().equals(item));
+    }
+
+    @Override
+    public IIngredientSerializer<? extends Ingredient> getSerializer() {
+        return SERIALIZER;
     }
 
     private static final class Serializer implements IInfIngredientSerializer<DynamicTextureIngredient> {
