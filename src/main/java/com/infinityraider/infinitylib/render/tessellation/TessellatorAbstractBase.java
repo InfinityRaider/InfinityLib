@@ -549,7 +549,12 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public TessellatorAbstractBase rotate(float angle, float x, float y, float z) {
-        this.manipulateMatrixStack(stack -> stack.rotate(new Quaternion(new Vector3f(x, y, z), angle, true)));
+        return this.rotate(new Quaternion(new Vector3f(x, y, z), angle, true));
+    }
+
+    @Override
+    public TessellatorAbstractBase rotate(Quaternion quaternion) {
+        this.manipulateMatrixStack(stack -> stack.rotate(quaternion));
         return this;
     }
 

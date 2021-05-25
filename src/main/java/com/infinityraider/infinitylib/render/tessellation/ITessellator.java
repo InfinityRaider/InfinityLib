@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.math.vector.Vector4f;
 import net.minecraftforge.api.distmarker.Dist;
@@ -414,6 +415,14 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @return this
      */
     ITessellator rotate(float angle, float x, float y, float z);
+
+    /**
+     * Rotates the matrix by a quaternion
+     *
+     * @param quaternion the rotation
+     * @return this
+     */
+    ITessellator rotate(Quaternion quaternion);
 
     /**
      * Scales along each axis with the corresponding factor
