@@ -14,6 +14,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.crafting.IIngredientSerializer;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -65,6 +66,11 @@ public class DynamicTextureParentIngredient extends Ingredient implements IDynam
        return stack != null
                && !stack.isEmpty()
                && stack.getItem() instanceof BlockItemDynamicTexture;
+    }
+
+    @Override
+    public IIngredientSerializer<? extends Ingredient> getSerializer() {
+        return SERIALIZER;
     }
 
     private static final class Serializer implements IInfIngredientSerializer<DynamicTextureParentIngredient> {
