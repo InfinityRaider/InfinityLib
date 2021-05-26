@@ -3,13 +3,19 @@ package com.infinityraider.infinitylib.block.property;
 import com.infinityraider.infinitylib.utility.DirectionalConnectivity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.state.*;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
+import net.minecraftforge.common.IExtensibleEnum;
+import net.minecraftforge.fluids.FluidStack;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -76,10 +82,20 @@ public class InfProperty<T extends Comparable<T>> {
         private Defaults() {}
 
         private static final InfProperty<Boolean> WATERLOGGED = Creators.create(BlockStateProperties.WATERLOGGED, false);
+        private static final InfProperty<Boolean> LAVALOGGED = Creators.create(BooleanProperty.create("lavalogged"), false);
+        private static final InfProperty<FluidLogged> FLUIDLOGGED  = Creators.create(EnumProperty.create("fluilogged", FluidLogged.class), FluidLogged.NONE);
         private static final InfProperty<DirectionalConnectivity> CONNECTIVITY = Creators.create("connectivity", DirectionalConnectivity.NONE);
 
         public static InfProperty<Boolean> waterlogged() {
             return WATERLOGGED;
+        }
+
+        public static InfProperty<Boolean> lavalogged() {
+            return LAVALOGGED;
+        }
+
+        public static InfProperty<FluidLogged> fluidlogged() {
+            return FLUIDLOGGED;
         }
 
         public static InfProperty<DirectionalConnectivity> connectivity() {
@@ -183,6 +199,53 @@ public class InfProperty<T extends Comparable<T>> {
             public Optional<DirectionalConnectivity> parseValue(String value) {
                 return Optional.empty();
             }
+        }
+    }
+
+    public enum FluidLogged implements IStringSerializable, IExtensibleEnum {
+        NONE(Fluids.EMPTY),
+        WATER(Fluids.WATER),
+        LAVA(Fluids.LAVA);
+
+        private final Fluid fluid;
+
+        FluidLogged(Fluid fluid) {
+            this.fluid = fluid;
+        }
+
+        public Fluid getFluid() {
+            return this.fluid;
+        }
+
+        public boolean isEmpty() {
+            return this == NONE;
+        }
+
+        @Override
+        public String getString() {
+            return this.name().toLowerCase();
+        }
+
+        public static boolean accepts(Fluid fluid) {
+            return Arrays.stream(values()).anyMatch(val -> val.getFluid().equals(fluid));
+        }
+
+        public static FluidLogged get(FluidState fluid) {
+            return get(fluid.getFluid());
+        }
+
+        public static FluidLogged get(FluidStack fluid) {
+            return get(fluid.getFluid());
+        }
+
+        public static FluidLogged get(Fluid fluid) {
+            return Arrays.stream(values()).filter(val -> val.getFluid() == fluid).findAny().orElse(NONE);
+        }
+
+        // this could be problematic, enum should be extended before state containers are filled.
+        @SuppressWarnings("unused")
+        public static FluidLogged create(String name, Fluid fluid) {
+            throw new IllegalStateException("Enum not extended");
         }
     }
 

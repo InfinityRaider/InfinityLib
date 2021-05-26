@@ -64,6 +64,14 @@ public final class InfPropertyConfiguration {
         return this.has(InfProperty.Defaults.waterlogged());
     }
 
+    public boolean isLavaLoggable() {
+        return this.has(InfProperty.Defaults.lavalogged());
+    }
+
+    public boolean isFluidLoggable() {
+        return this.has(InfProperty.Defaults.fluidlogged());
+    }
+
     private static final InfPropertyConfiguration EMPTY = builder().build();
 
     public static final class Builder {
@@ -152,6 +160,14 @@ public final class InfPropertyConfiguration {
 
         public Builder waterloggable() {
             return this.add(InfProperty.Defaults.waterlogged());
+        }
+
+        public Builder lavaloggable() {
+            return this.add(InfProperty.Defaults.lavalogged());
+        }
+
+        public Builder fluidloggable() {
+            return this.add(InfProperty.Defaults.fluidlogged());
         }
 
         public Builder connectivity() {

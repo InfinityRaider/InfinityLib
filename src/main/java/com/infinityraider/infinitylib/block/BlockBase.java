@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
@@ -58,9 +59,20 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
     @Deprecated
     @SuppressWarnings("deprecation")
     public FluidState getFluidState(BlockState state) {
-        return this.getPropertyConfiguration().isWaterLoggable() && InfProperty.Defaults.waterlogged().fetch(state)
-                ? Fluids.WATER.getStillFluidState(false)
-                : super.getFluidState(state);
+        if(this.getPropertyConfiguration().isWaterLoggable()) {
+            if(InfProperty.Defaults.waterlogged().fetch(state)) {
+                return Fluids.WATER.getStillFluidState(false);
+            }
+        }
+        if(this.getPropertyConfiguration().isLavaLoggable()) {
+            if(InfProperty.Defaults.lavalogged().fetch(state)) {
+                return Fluids.LAVA.getStillFluidState(false);
+            }
+        }
+        if(this.getPropertyConfiguration().isFluidLoggable()) {
+            return InfProperty.Defaults.fluidlogged().fetch(state).getFluid().getDefaultState();
+        }
+        return super.getFluidState(state);
     }
 
     @Override
@@ -69,6 +81,15 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
     public BlockState updatePostPlacement(BlockState ownState, Direction dir, BlockState otherState, IWorld world, BlockPos pos, BlockPos otherPos) {
         if (this.getPropertyConfiguration().isWaterLoggable() && InfProperty.Defaults.waterlogged().fetch(ownState)) {
             world.getPendingFluidTicks().scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
+        }
+        if (this.getPropertyConfiguration().isLavaLoggable() && InfProperty.Defaults.lavalogged().fetch(ownState)) {
+            world.getPendingFluidTicks().scheduleTick(pos, Fluids.LAVA, Fluids.LAVA.getTickRate(world));
+        }
+        if (this.getPropertyConfiguration().isFluidLoggable()) {
+            Fluid fluid = InfProperty.Defaults.fluidlogged().fetch(ownState).getFluid();
+            if(fluid != Fluids.EMPTY) {
+                world.getPendingFluidTicks().scheduleTick(pos, fluid, fluid.getTickRate(world));
+            }
         }
         return super.updatePostPlacement(ownState, dir, otherState, world, pos, otherPos);
     }
@@ -84,10 +105,18 @@ public abstract class BlockBase extends Block implements IInfinityBlock {
         return this.internalName;
     }
 
-    public final BlockState waterlog(BlockState state, World world, BlockPos pos) {
+    public final BlockState fluidlog(BlockState state, World world, BlockPos pos) {
         if(this.getPropertyConfiguration().isWaterLoggable()) {
             FluidState fluid = world.getFluidState(pos);
             state = InfProperty.Defaults.waterlogged().apply(state, fluid.getFluid() == Fluids.WATER);
+        }
+        if(this.getPropertyConfiguration().isLavaLoggable()) {
+            FluidState fluid = world.getFluidState(pos);
+            state = InfProperty.Defaults.lavalogged().apply(state, fluid.getFluid() == Fluids.LAVA);
+        }
+        if(this.getPropertyConfiguration().isFluidLoggable()) {
+            FluidState fluid = world.getFluidState(pos);
+            state = InfProperty.Defaults.fluidlogged().apply(state, InfProperty.FluidLogged.get(fluid));
         }
         return state;
     }
