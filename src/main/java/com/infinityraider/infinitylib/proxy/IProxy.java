@@ -16,6 +16,7 @@ import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.entity.IInfinityLivingEntityType;
 import com.infinityraider.infinitylib.fluid.IInfinityFluid;
 import com.infinityraider.infinitylib.item.IInfinityItem;
+import com.infinityraider.infinitylib.loot.IInfLootModifierSerializer;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.particle.IInfinityParticleType;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
@@ -41,6 +42,7 @@ import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -99,6 +101,7 @@ public interface IProxy extends IProxyBase<Config> {
         this.registerEffects(mod);
         this.registerContainers(mod);
         this.registerRecipeSerializers(mod);
+        this.registerLootModifiers(mod);
     }
 
     default void registerBlocks(InfinityMod<?,?> mod) {
@@ -206,6 +209,10 @@ public interface IProxy extends IProxyBase<Config> {
         }
     }
 
+    default void registerLootModifiers(InfinityMod<?,?> mod) {
+        this.registerObjects(mod, mod.getModLootModifierSerializerRegistry(), Classes.LOOT_MODIFIER, ForgeRegistries.LOOT_MODIFIER_SERIALIZERS);
+    }
+
     default void registerGuiContainer(IInfinityContainerType containerType) {}
 
     default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Object modRegistry,
@@ -264,6 +271,8 @@ public interface IProxy extends IProxyBase<Config> {
         private static final Class<? extends IInfinityRegistrable<ContainerType<?>>> CONTAINER_TYPE = IInfinityContainerType.class;
 
         private static final Class<? extends IInfinityRegistrable<IRecipeSerializer<?>>> RECIPE_SERIALIZER = IInfRecipeSerializer.class;
+
+        private static final Class<? extends IInfinityRegistrable<GlobalLootModifierSerializer<?>>> LOOT_MODIFIER = IInfLootModifierSerializer.class;
 
         // DAMN GENERICS
         // tldr: yes this is an ugly hack to get the generics to work, if you know a better way, PR pls

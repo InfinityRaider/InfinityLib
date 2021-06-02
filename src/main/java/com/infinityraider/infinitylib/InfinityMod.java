@@ -304,6 +304,18 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
+     * Used to register all of the mod's Global Loot Modifier Serializers
+     * The object returned by this should have a field for each of its Global Loot Modifier Serializers
+     *
+     * Note: for this to work, the Global Loot Modifier Serializers must implement IInfLootModifierSerializer
+     *
+     * @return IRecipeSerializer registry object or class
+     */
+    public Object getModLootModifierSerializerRegistry() {
+        return null;
+    }
+
+    /**
      * Used to register all of the mod's VillagerProfessions.
      * The object returned by this should have a field for each of its VillagerProfessions
      *
