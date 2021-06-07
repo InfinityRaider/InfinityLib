@@ -1,5 +1,11 @@
 Changelog
 ---------
+2.0.4
+- FIXED: RenderViewEntity issues
+
+2.0.3
+- CHANGE / ADDED / FIXED: A whole bunch of stuff for AgriCraft
+
 2.0.2
 - CHANGE: Ported to Minecraft version 1.16.5
 - ADDED:  Dynamic Texture Recipes

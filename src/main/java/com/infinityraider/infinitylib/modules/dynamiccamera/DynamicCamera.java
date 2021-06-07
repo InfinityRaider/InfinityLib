@@ -317,7 +317,7 @@ public class DynamicCamera extends Entity {
         if (this.controller != null) {
             this.controller = null;
         }
-        InfinityLib.instance.proxy().setRenderViewEntity(this.originalCamera);
+        InfinityLib.instance.proxy().setRenderViewEntity(InfinityLib.instance.getClientPlayer());
         if (this.originalPov != null) {
             Minecraft.getInstance().gameSettings.setPointOfView(this.originalPov);
         }
