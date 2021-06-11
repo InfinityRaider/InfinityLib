@@ -48,9 +48,9 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
     @Override
     default void queueTask(Runnable task) {
         if(getLogicalSide() == LogicalSide.CLIENT) {
-            Minecraft.getInstance().execute(task);
+            Minecraft.getInstance().enqueue(task);
         } else {
-            this.getMinecraftServer().execute(task);
+            IProxyBase.super.queueTask(task);
         }
     }
 

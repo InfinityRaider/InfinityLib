@@ -28,10 +28,4 @@ public interface IServerProxyBase<C extends ConfigurationHandler.SidedModConfig>
     default World getWorldFromDimension(RegistryKey<World> dimension) {
         return ServerLifecycleHooks.getCurrentServer().getWorld(dimension);
     }
-
-
-    @Override
-    default void queueTask(Runnable task) {
-        this.getMinecraftServer().execute(task);
-    }
 }

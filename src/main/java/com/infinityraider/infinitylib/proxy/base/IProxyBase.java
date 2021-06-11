@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.concurrent.TickDelayedTask;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -175,7 +176,9 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     }
 
     /** Queues a task to be executed on this side */
-    void queueTask(Runnable task);
+    default void queueTask(Runnable task) {
+        this.getMinecraftServer().enqueue(new TickDelayedTask(this.getMinecraftServer().getTickCounter() + 1, task));
+    }
 
     /** Sets the ItemStackTileEntityRenderer in the properties on the client side */
     default Item.Properties setItemRenderer(Item.Properties properties) {
