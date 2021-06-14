@@ -2,6 +2,7 @@ package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.modules.Module;
+import com.infinityraider.infinitylib.modules.playeranimations.ModulePlayerAnimations;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
@@ -60,9 +61,8 @@ public class ModuleDualWield extends Module {
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public void postInitClient() {
-        ModelPlayerCustomized.replaceOldModel();
+    public List<Module> requiredModules() {
+        return ImmutableList.of(ModulePlayerAnimations.getInstance());
     }
 
     /**

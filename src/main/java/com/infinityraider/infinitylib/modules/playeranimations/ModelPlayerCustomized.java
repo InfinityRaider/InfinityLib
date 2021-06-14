@@ -1,4 +1,4 @@
-package com.infinityraider.infinitylib.modules.dualwield;
+package com.infinityraider.infinitylib.modules.playeranimations;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import net.minecraft.client.Minecraft;
@@ -10,21 +10,24 @@ import net.minecraft.client.renderer.model.Model;
 import net.minecraft.client.renderer.model.ModelHelper;
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.HandSide;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
-public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T> {
-    private static final ModelPlayerCustomized MODEL_MAIN =  new ModelPlayerCustomized(0.0F, false);
-    private static final ModelPlayerCustomized MODEL_SLIM =  new ModelPlayerCustomized(0.0F, true);
+public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T> implements IAnimatablePlayerModel {
+    private static final ModelPlayerCustomized<PlayerEntity> MODEL_MAIN =  new ModelPlayerCustomized<>(0.0F, false);
+    private static final ModelPlayerCustomized<PlayerEntity> MODEL_SLIM =  new ModelPlayerCustomized<>(0.0F, true);
 
     private float swingProgressLeft;
     private float swingProgressRight;
+    private boolean doArmWobble;
 
     private ModelPlayerCustomized(float modelSize, boolean smallArmsIn) {
         super(modelSize, smallArmsIn);
@@ -35,19 +38,23 @@ public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T
         this.swingProgressRight = right;
     }
 
+    public void setDoArmWobble(boolean status) {
+        this.doArmWobble = status;
+    }
+
     @Override
     @SuppressWarnings("incomplete-switch")
-    public void setRotationAngles(T entity,float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+    public void setRotationAngles(@Nonnull T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         // Call super for cape animation (because it is private and can not be replicated)
         super.setRotationAngles(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         // Replicate BipedModel behaviour
-        boolean flag = entity.getTicksElytraFlying() > 4;
-        boolean flag1 = entity.isActualySwimming();
+        boolean isElytraFlying = entity.getTicksElytraFlying() > 4;
+        boolean isSwimming = entity.isActualySwimming();
         this.bipedHead.rotateAngleY = netHeadYaw * ((float)Math.PI / 180F);
-        if (flag) {
+        if (isElytraFlying) {
             this.bipedHead.rotateAngleX = (-(float)Math.PI / 4F);
         } else if (this.swimAnimation > 0.0F) {
-            if (flag1) {
+            if (isSwimming) {
                 this.bipedHead.rotateAngleX = this.rotLerpRad(this.swimAnimation, this.bipedHead.rotateAngleX, (-(float)Math.PI / 4F));
             } else {
                 this.bipedHead.rotateAngleX = this.rotLerpRad(this.swimAnimation, this.bipedHead.rotateAngleX, headPitch * ((float)Math.PI / 180F));
@@ -61,7 +68,7 @@ public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T
         this.bipedLeftArm.rotationPointZ = 0.0F;
         this.bipedLeftArm.rotationPointX = 5.0F;
         float f = 1.0F;
-        if (flag) {
+        if (isElytraFlying) {
             f = (float) entity.getMotion().lengthSquared();
             f = f / 0.2F;
             f = f * f * f;
@@ -127,7 +134,9 @@ public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T
             this.bipedLeftArm.rotationPointY = 2.0F;
             this.bipedRightArm.rotationPointY = 2.0F;
         }
-        ModelHelper.func_239101_a_(this.bipedRightArm, this.bipedLeftArm, ageInTicks);
+        if(this.doArmWobble) {
+            ModelHelper.func_239101_a_(this.bipedRightArm, this.bipedLeftArm, ageInTicks);
+        }
         if (this.swimAnimation > 0.0F) {
             float f1 = limbSwing % 26.0F;
             HandSide handside = this.getMainHand(entity);
@@ -157,9 +166,6 @@ public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T
                 this.bipedLeftArm.rotateAngleZ = this.rotLerpRad(f3, this.bipedLeftArm.rotateAngleZ, (float)Math.PI);
                 this.bipedRightArm.rotateAngleZ = MathHelper.lerp(f2, this.bipedRightArm.rotateAngleZ, (float)Math.PI);
             }
-
-            float f7 = 0.3F;
-            float f5 = 0.33333334F;
             this.bipedLeftLeg.rotateAngleX = MathHelper.lerp(this.swimAnimation, this.bipedLeftLeg.rotateAngleX, 0.3F * MathHelper.cos(limbSwing * 0.33333334F + (float)Math.PI));
             this.bipedRightLeg.rotateAngleX = MathHelper.lerp(this.swimAnimation, this.bipedRightLeg.rotateAngleX, 0.3F * MathHelper.cos(limbSwing * 0.33333334F));
         }
@@ -319,9 +325,12 @@ public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T
             return;
         }
         PlayerModel<?> oldModel = renderer.getEntityModel();
+        if(oldModel instanceof ModelPlayerCustomized) {
+            return;
+        }
         PlayerModel<?> newModel = null;
         for(Field field : LivingRenderer.class.getDeclaredFields()) {
-            if(field.getType().isAssignableFrom(Model.class)) {
+            if(Model.class.isAssignableFrom(field.getType())) {
                 try {
                     field.setAccessible(true);
                     Object obj = field.get(renderer);
@@ -355,7 +364,7 @@ public class ModelPlayerCustomized<T extends LivingEntity> extends PlayerModel<T
         }
         //replace relevant fields in PlayerRenderer
         for(Field field : LivingRenderer.class.getDeclaredFields()) {
-            if(field.getType().isAssignableFrom(Model.class)) {
+            if(Model.class.isAssignableFrom(field.getType())) {
                 field.setAccessible(true);
                 try {
                     field.set(renderer, newModel);
