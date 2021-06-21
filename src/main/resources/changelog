@@ -2,6 +2,7 @@ Changelog
 ---------
 2.0.5
 - FIXED: Capability-related crash with Integrated Dynamics
+- CHANGE: Dynamic Texture blocks now require a default item
 
 2.0.4
 - ADDED: Player Animation Module

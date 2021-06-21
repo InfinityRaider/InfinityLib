@@ -52,7 +52,7 @@ public class JeiPlugin implements IModPlugin {
     @Override
     public void registerItemSubtypes(ISubtypeRegistration registration) {
         // Register dynamic texture wood items
-        BlockItemDynamicTexture.getAll().forEach(item -> registration.registerSubtypeInterpreter(item, (stack) -> {
+        BlockItemDynamicTexture.getAll().forEach(item -> registration.registerSubtypeInterpreter(item, (stack, context) -> {
             ResourceLocation id = item.getMaterial(stack).getItem().getRegistryName();
             return id == null ? "unknown" : id.toString();
         }));

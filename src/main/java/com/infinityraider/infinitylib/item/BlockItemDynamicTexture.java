@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class BlockItemDynamicTexture extends BlockItemBase {
+public abstract class BlockItemDynamicTexture extends BlockItemBase {
     private static final Set<BlockItemDynamicTexture> ITEMS = Sets.newConcurrentHashSet();
 
     public static Set<BlockItemDynamicTexture> getAll() {
@@ -39,16 +39,26 @@ public class BlockItemDynamicTexture extends BlockItemBase {
             tag = new CompoundNBT();
             stack.setTag(tag);
         }
+        this.setMaterial(tag, material);
+    }
+
+    protected final void setMaterial(CompoundNBT tag, ItemStack material) {
         tag.put(Names.NBT.MATERIAL, material.write(new CompoundNBT()));
     }
 
     public final ItemStack getMaterial(ItemStack stack) {
         CompoundNBT tag = stack.getTag();
-        if(tag == null || !tag.contains(Names.NBT.MATERIAL)) {
-            return ItemStack.EMPTY;
+        if(tag == null) {
+            tag = new CompoundNBT();
+            stack.setTag(tag);
+        }
+        if(!tag.contains(Names.NBT.MATERIAL)) {
+            this.setMaterial(stack, this.getDefaultMaterial());
         }
         return ItemStack.read(tag.getCompound(Names.NBT.MATERIAL));
     }
+
+    public abstract ItemStack getDefaultMaterial();
 
     private static final ITextComponent TOOLTIP = new TranslationTextComponent(InfinityLib.instance.getModId() + ".tooltip.material");
     private static final ITextComponent COLON = new StringTextComponent(": ");

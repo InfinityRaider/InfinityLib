@@ -142,8 +142,8 @@ dependencies {
     minecraft "net.minecraftforge:forge:${config.version_minecraft}-${config.version_forge}"
 
     //JEI
-    compileOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.72:api")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.72")
+    compileOnly fg.deobf("mezz.jei:jei-1.16.5:7.7.0.106:api")
+    runtimeOnly fg.deobf("mezz.jei:jei-1.16.5:7.7.0.106")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
