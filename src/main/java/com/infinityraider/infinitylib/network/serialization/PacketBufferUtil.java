@@ -95,7 +95,7 @@ public class PacketBufferUtil {
     }
     
     public static String readString(PacketBuffer buf) {
-        return buf.readString();
+        return buf.readString(32767);
     }
 
     public static PacketBuffer writeResourceLocation(PacketBuffer buf, ResourceLocation rl) {
