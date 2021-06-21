@@ -51,7 +51,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         // Create proxy
         this.proxy = this.createProxy();
         // Create configuration
-        this.config = new ConfigurationHandler<>(ModLoadingContext.get(), this.proxy().getConfigConstructor());
+        this.config = new ConfigurationHandler<>(ModLoadingContext.get(), this.proxy().getConfigConstructor(), this);
         // Register FML mod loading cycle listeners
         FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
         IEventBus bus = context.getModEventBus();
