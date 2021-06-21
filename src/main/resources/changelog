@@ -1,7 +1,7 @@
 Changelog
 ---------
 2.0.5
-
+- FIXED: Capability-related crash with Integrated Dynamics
 
 2.0.4
 - ADDED: Player Animation Module

@@ -48,18 +48,18 @@ public class CapabilityHandler {
 
     @SuppressWarnings("unchecked")
     protected  <T extends ICapabilityProvider> void addCapabilities(AttachCapabilitiesEvent<T> event) {
-        T carrier = event.getObject();
-        Class<T> clazz = (Class<T>) carrier.getClass();
-        this.capabilityImplementations.stream()
-                .filter(impl -> impl.getCarrierClass().isAssignableFrom(clazz))
-                .filter(impl -> impl.shouldApplyCapability(carrier))
-                .forEach(impl -> this.addCapability(event, impl, carrier));
+            T carrier = event.getObject();
+            Class<T> clazz = (Class<T>) carrier.getClass();
+            this.capabilityImplementations.stream()
+                    .filter(impl -> impl.getCarrierClass().isAssignableFrom(clazz))
+                    .filter(impl -> impl.shouldApplyCapability(carrier))
+                    .forEach(impl -> this.addCapability(event, impl, carrier));
     }
 
     @SubscribeEvent
     @SuppressWarnings({"unchecked","unused"})
     public void addCapabilitiesRaw(AttachCapabilitiesEvent event) {
-        if(event.getObject() != null) {
+        if(event.getObject() instanceof ICapabilityProvider) {
             this.addCapabilities(event);
         }
     }
