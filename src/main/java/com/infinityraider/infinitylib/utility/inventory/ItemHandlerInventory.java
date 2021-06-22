@@ -28,7 +28,7 @@ public class ItemHandlerInventory implements IInventoryItemHandler {
 
     @Override
     @Nonnull
-    public ItemStack getStackInSlot(int index) {
+    public ItemStack getStackInInvSlot(int index) {
         return  this.getInventory().getStackInSlot(index);
     }
 

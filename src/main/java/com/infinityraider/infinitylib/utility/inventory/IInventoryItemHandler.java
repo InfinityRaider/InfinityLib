@@ -1,15 +1,19 @@
 package com.infinityraider.infinitylib.utility.inventory;
 
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 
 /**
  * IInventory interface to link the IItemHandler methods automatically to the IInventory methods
  */
-public interface IInventoryItemHandler extends IInventory, IItemHandler {
+public interface IInventoryItemHandler extends IInventoryWrapped, IItemHandlerWrapped {
+    @Nonnull
+    @Override
+    default ItemStack getStackInSlot(int index) {
+        return IItemHandlerWrapped.super.getStackInSlot(index);
+    }
+
     @Override
     default int getSlots() {
         return this.getSizeInventory();

@@ -9,7 +9,7 @@ import net.minecraft.nbt.ListNBT;
 /**
  * IInventory interface to automatically have methods implemented to read/write inventory data from/to nbt
  */
-public interface IInventorySerializable extends IInventory {
+public interface IInventorySerializable extends IInventoryWrapped {
     default CompoundNBT writeInventoryToNBT(CompoundNBT tag) {
         ListNBT list = new ListNBT();
         for(int i = 0; i < this.getSizeInventory(); i++) {

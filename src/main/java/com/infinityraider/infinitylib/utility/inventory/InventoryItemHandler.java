@@ -34,7 +34,7 @@ public class InventoryItemHandler implements IInventoryItemHandler {
 
     @Override
     @Nonnull
-    public ItemStack getStackInSlot(int index) {
+    public ItemStack getStackInInvSlot(int index) {
         return this.getItemHandler().getStackInSlot(index);
     }
 
