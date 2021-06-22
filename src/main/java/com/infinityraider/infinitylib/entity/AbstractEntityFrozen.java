@@ -259,7 +259,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     public final void setPositionAndRotation(double x, double y, double z, float yaw, float pitch) {}
 
     @Override
-    public final void func_242281_f(double p_242281_1_, double p_242281_3_, double p_242281_5_) {}
+    public final void setPositionWithinBounds(double x, double y, double z) {}
 
     @Override
     public final void moveForced(Vector3d vec) {}
@@ -522,7 +522,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
 
     @Override
     // onEntityStruckByLightning
-    public final void func_241841_a(ServerWorld world, LightningBoltEntity lightningBolt) {}
+    public final void causeLightningStrike(ServerWorld world, LightningBoltEntity lightningBolt) {}
 
     @Override
     public final void onEnterBubbleColumnWithAirAbove(boolean downwards) {}
@@ -531,7 +531,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     public void onEnterBubbleColumn(boolean downwards) {}
 
     @Override
-    public void func_241847_a(ServerWorld world, LivingEntity entity) {}
+    public void onKillEntity(ServerWorld world, LivingEntity entity) {}
 
     @Override
     protected final void pushOutOfBlocks(double x, double y, double z) {}

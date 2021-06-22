@@ -141,7 +141,7 @@ public class DamageDealer {
 
     protected InfinityDamageSource createDamage(Entity source) {
         if(source instanceof ThrowableEntity) {
-            return this.createDamage(source, (((ThrowableEntity) source).func_234616_v_()));
+            return this.createDamage(source, (((ThrowableEntity) source).getShooter()));
         } else {
             return this.createDamage(source, source);
         }

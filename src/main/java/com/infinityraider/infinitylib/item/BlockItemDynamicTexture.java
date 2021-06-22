@@ -68,11 +68,11 @@ public abstract class BlockItemDynamicTexture extends BlockItemBase {
     @OnlyIn(Dist.CLIENT)
     public final void addInformation(@Nonnull ItemStack stack, @Nullable World world, @Nonnull List<ITextComponent> tooltips, @Nonnull ITooltipFlag advanced) {
         ItemStack material = this.getMaterial(stack);
-        IFormattableTextComponent tooltip = new StringTextComponent("").append(TOOLTIP).append(COLON);
+        IFormattableTextComponent tooltip = new StringTextComponent("").appendSibling(TOOLTIP).appendSibling(COLON);
         if(material.isEmpty()) {
-            tooltips.add(tooltip.append(UNKNOWN));
+            tooltips.add(tooltip.appendSibling(UNKNOWN));
         } else {
-            tooltips.add(tooltip.append(material.getDisplayName()));
+            tooltips.add(tooltip.appendSibling(material.getDisplayName()));
         }
         this.addInformation(stack, world, tooltips::add, advanced);
     }
