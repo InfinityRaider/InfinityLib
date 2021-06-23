@@ -5,6 +5,7 @@ Changelog
 - CHANGE: Config files will now go in a subdirectory for each mod
 - FIXED: Capability-related crash with Integrated Dynamics
 - FIXED: Crash following an AbstractMethodException due to classes implementing both IInventory and IItemHandler
+- FIXED: Server and Client being swapped in the feedback debug mode
 
 2.0.4
 - ADDED: Player Animation Module

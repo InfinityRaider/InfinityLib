@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.utility.debug;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
@@ -9,7 +8,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -48,12 +46,12 @@ public class DebugModeFeedback extends DebugMode {
      * @param consumer a consumer accepting the lines of debug data.
      */
     private void getDebugData(World world, BlockPos pos, Consumer<String> consumer) {
-        final boolean remote = world.isRemote;
+        final boolean remote = world.isRemote();
 
         final TileEntity tile = world.getTileEntity(pos);
 
         consumer.accept("------------------");
-        consumer.accept(remote ? "server" : "client" + " debug info:");
+        consumer.accept(remote ? "client" : "server" + " debug info:");
         consumer.accept("------------------");
         
         consumer.accept("Clicked block at (" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")");
@@ -61,10 +59,9 @@ public class DebugModeFeedback extends DebugMode {
         if (tile instanceof IDebuggable) {
             IDebuggable debuggable = (IDebuggable) tile;
             if (remote) {
-                debuggable.addServerDebugInfo(consumer);
-            } else {
                 debuggable.addClientDebugInfo(consumer);
-            }
+            } else {
+                debuggable.addServerDebugInfo(consumer);            }
         } else {
             BlockState state = world.getBlockState(pos);
             Block block = state.getBlock();
