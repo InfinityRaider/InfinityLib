@@ -1,6 +1,7 @@
 Changelog
 ---------
 2.0.5
+- ADDED: Automated structure handling
 - CHANGE: Dynamic Texture blocks now require a default item
 - CHANGE: Config files will now go in a subdirectory for each mod
 - FIXED: Capability-related crash with Integrated Dynamics

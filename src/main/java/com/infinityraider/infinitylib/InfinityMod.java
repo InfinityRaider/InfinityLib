@@ -316,6 +316,16 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     }
 
     /**
+     * Used to register all of the mod's Structures.
+     * The object returned by this should have a field for each of its Structures
+     *
+     * @return Structure registry object
+     */
+    public Object getStructureRegistry() {
+        return null;
+    }
+
+    /**
      * Used to register all of the mod's VillagerProfessions.
      * The object returned by this should have a field for each of its VillagerProfessions
      *

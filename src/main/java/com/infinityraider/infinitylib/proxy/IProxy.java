@@ -23,6 +23,8 @@ import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.sound.IInfinitySoundEvent;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
+import com.infinityraider.infinitylib.world.IInfStructure;
+import com.infinityraider.infinitylib.world.StructureRegistry;
 import com.mojang.brigadier.StringReader;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
@@ -44,6 +46,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -81,6 +84,11 @@ public interface IProxy extends IProxyBase<Config> {
         RecipeSerializers.getInstance().registerSerializers();
     }
 
+    @Override
+    default void onServerAboutToStartEvent(final FMLServerAboutToStartEvent event) {
+        StructureRegistry.getInstance().injectStructures(event.getServer().getDynamicRegistries());
+    }
+
     default void forceClientRenderUpdate(BlockPos pos) {}
 
     /**
@@ -102,6 +110,7 @@ public interface IProxy extends IProxyBase<Config> {
         this.registerContainers(mod);
         this.registerRecipeSerializers(mod);
         this.registerLootModifiers(mod);
+        this.registerStructures(mod);
     }
 
     default void registerBlocks(InfinityMod<?,?> mod) {
@@ -211,6 +220,17 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerLootModifiers(InfinityMod<?,?> mod) {
         this.registerObjects(mod, mod.getModLootModifierSerializerRegistry(), Classes.LOOT_MODIFIER, ForgeRegistries.LOOT_MODIFIER_SERIALIZERS);
+    }
+
+    default void registerStructures(InfinityMod<?,?> mod) {
+        Object registry = mod.getStructureRegistry();
+        if(registry != null) {
+            ReflectionHelper.forEachValueIn(registry, IInfStructure.class, structure -> {
+                if(structure != null) {
+                    StructureRegistry.getInstance().registerStructure(structure);
+                }
+            });
+        }
     }
 
     default void registerGuiContainer(IInfinityContainerType containerType) {}
