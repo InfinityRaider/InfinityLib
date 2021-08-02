@@ -1,8 +1,8 @@
 Changelog
 ---------
 2.0.6
-
-
+ - FIXED: Resource Pack file structure
+ 
 2.0.5
 - ADDED: Automated structure handling
 - CHANGE: Dynamic Texture blocks now require a default item
