@@ -15,6 +15,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
@@ -363,7 +364,7 @@ public class RayTraceHelper {
 
         @Override
         public EntityRayTraceResult createMiss(Tuple<Vector3d, Vector3d> ray) {
-            return new EntityRayTraceResult(null, ray.getB());
+            return new EntityRayTraceResultMiss(ray.getB());
         }
     };
 
@@ -383,4 +384,16 @@ public class RayTraceHelper {
             return BLOCK_RAY_TRACER.createMiss(ray);
         }
     };
+
+    private static final class EntityRayTraceResultMiss extends EntityRayTraceResult {
+        public EntityRayTraceResultMiss(Vector3d hitVec) {
+            super(null, hitVec);
+        }
+
+        @Nonnull
+        @Override
+        public Type getType() {
+            return Type.MISS;
+        }
+    }
 }
