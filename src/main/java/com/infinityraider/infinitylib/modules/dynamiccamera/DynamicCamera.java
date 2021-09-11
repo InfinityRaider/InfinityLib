@@ -305,7 +305,7 @@ public class DynamicCamera extends Entity {
     public void baseTick() {
         // If analyzer or player is null, this is invalid
         if (this.controller == null) {
-            this.reset();
+            if (this.status != Status.IDLE) this.reset();
             return;
         }
         // Forward tick logic to the status
