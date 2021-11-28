@@ -1,5 +1,7 @@
 Changelog
 ---------
+2.0.8
+
 2.0.7
  - FIXED: Inventory bug causing ItemStacks to be voided
  - FIXED: Dynamic camera resetting every tick
