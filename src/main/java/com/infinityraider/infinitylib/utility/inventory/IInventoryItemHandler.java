@@ -27,7 +27,7 @@ public interface IInventoryItemHandler extends IInventoryWrapped, IItemHandlerWr
     @Override
     @Nonnull
     default ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-        if(!isValidSlot(slot) || stack.isEmpty() || stack.getCount() <= 0) {
+        if(!isValidSlot(slot) || stack.isEmpty() || stack.getCount() <= 0 || !this.isItemValidForSlot(slot, stack)) {
             return stack;
         }
         ItemStack inSlot = this.getStackInSlot(slot);
