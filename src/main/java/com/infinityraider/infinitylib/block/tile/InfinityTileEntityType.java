@@ -2,9 +2,9 @@ package com.infinityraider.infinitylib.block.tile;
 
 import com.google.common.collect.Sets;
 import com.infinityraider.infinitylib.render.tile.ITileRenderer;
-import net.minecraft.block.Block;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -13,16 +13,15 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Supplier;
 
-public class InfinityTileEntityType<T extends TileEntity> extends TileEntityType<T> implements IInfinityTileEntityType {
+public class InfinityTileEntityType<T extends BlockEntity> extends BlockEntityType<T> implements IInfinityTileEntityType {
     private final String name;
     private final IRenderFactory<T> renderFactory;
 
     @OnlyIn(Dist.CLIENT)
     private ITileRenderer<T> renderer;
 
-    private InfinityTileEntityType(String name, Supplier<? extends T> factory, Set<Block> validBlocks, IRenderFactory<T> renderFactory) {
+    private InfinityTileEntityType(String name, BlockEntityType.BlockEntitySupplier<? extends T> factory, Set<Block> validBlocks, IRenderFactory<T> renderFactory) {
         super(factory, validBlocks, null);
         this.name = name;
         this.renderFactory = renderFactory;
@@ -49,18 +48,18 @@ public class InfinityTileEntityType<T extends TileEntity> extends TileEntityType
         return this.renderer;
     }
 
-    public static <T extends TileEntity> Builder<T> builder(String name, Supplier<? extends T> factory) {
-        return new Builder<>(name, factory);
+    public static <T extends BlockEntity> Builder<T> builder(String name, BlockEntityType.BlockEntitySupplier<? extends T> factory) {
+        return new Builder<T>(name, factory);
     }
 
-    public static final class Builder<T extends TileEntity> {
+    public static final class Builder<T extends BlockEntity> {
         private final String name;
-        private final Supplier<? extends T> factory;
+        private final BlockEntityType.BlockEntitySupplier<? extends T> factory;
         private final Set<Block> blocks;
 
         private IRenderFactory<T> renderFactory;
 
-        private Builder(String name, Supplier<? extends T> factory) {
+        private Builder(String name, BlockEntityType.BlockEntitySupplier<? extends T> factory) {
             this.name = name;
             this.factory = factory;
             this.blocks = Sets.newIdentityHashSet();
@@ -92,17 +91,17 @@ public class InfinityTileEntityType<T extends TileEntity> extends TileEntityType
         }
     }
 
-    public static <T extends TileEntity> IRenderFactory<T> noRenderer() {
+    public static <T extends BlockEntity> IRenderFactory<T> noRenderer() {
         return new NoRenderFactory<>();
     }
 
-    public interface IRenderFactory<T extends TileEntity> {
+    public interface IRenderFactory<T extends BlockEntity> {
         @Nullable
         @OnlyIn(Dist.CLIENT)
         ITileRenderer<T> createRenderer();
     }
 
-    private static final class NoRenderFactory<T extends TileEntity> implements IRenderFactory<T> {
+    private static final class NoRenderFactory<T extends BlockEntity> implements IRenderFactory<T> {
         @Override
         @Nullable
         @OnlyIn(Dist.CLIENT)

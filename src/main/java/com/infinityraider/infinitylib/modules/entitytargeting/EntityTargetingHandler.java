@@ -1,8 +1,8 @@
 package com.infinityraider.infinitylib.modules.entitytargeting;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -18,13 +18,13 @@ public class EntityTargetingHandler {
         return INSTANCE;
     }
 
-    private Map<Class<? extends MobEntity>, List<Class<? extends Entity>>> targetMap;
+    private Map<Class<? extends Mob>, List<Class<? extends Entity>>> targetMap;
 
     private EntityTargetingHandler() {
         this.targetMap = new HashMap<>();
     }
 
-    void registerEntityTargetingRule(Class<? extends Entity> target, Class<? extends MobEntity> aggressor) {
+    void registerEntityTargetingRule(Class<? extends Entity> target, Class<? extends Mob> aggressor) {
         if(!this.targetMap.containsKey(aggressor)) {
             this.targetMap.put(aggressor, new ArrayList<>());
         }
@@ -34,15 +34,15 @@ public class EntityTargetingHandler {
     @SubscribeEvent
     @SuppressWarnings({"unused", "unchecked"})
     public void onZombieSpawn(LivingSpawnEvent event) {
-        if(!(event.getEntity() instanceof MobEntity)) {
+        if(!(event.getEntity() instanceof Mob)) {
             return;
         }
-        MobEntity entity = (MobEntity) event.getEntity();
+        Mob mob = (Mob) event.getEntity();
         //if i replace this with a stream it stops working for some reason >>
-        for(Map.Entry<Class<? extends MobEntity>, List<Class<? extends Entity>>> entry : this.targetMap.entrySet()) {
-            if (entry.getKey().isAssignableFrom(entity.getClass())) {
+        for(Map.Entry<Class<? extends Mob>, List<Class<? extends Entity>>> entry : this.targetMap.entrySet()) {
+            if (entry.getKey().isAssignableFrom(mob.getClass())) {
                 for (Class<? extends Entity> entityClass : entry.getValue()) {
-                    entity.targetSelector.addGoal(2, new NearestAttackableTargetGoal(entity, entityClass, true));
+                    mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal(mob, entityClass, true));
                 }
             }
         }

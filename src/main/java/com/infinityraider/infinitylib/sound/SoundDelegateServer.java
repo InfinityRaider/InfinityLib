@@ -1,9 +1,10 @@
 package com.infinityraider.infinitylib.sound;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.vector.Vector3d;
+
+import com.mojang.math.Vector3d;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 
 public class SoundDelegateServer extends SidedSoundDelegate {
     public SoundDelegateServer() {
@@ -11,28 +12,28 @@ public class SoundDelegateServer extends SidedSoundDelegate {
     }
 
     @Override
-    public SoundTask playSoundAtPositionOnce(Vector3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    public SoundTask playSoundAtPositionOnce(Vector3d position, SoundEvent sound, SoundSource category, float volume, float pitch) {
         SoundTask soundTask = new SoundTaskServer(sound, category, volume, pitch).setRepeat(false);
         new MessagePlaySound(position, (SoundTaskServer) soundTask).sendToAll();
         return soundTask;
     }
 
     @Override
-    public SoundTask playSoundAtEntityOnce(Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    public SoundTask playSoundAtEntityOnce(Entity entity, SoundEvent sound, SoundSource category, float volume, float pitch) {
         SoundTask soundTask = new SoundTaskServer(sound, category, volume, pitch).setRepeat(false);
         new MessagePlaySound(entity, (SoundTaskServer) soundTask).sendToAll();
         return soundTask;
     }
 
     @Override
-    public SoundTask playSoundAtPositionContinuous(Vector3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    public SoundTask playSoundAtPositionContinuous(Vector3d position, SoundEvent sound, SoundSource category, float volume, float pitch) {
         SoundTask soundTask = new SoundTaskServer(sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
         new MessagePlaySound(position, (SoundTaskServer) soundTask).sendToAll();
         return soundTask;
     }
 
     @Override
-    public SoundTask playSoundAtEntityContinuous(Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    public SoundTask playSoundAtEntityContinuous(Entity entity, SoundEvent sound, SoundSource category, float volume, float pitch) {
         SoundTask soundTask = new SoundTaskServer(sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
         new MessagePlaySound(entity, (SoundTaskServer) soundTask).sendToAll();
         return soundTask;

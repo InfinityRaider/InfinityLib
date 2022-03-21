@@ -1,9 +1,9 @@
 package com.infinityraider.infinitylib.render.tile;
 
 import com.infinityraider.infinitylib.render.IRenderUtilities;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.tileentity.TileEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -12,7 +12,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 @OnlyIn(Dist.CLIENT)
 @FunctionalInterface
-public interface ITileRenderer<T extends TileEntity> extends IRenderUtilities {
+public interface ITileRenderer<T extends BlockEntity> extends IRenderUtilities {
 	
-	void render(T tile, float partialTicks, MatrixStack transforms, IRenderTypeBuffer buffer, int light, int overlay);
+	void render(T tile, float partialTicks, PoseStack transforms, MultiBufferSource buffer, int light, int overlay);
 }

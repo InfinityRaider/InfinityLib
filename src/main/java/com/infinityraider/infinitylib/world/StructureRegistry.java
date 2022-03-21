@@ -1,8 +1,8 @@
 package com.infinityraider.infinitylib.world;
 
 import com.google.common.collect.Maps;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public class StructureRegistry {
         structure.targetPools().forEach(target -> this.injectors.computeIfAbsent(target, StructureInjector::new).addStructure(structure));
     }
 
-    public void injectStructures(DynamicRegistries registries) {
+    public void injectStructures(RegistryAccess registries) {
         this.injectors.values().forEach(injector -> injector.inject(registries));
     }
 }

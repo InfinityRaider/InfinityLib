@@ -1,27 +1,32 @@
 package com.infinityraider.infinitylib.capability;
 
-import com.infinityraider.infinitylib.utility.ISerializable;
-import net.minecraft.nbt.CompoundNBT;
+import com.infinityraider.infinitylib.capability.IInfSerializableCapabilityImplementation.Serializable;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.INBTSerializable;
 
-public interface IInfSerializableCapabilityImplementation<C extends ICapabilityProvider, V extends ISerializable> extends IInfCapabilityImplementation<C, V> {
+public interface IInfSerializableCapabilityImplementation<C extends ICapabilityProvider, V extends Serializable<V>> extends IInfCapabilityImplementation<C, V> {
     @Override
     default IInfCapabilityImplementation.Serializer<V> getSerializer() {
-        return new IInfCapabilityImplementation.Serializer<V>() {
+        return new IInfCapabilityImplementation.Serializer<>() {
             @Override
-            public CompoundNBT writeToNBT(V object) {
-                return object.writeToNBT();
+            public CompoundTag writeToNBT(V object) {
+                return object.serializeNBT();
             }
 
             @Override
-            public void readFromNBT(V object, CompoundNBT nbt) {
-                object.readFromNBT(nbt);
+            public void readFromNBT(V object, CompoundTag nbt) {
+                object.deserializeNBT(nbt);
             }
         };
     }
 
     @Override
     default void copyData(V from, V to) {
-        to.readFromNBT(from.writeToNBT());
+        to.copyDataFrom(from);
+    }
+
+    interface Serializable<F> extends INBTSerializable<CompoundTag> {
+        void copyDataFrom(F from);
     }
 }

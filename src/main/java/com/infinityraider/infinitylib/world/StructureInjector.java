@@ -3,13 +3,10 @@ package com.infinityraider.infinitylib.world;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.DynamicRegistries;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPiece;
-import net.minecraft.world.gen.feature.jigsaw.LegacySingleJigsawPiece;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -30,8 +27,8 @@ public class StructureInjector {
     }
 
     @SuppressWarnings("unchecked")
-    protected void inject(DynamicRegistries registries) {
-        JigsawPattern pool = registries.getRegistry(Registry.JIGSAW_POOL_KEY).getOptional(this.target).orElse(null);
+    protected void inject(RegistryAccess registries) {
+        JigsawPattern pool = registries.registry(Registry.JIGSAW_POOL_KEY).getOptional(this.target).orElse(null);
         if(pool == null) {
             InfinityLib.instance.getLogger().error("Could not inject structures into {0}, pool not found", this.target);
             return;

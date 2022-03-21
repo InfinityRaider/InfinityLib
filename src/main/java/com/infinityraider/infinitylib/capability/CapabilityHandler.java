@@ -2,9 +2,9 @@ package com.infinityraider.infinitylib.capability;
 
 import com.google.common.collect.Sets;
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,53 +25,38 @@ public class CapabilityHandler {
         InfinityLib.instance.registerEventHandler(this);
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends ICapabilityProvider, C> void registerCapability(ICapabilityImplementation<T, C> implementation) {
         this.capabilityImplementations.add((ICapabilityImplementation<ICapabilityProvider, ?>) implementation);
-        if(implementation instanceof IInfCapabilityImplementation) {
-            IInfCapabilityImplementation<T, C> infImpl = (IInfCapabilityImplementation<T, C>) implementation;
-            CapabilityManager.INSTANCE.register(
-                    infImpl.getCapabilityClass(),
-                    new CapabilityStorage<>(infImpl.getSerializer()),
-                    infImpl.factory()
-            );
-        }
-    }
-
-    protected <T extends ICapabilityProvider, C> void addCapability(
-            AttachCapabilitiesEvent<?> event, ICapabilityImplementation<T , C> implementation, T carrier) {
-        event.addCapability(
-                implementation.getCapabilityKey(),
-                new CapabilityProvider<>(implementation::getCapability, implementation.createNewValue(carrier))
-        );
-    }
-
-    @SuppressWarnings("unchecked")
-    protected  <T extends ICapabilityProvider> void addCapabilities(AttachCapabilitiesEvent<T> event) {
-            T carrier = event.getObject();
-            Class<T> clazz = (Class<T>) carrier.getClass();
-            this.capabilityImplementations.stream()
-                    .filter(impl -> impl.getCarrierClass().isAssignableFrom(clazz))
-                    .filter(impl -> impl.shouldApplyCapability(carrier))
-                    .forEach(impl -> this.addCapability(event, impl, carrier));
     }
 
     @SubscribeEvent
     @SuppressWarnings({"unchecked","unused"})
-    public void addCapabilitiesRaw(AttachCapabilitiesEvent event) {
-        if(event.getObject() instanceof ICapabilityProvider) {
-            this.addCapabilities(event);
-        }
+    public <T extends ICapabilityProvider> void addCapabilitiesRaw(AttachCapabilitiesEvent<T> event) {
+        T carrier = event.getObject();
+        Class<T> clazz = (Class<T>) carrier.getClass();
+        this.capabilityImplementations.stream()
+                .filter(impl -> impl.getCarrierClass().isAssignableFrom(clazz))
+                .filter(impl -> impl.shouldApplyCapability(carrier))
+                .forEach(impl -> event.addCapability(impl.getCapabilityKey(), impl.createProvider(carrier)));
+    }
+
+    @SubscribeEvent
+    @SuppressWarnings({"unchecked","unused"})
+    public void registerCapabilities(RegisterCapabilitiesEvent event) {
+        this.capabilityImplementations.stream()
+                .filter(impl -> impl instanceof IInfCapabilityImplementation)
+                .map(impl -> (IInfCapabilityImplementation<?,?>) impl)
+                .forEach(impl -> event.register(impl.getCapabilityClass()));
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onPlayerClone(PlayerEvent.Clone event) {
-        PlayerEntity oldPlayer = event.getOriginal();
-        PlayerEntity newPlayer = event.getPlayer();
-        if(oldPlayer != null && newPlayer != null && !oldPlayer.getEntityWorld().isRemote) {
+        Player oldPlayer = event.getOriginal();
+        Player newPlayer = event.getPlayer();
+        if(oldPlayer != null && newPlayer != null && !oldPlayer.getLevel().isClientSide()) {
             this.capabilityImplementations.stream()
-                    .filter(impl -> PlayerEntity.class.isAssignableFrom(impl.getCarrierClass()))
+                    .filter(impl -> Player.class.isAssignableFrom(impl.getCarrierClass()))
                     .filter(impl -> impl instanceof IInfCapabilityImplementation)
                     .map(impl -> (IInfCapabilityImplementation<?, ?>) impl)
                     .forEach(impl ->

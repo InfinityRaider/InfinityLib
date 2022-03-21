@@ -2,12 +2,13 @@ package com.infinityraider.infinitylib.render.item;
 
 import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.item.IInfinityItem;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -28,7 +29,7 @@ public class InfItemRendererRegistry {
 
     private InfItemRendererRegistry() {
         this.registry = Maps.newIdentityHashMap();
-        this.defaultRenderer = ItemStackTileEntityRenderer.instance::func_239207_a_;
+        this.defaultRenderer = Minecraft.getInstance().getItemRenderer().getBlockEntityRenderer()::renderByItem;
     }
 
     public InfItemRendererRegistry register(IInfinityItem item) {
@@ -43,15 +44,16 @@ public class InfItemRendererRegistry {
         return this.registry.getOrDefault(stack.getItem(), this.defaultRenderer);
     }
 
-    public Supplier<Callable<ItemStackTileEntityRenderer>> getISTER() {
+    public Supplier<Callable<BlockEntityWithoutLevelRenderer>> getISTER() {
         return () -> () -> new Dispatcher(this);
     }
 
-    private static class Dispatcher extends ItemStackTileEntityRenderer {
+    private static class Dispatcher extends BlockEntityWithoutLevelRenderer {
         private final InfItemRendererRegistry registry;
         private InfItemRenderer renderer;
 
         private Dispatcher(InfItemRendererRegistry registry) {
+            super(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
             this.registry = registry;
         }
 
@@ -63,8 +65,8 @@ public class InfItemRendererRegistry {
         }
 
         @Override
-        public void func_239207_a_(ItemStack stack, ItemCameraTransforms.TransformType perspective, MatrixStack transforms,
-                                   IRenderTypeBuffer buffer, int light, int overlay) {
+        public void renderByItem(ItemStack stack, ItemTransforms.TransformType perspective, PoseStack transforms,
+                                 MultiBufferSource buffer, int light, int overlay) {
             this.getRenderer(stack).render(stack, perspective, transforms, buffer, light, overlay);
         }
     }

@@ -2,13 +2,13 @@ package com.infinityraider.infinitylib.entity.ai.pathfinding;
 
 import com.google.common.collect.Lists;
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.pathfinding.PathPoint;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.pathfinder.Node;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -18,7 +18,7 @@ import java.util.Objects;
 public class PathFindJob extends Path {
     public static final double DEFAULT_SPEED = 1.5D;
 
-    private final MobEntity entity;
+    private final Mob entity;
     private final double speed;
     private final PathCalculator.ITarget target;
     private final PathCalculator.IPathOptions options;
@@ -26,16 +26,16 @@ public class PathFindJob extends Path {
 
     private boolean cancelled;
 
-    public PathFindJob(MobEntity entity, PathCalculator.ITarget target, PathCalculator.IPathOptions options) {
+    public PathFindJob(Mob entity, PathCalculator.ITarget target, PathCalculator.IPathOptions options) {
         this(entity, DEFAULT_SPEED, target, options);
     }
 
-    public PathFindJob(MobEntity entity, double speed, PathCalculator.ITarget target, PathCalculator.IPathOptions options) {
+    public PathFindJob(Mob entity, double speed, PathCalculator.ITarget target, PathCalculator.IPathOptions options) {
         this(entity, speed, target, options, ICallback.none);
     }
 
-    public PathFindJob(MobEntity entity, double speed, PathCalculator.ITarget target, PathCalculator.IPathOptions options, ICallback callback) {
-        super(Lists.newArrayList(target.getTargetPoint()), target.getTargetPoint().func_224759_a(), false);
+    public PathFindJob(Mob entity, double speed, PathCalculator.ITarget target, PathCalculator.IPathOptions options, ICallback callback) {
+        super(Lists.newArrayList(target.getTargetPoint()), target.getTargetPoint().asBlockPos(), false);
         this.entity = Objects.requireNonNull(entity);
         this.speed = speed;
         this.target = Objects.requireNonNull(target);
@@ -48,7 +48,7 @@ public class PathFindJob extends Path {
     //Getters
     //-------
 
-    public MobEntity entity() {
+    public Mob entity() {
         return this.entity;
     }
 
@@ -60,16 +60,16 @@ public class PathFindJob extends Path {
         return this.options;
     }
 
-    public PathPoint getEntityPoint() {
-        Vector3d entityPos = this.getEntityPosition();
-        return new PathPoint(MathHelper.floor(entityPos.x), MathHelper.floor(entityPos.y), MathHelper.floor(entityPos.z));
+    public Node getEntityPoint() {
+        Vec3 entityPos = this.getEntityPosition();
+        return new Node(Mth.floor(entityPos.x), Mth.floor(entityPos.y), Mth.floor(entityPos.z));
     }
 
-    public Vector3d getEntityPosition() {
-        return this.entity().getPositionVec().add(new Vector3d(
-                (double)((int)(this.entity().getWidth() + 1.0F)) * 0.5D,
+    public Vec3 getEntityPosition() {
+        return this.entity().position().add(new Vec3(
+                (double)((int)(this.entity().getBbWidth() + 1.0F)) * 0.5D,
                 0,
-                (double)((int)(this.entity().getWidth() + 1.0F)) * 0.5D
+                (double)((int)(this.entity().getBbHeight() + 1.0F)) * 0.5D
         ));
     }
 
@@ -83,13 +83,13 @@ public class PathFindJob extends Path {
 
     public PathFindJob cancel() {
         this.cancelled = true;
-        this.entity().getNavigator().setPath(null, this.speed());
+        this.entity().getNavigation().moveTo((Path) null, this.speed());
         InfinityLib.instance.queueTask(this.callback::onJobCancelled);
         return this;
     }
 
     public PathFindJob finish(Path path) {
-        this.entity().getNavigator().setPath(path, this.speed());
+        this.entity().getNavigation().moveTo(path, this.speed());
         InfinityLib.instance.queueTask(() -> this.callback.onJobFinished(this.entity(), path));
         this.cancelled = true;
         return this;
@@ -97,7 +97,7 @@ public class PathFindJob extends Path {
 
     public PathFindJob fail() {
         this.cancelled = true;
-        this.entity().getNavigator().setPath(null, this.speed());
+        this.entity().getNavigation().moveTo((Path) null, this.speed());
         InfinityLib.instance.queueTask(this.callback::onJobFailed);
         return this;
     }
@@ -105,7 +105,7 @@ public class PathFindJob extends Path {
     public interface ICallback {
         void onJobCancelled();
 
-        void onJobFinished(MobEntity entity, Path path);
+        void onJobFinished(Mob entity, Path path);
 
         void onJobFailed();
 
@@ -114,7 +114,7 @@ public class PathFindJob extends Path {
             public void onJobCancelled() {}
 
             @Override
-            public void onJobFinished(MobEntity entity, Path path) {}
+            public void onJobFinished(Mob entity, Path path) {}
 
             @Override
             public void onJobFailed() {}
@@ -133,11 +133,11 @@ public class PathFindJob extends Path {
         return this.target.canTargetMove();
     }
 
-    public boolean hasTargetChanged(Vector3d previous) {
+    public boolean hasTargetChanged(Vec3 previous) {
         return this.target.hasTargetChanged(previous);
     }
 
-    public Vector3d getTargetVector() {
+    public Vec3 getTargetVector() {
         return this.target.getTarget();
     }
 
@@ -177,71 +177,68 @@ public class PathFindJob extends Path {
     //-------------------
 
     @Override
-    public void incrementPathIndex() {}
+    public void advance() {}
 
     @Override
-    public boolean isFinished() {
+    public boolean isDone() {
         return false;
     }
 
     @Override
     @Nullable
-    public PathPoint getFinalPathPoint() {
+    public Node getEndNode() {
         return this.target.getTargetPoint();
     }
 
     @Override
-    public PathPoint getPathPointFromIndex(int index) {
+    public Node getNode(int index) {
         return this.getEntityPoint();
     }
 
     @Override
-    public void setPoint(int index, PathPoint point) {}
+    public void replaceNode(int index, Node point) {}
 
     @Override
-    public int getCurrentPathLength() {
-        return MathHelper.ceil(this.entity().getPositionVec().distanceTo(this.target.getTarget()));
+    public int getNodeCount() {
+        return Mth.ceil(this.entity().position().distanceTo(this.target.getTarget()));
     }
 
     @Override
-    public void setCurrentPathLength(int length) {}
-
-    @Override
-    public int getCurrentPathIndex() {
+    public int getNextNodeIndex() {
         return 0;
     }
 
     @Override
-    public void setCurrentPathIndex(int currentPathIndexIn) {}
+    public void setNextNodeIndex(int currentPathIndexIn) {}
 
     @Override
-    public Vector3d getVectorFromIndex(Entity entity, int index) {
+    public Vec3 getEntityPosAtNode(Entity entity, int index) {
         return this.getEntityPosition();
     }
 
     @Override
-    public Vector3d getPosition(Entity entity)  {
-        return this.getVectorFromIndex(entity, this.getCurrentPathIndex());
+    public Vec3 getNextEntityPos(Entity entity)  {
+        return this.getEntityPosAtNode(entity, this.getNextNodeIndex());
     }
 
     @Override
-    public boolean isSamePath(Path other) {
+    public boolean sameAs(Path other) {
         return other == this;
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public PathPoint[] getOpenSet() {
-        return new PathPoint[] {};
+    public Node[] getOpenSet() {
+        return new Node[] {};
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public PathPoint[] getClosedSet() {
-        return new PathPoint[] {};
+    public Node[] getClosedSet() {
+        return new Node[] {};
     }
 
     public BlockPos getTarget()  {
-        return this.getFinalPathPoint().func_224759_a();
+        return this.getEndNode().asBlockPos();
     }
 }

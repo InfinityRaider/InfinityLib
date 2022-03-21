@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.block.property;
 
-import net.minecraft.util.Direction;
-import net.minecraft.util.Mirror;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Mirror;
 
 @FunctionalInterface
 public interface MirrorHandler<T> {

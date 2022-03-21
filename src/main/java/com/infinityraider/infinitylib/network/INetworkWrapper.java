@@ -3,10 +3,10 @@ package com.infinityraider.infinitylib.network;
 import com.infinityraider.infinitylib.network.serialization.IMessageReader;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.function.Supplier;
 
@@ -23,19 +23,19 @@ public interface INetworkWrapper {
      * Sends a message to one particular connected client
      * only valid if the message is handled on the client
      */
-    void sendTo(MessageBase message, ServerPlayerEntity player);
+    void sendTo(MessageBase message, ServerPlayer player);
 
     /**
      * Sends a message to all connected clients near a certain point,
      * only valid if the message is handled on the client
      */
-    void sendToAllAround(MessageBase message, World world, double x, double y, double z, double range);
+    void sendToAllAround(MessageBase message, Level world, double x, double y, double z, double range);
 
     /**
      * Sends a message to all connected clients near a certain point,
      * only valid if the message is handled on the client
      */
-    void sendToAllAround(MessageBase message, RegistryKey<World> dimension, double x, double y, double z, double range);
+    void sendToAllAround(MessageBase message, ResourceKey<Level> dimension, double x, double y, double z, double range);
 
     /**
      * Sends a message to all connected clients near a certain point,
@@ -47,13 +47,13 @@ public interface INetworkWrapper {
      * Sends a message to all connected clients in a certain dimension,
      * only valid if the message is handled on the client
      */
-    void sendToDimension(MessageBase message, World world);
+    void sendToDimension(MessageBase message, Level world);
 
     /**
      * Sends a message to all connected clients in a certain dimension,
      * only valid if the message is handled on the client
      */
-    void sendToDimension(MessageBase message, RegistryKey<World> dimension);
+    void sendToDimension(MessageBase message, ResourceKey<Level> dimension);
 
     /**
      * Sends a message to the server,

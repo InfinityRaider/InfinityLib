@@ -1,8 +1,10 @@
 package com.infinityraider.infinitylib.block.tile;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 
@@ -14,8 +16,8 @@ public abstract class TileEntityDynamicTexture extends TileEntityBase {
     private final AutoSyncedField<ItemStack> material;
     private final ModelDataMap data;
 
-    public TileEntityDynamicTexture(TileEntityType<?> type) {
-        super(type);
+    public TileEntityDynamicTexture(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         this.data = new ModelDataMap.Builder().withInitial(PROPERTY_MATERIAL, ItemStack.EMPTY).build();
         this.material = this.getAutoSyncedFieldBuilder(ItemStack.EMPTY)
                 .withRenderUpdate()
@@ -31,7 +33,7 @@ public abstract class TileEntityDynamicTexture extends TileEntityBase {
         this.material.set(material);
     }
 
-    public boolean isSameMaterial(TileEntity other) {
+    public boolean isSameMaterial(BlockEntity other) {
         if(!(other instanceof TileEntityDynamicTexture)) {
             return false;
         }
@@ -39,7 +41,7 @@ public abstract class TileEntityDynamicTexture extends TileEntityBase {
     }
 
     public boolean isSameMaterial(ItemStack material) {
-        return ItemStack.areItemsEqual(this.getMaterial(), material);
+        return ItemStack.matches(this.getMaterial(), material);
     }
 
     @Nonnull

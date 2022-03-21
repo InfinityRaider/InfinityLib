@@ -1,17 +1,17 @@
 package com.infinityraider.infinitylib.sound;
 
 import com.infinityraider.infinitylib.InfinityLib;
+import com.mojang.math.Vector3d;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.audio.ISoundEventListener;
-import net.minecraft.client.audio.SoundEventAccessor;
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.sounds.SoundEventListener;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.client.sounds.WeighedSoundEvents;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.TickEvent;
@@ -23,12 +23,12 @@ import java.util.Map;
 import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
-public class SoundDelegateClient extends SidedSoundDelegate implements ISoundEventListener {
-    private final SoundHandler handler;
+public class SoundDelegateClient extends SidedSoundDelegate implements SoundEventListener {
+    private final SoundManager handler;
     private final Map<String, IModSound> soundMap;
     private final Set<String> cleanupPool;
 
-    public SoundDelegateClient(SoundHandler handler) {
+    public SoundDelegateClient(SoundManager handler) {
         this.handler = handler;
         this.soundMap = new HashMap<>();
         this.cleanupPool = new HashSet<>();
@@ -37,35 +37,35 @@ public class SoundDelegateClient extends SidedSoundDelegate implements ISoundEve
     }
 
     @Override
-    public void onPlaySound(ISound soundIn, SoundEventAccessor accessor) { }
+    public void onPlaySound(SoundInstance sound, WeighedSoundEvents accessor) { }
 
     @Override
-    public SoundTask playSoundAtPositionOnce(Vector3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        SoundTaskClient soundTask = new SoundTaskClient(MathHelper.getRandomUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(false);
+    public SoundTask playSoundAtPositionOnce(Vector3d position, SoundEvent sound, SoundSource category, float volume, float pitch) {
+        SoundTaskClient soundTask = new SoundTaskClient(Mth.createInsecureUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(false);
         ModSoundAtPosition soundImpl = new ModSoundAtPosition(this, position, soundTask);
         this.handleSoundPlay(soundTask, soundImpl);
         return soundTask;
     }
 
     @Override
-    public SoundTaskClient playSoundAtEntityOnce(Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        SoundTaskClient soundTask = new SoundTaskClient(MathHelper.getRandomUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(false);
+    public SoundTaskClient playSoundAtEntityOnce(Entity entity, SoundEvent sound, SoundSource category, float volume, float pitch) {
+        SoundTaskClient soundTask = new SoundTaskClient(Mth.createInsecureUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(false);
         ModSoundAtEntity soundImpl = new ModSoundAtEntity(this, entity, soundTask);
         this.handleSoundPlay(soundTask, soundImpl);
         return soundTask;
     }
 
     @Override
-    public SoundTask playSoundAtPositionContinuous(Vector3d position, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        SoundTaskClient soundTask = new SoundTaskClient(MathHelper.getRandomUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
+    public SoundTask playSoundAtPositionContinuous(Vector3d position, SoundEvent sound, SoundSource category, float volume, float pitch) {
+        SoundTaskClient soundTask = new SoundTaskClient(Mth.createInsecureUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
         ModSoundAtPosition soundImpl = new ModSoundAtPosition(this, position, soundTask);
         this.handleSoundPlay(soundTask, soundImpl);
         return soundTask;
     }
 
     @Override
-    public SoundTaskClient playSoundAtEntityContinuous(Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        SoundTaskClient soundTask = new SoundTaskClient(MathHelper.getRandomUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
+    public SoundTaskClient playSoundAtEntityContinuous(Entity entity, SoundEvent sound, SoundSource category, float volume, float pitch) {
+        SoundTaskClient soundTask = new SoundTaskClient(Mth.createInsecureUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
         ModSoundAtEntity soundImpl = new ModSoundAtEntity(this, entity, soundTask);
         this.handleSoundPlay(soundTask, soundImpl);
         return soundTask;
@@ -73,7 +73,7 @@ public class SoundDelegateClient extends SidedSoundDelegate implements ISoundEve
 
     protected void handleSoundPlay(SoundTaskClient soundTask, IModSound sound) {
         this.soundMap.put(soundTask.getUUID(), sound);
-        Minecraft.getInstance().getSoundHandler().play(sound);
+        Minecraft.getInstance().getSoundManager().play(sound);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class SoundDelegateClient extends SidedSoundDelegate implements ISoundEve
 
     protected void stopSound(String UUID) {
         if(this.soundMap.containsKey(UUID)) {
-            this.soundMap.remove(UUID).stop();
+            this.soundMap.remove(UUID).stopPlaying();
         }
     }
 

@@ -6,16 +6,16 @@ import com.infinityraider.infinitylib.network.serialization.IMessageReader;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
 import com.infinityraider.infinitylib.network.serialization.MessageSerializerStore;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.PacketDistributor;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.lang.reflect.Constructor;
 import java.util.Optional;
@@ -53,19 +53,19 @@ public class NetworkWrapper implements INetworkWrapper {
     }
 
     @Override
-    public void sendTo(MessageBase message, ServerPlayerEntity player) {
+    public void sendTo(MessageBase message, ServerPlayer player) {
         if(message.getMessageDirection() == NetworkDirection.PLAY_TO_CLIENT) {
             this.channel.send(PacketDistributor.PLAYER.with(() -> player), message);
         }
     }
 
     @Override
-    public void sendToAllAround(MessageBase message, World world, double x, double y, double z, double range) {
-        this.sendToAllAround(message, world.getDimensionKey(), x, y, z, range);
+    public void sendToAllAround(MessageBase message, Level world, double x, double y, double z, double range) {
+        this.sendToAllAround(message, world.dimension(), x, y, z, range);
     }
 
     @Override
-    public void sendToAllAround(MessageBase message, RegistryKey<World> dimension, double x, double y, double z, double range) {
+    public void sendToAllAround(MessageBase message, ResourceKey<Level> dimension, double x, double y, double z, double range) {
         if(message.getMessageDirection() == NetworkDirection.PLAY_TO_CLIENT) {
             this.sendToAllAround(message, PacketDistributor.TargetPoint.p(x, y, z, range, dimension));
         }
@@ -79,12 +79,12 @@ public class NetworkWrapper implements INetworkWrapper {
     }
 
     @Override
-    public void sendToDimension(MessageBase message, World world) {
-        this.sendToDimension(message, world.getDimensionKey());
+    public void sendToDimension(MessageBase message, Level world) {
+        this.sendToDimension(message, world.dimension());
     }
 
     @Override
-    public void sendToDimension(MessageBase message, RegistryKey<World> dimension) {
+    public void sendToDimension(MessageBase message, ResourceKey<Level> dimension) {
         if(message.getMessageDirection() == NetworkDirection.PLAY_TO_CLIENT) {
             this.channel.send(PacketDistributor.DIMENSION.with(() -> dimension), message);
         }
@@ -132,16 +132,16 @@ public class NetworkWrapper implements INetworkWrapper {
         MessageSerializerStore.registerMessageSerializer(serializer);
     }
 
-    private static class MessageEncoder<MSG extends MessageBase> implements BiConsumer<MSG, PacketBuffer> {
+    private static class MessageEncoder<MSG extends MessageBase> implements BiConsumer<MSG, FriendlyByteBuf> {
         private MessageEncoder() {}
 
         @Override
-        public void accept(MSG req, PacketBuffer packetBuffer) {
+        public void accept(MSG req, FriendlyByteBuf packetBuffer) {
             req.toBytes(packetBuffer);
         }
     }
 
-    private static class MessageDecoder<MSG extends MessageBase> implements Function<PacketBuffer, MSG> {
+    private static class MessageDecoder<MSG extends MessageBase> implements Function<FriendlyByteBuf, MSG> {
         private final Constructor<MSG> msgConstructor;
 
         private MessageDecoder(Constructor<MSG> msgConstructor) {
@@ -149,7 +149,7 @@ public class NetworkWrapper implements INetworkWrapper {
         }
 
         @Override
-        public MSG apply(PacketBuffer buf) {
+        public MSG apply(FriendlyByteBuf buf) {
             try {
                 return this.msgConstructor.newInstance().fromBytes(buf);
             } catch (Exception e) {

@@ -1,8 +1,8 @@
 package com.infinityraider.infinitylib.capability;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -12,45 +12,42 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class CapabilityProvider<C> implements ICapabilitySerializable<CompoundNBT> {
-    private final Supplier<Capability<C>> capabilitySupplier;
-    private final C value;
-    private final LazyOptional<C> valueHolder;
+public final class CapabilityProvider<V> implements ICapabilitySerializable<CompoundTag> {
+    private final Supplier<Capability<V>> capabilitySupplier;
+    private final IInfCapabilityImplementation.Serializer<V> serializer;
+    private final V value;
+    private final LazyOptional<V> valueHolder;
 
-    @Deprecated
-    public CapabilityProvider(Capability<C> capability, C value) {
-        this(() -> capability, value);
-    }
-
-    public CapabilityProvider(Supplier<Capability<C>> capability, C value) {
+    public CapabilityProvider(Supplier<Capability<V>> capability, IInfCapabilityImplementation.Serializer<V> serializer, V value) {
         this.capabilitySupplier = capability;
+        this.serializer = serializer;
         this.value = value;
         this.valueHolder = LazyOptional.of(this::getCapabilityValue);
     }
 
-    public Capability<C> getCapability() {
+    public Capability<V> getCapability() {
         return this.capabilitySupplier.get();
     }
 
     @Nonnull
-    public C getCapabilityValue() {
+    public V getCapabilityValue() {
         return value;
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
+    public CompoundTag serializeNBT() {
         return this.checkCapability()
-                .map(capability -> (CompoundNBT) capability.getStorage().writeNBT(capability, this.getCapabilityValue(), null))
-                .orElse(new CompoundNBT());
+                .map(capability -> this.serializer.writeToNBT(this.getCapabilityValue()))
+                .orElse(new CompoundTag());
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        this.checkCapability().ifPresent(capability -> capability.getStorage().readNBT(capability, this.getCapabilityValue(), null, nbt));
+    public void deserializeNBT(CompoundTag nbt) {
+        this.checkCapability().ifPresent(capability -> this.serializer.readFromNBT(this.getCapabilityValue(), nbt));
     }
 
-    protected Optional<Capability<C>> checkCapability() {
-        Capability<C> capability = this.getCapability();
+    protected Optional<Capability<V>> checkCapability() {
+        Capability<V> capability = this.getCapability();
         if(capability == null) {
             InfinityLib.instance.getLogger().error(
                     "[SEVERE] Capability implementation is requested before injection, report this to the mod author");

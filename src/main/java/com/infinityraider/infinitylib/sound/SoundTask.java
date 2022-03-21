@@ -1,13 +1,13 @@
 package com.infinityraider.infinitylib.sound;
 
 import com.infinityraider.infinitylib.utility.IStoppable;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 
 public abstract class SoundTask implements IStoppable {
     private final String id;
     private final SoundEvent sound;
-    private final SoundCategory category;
+    private final SoundSource category;
 
     private float volume;
     private float pitch;
@@ -15,7 +15,7 @@ public abstract class SoundTask implements IStoppable {
     private boolean repeat;
     private int repeatDelay;
 
-    protected SoundTask(String uuid, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    protected SoundTask(String uuid, SoundEvent sound, SoundSource category, float volume, float pitch) {
         this. id = uuid;
         this.sound = sound;
         this.category = category;
@@ -31,7 +31,7 @@ public abstract class SoundTask implements IStoppable {
         return this.sound;
     }
 
-    public final SoundCategory getCategory() {
+    public final SoundSource getCategory() {
         return this.category;
     }
 
@@ -72,7 +72,7 @@ public abstract class SoundTask implements IStoppable {
     }
 
     @Override
-    public final void stop() {
+    public final void stopPlaying() {
         ModSoundHandler.getInstance().stopSound(this);
     }
 }

@@ -4,14 +4,7 @@ import com.google.common.collect.Sets;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.block.BlockDynamicTexture;
 import com.infinityraider.infinitylib.reference.Names;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 

@@ -1,18 +1,18 @@
 package com.infinityraider.infinitylib.network;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageSyncTile extends MessageBase {
     private String className;
-    private TileEntity tile;
-    private CompoundNBT tag;
+    private BlockEntity tile;
+    private CompoundTag tag;
     private BlockPos pos;
     private boolean renderUpdate;
 
@@ -20,12 +20,12 @@ public class MessageSyncTile extends MessageBase {
         super();
     }
 
-    public MessageSyncTile(TileEntity tile, boolean renderUpdate) {
+    public MessageSyncTile(BlockEntity tile, boolean renderUpdate) {
         this();
         this.className = tile.getClass().getName();
         this.tile = tile;
-        this.pos = tile.getPos();
-        this.tag = tile.write(new CompoundNBT());
+        this.pos = tile.getBlockPos();
+        this.tag = tile.saveWithFullMetadata();
         this.renderUpdate = renderUpdate;
     }
 
@@ -36,12 +36,12 @@ public class MessageSyncTile extends MessageBase {
 
     @Override
     protected void processMessage(NetworkEvent.Context ctx) {
-        World world = InfinityLib.instance.getClientWorld();
+        Level world = InfinityLib.instance.getClientWorld();
         if (this.tile != null && this.tile.getClass().toString().equals(this.className)) {
             BlockState pre = world.getBlockState(this.pos);
-            this.tile.read(pre, this.tag);
+            this.tile.load(this.tag);
             if (this.renderUpdate) {
-                world.markBlockRangeForRenderUpdate(this.tile.getPos(), pre, world.getBlockState(this.pos));
+                world.setBlocksDirty(this.tile.getBlockPos(), pre, world.getBlockState(this.pos));
             }
         }
     }

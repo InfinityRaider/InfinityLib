@@ -1,8 +1,8 @@
 package com.infinityraider.infinitylib.enchantment;
 
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentType;
-import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
 import javax.annotation.Nonnull;
 
@@ -10,8 +10,8 @@ public class EnchantmentBase extends Enchantment implements IInfinityEnchantment
     private final String name;
     private String displayName;
 
-    protected EnchantmentBase(String name, Rarity rarityIn, EnchantmentType typeIn, EquipmentSlotType[] slots) {
-        super(rarityIn, typeIn, slots);
+    protected EnchantmentBase(String name, Rarity rarityIn, EnchantmentCategory type, EquipmentSlot[] slots) {
+        super(rarityIn, type, slots);
         this.name = name;
     }
 
@@ -20,7 +20,7 @@ public class EnchantmentBase extends Enchantment implements IInfinityEnchantment
     }
 
     @Override
-    protected final String getDefaultTranslationKey() {
+    protected final String getOrCreateDescriptionId() {
         return this.displayName;
     }
 

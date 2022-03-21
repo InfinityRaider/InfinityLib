@@ -2,7 +2,7 @@ package com.infinityraider.infinitylib.network.serialization;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -19,7 +19,7 @@ public class MessageElement<T> {
         this.reader = reader;
     }
 
-    public void writeToByteBuf(PacketBuffer buf, MessageBase msg) {
+    public void writeToByteBuf(FriendlyByteBuf buf, MessageBase msg) {
         T data = null;
         try {
             data = (T) this.field.get(msg);
@@ -35,7 +35,7 @@ public class MessageElement<T> {
         }
     }
 
-    public void readFromByteBuf(PacketBuffer buf, MessageBase msg) {
+    public void readFromByteBuf(FriendlyByteBuf buf, MessageBase msg) {
         boolean shouldRead = buf.readBoolean();
         if (shouldRead) {
             T data = this.reader.readData(buf);

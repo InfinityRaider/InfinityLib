@@ -2,37 +2,36 @@ package com.infinityraider.infinitylib.entity;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import net.minecraft.block.Block;
-import net.minecraft.entity.*;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.client.registry.IRenderFactory;
-import net.minecraftforge.fml.network.FMLPlayMessages;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.network.PlayMessages;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.*;
+import java.util.function.BiFunction;
 
 public class EntityTypeBase<T extends Entity> extends EntityType<T> implements IInfinityEntityType {
     private final String name;
     private final Class<T> entityClass;
-    private final IRenderFactory<T> renderFactory;
+    private final IEntityRenderSupplier<T> renderSupplier;
 
     @SuppressWarnings("Unchecked")
     protected EntityTypeBase(String name, Class<T> entityClass,
-                           EntityType.IFactory<T> factory, EntityClassification classification,
-                           boolean serializable, boolean summonable, boolean immuneToFire, boolean p_i231489_6_,
-                           ImmutableSet<Block> blocks, EntitySize size, int trackingRange, int updateInterval, boolean velocityUpdates,
-                           final BiFunction<FMLPlayMessages.SpawnEntity, World, T> customClientFactory,
-                           Set<Class<? extends MobEntity>> aggressors, IRenderFactory<T> renderFactory) {
+                             EntityType.EntityFactory<T> factory, MobCategory classification,
+                             boolean serializable, boolean summonable, boolean immuneToFire, boolean p_i231489_6_,
+                             ImmutableSet<Block> blocks, EntityDimensions size, int trackingRange, int updateInterval, boolean velocityUpdates,
+                             final BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory,
+                             Set<Class<? extends Mob>> aggressors, IEntityRenderSupplier<T> renderSupplier) {
 
         super(factory, classification, serializable, summonable, immuneToFire, p_i231489_6_, blocks, size, trackingRange, updateInterval,
                 t -> velocityUpdates, t -> trackingRange, t -> updateInterval, customClientFactory);
 
         this.name = name;
         this.entityClass = entityClass;
-        this.renderFactory = renderFactory;
+        this.renderSupplier = renderSupplier;
         aggressors.forEach(this::setEntityTargetedBy);
     }
 
@@ -43,8 +42,8 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
 
     @Override
     @SuppressWarnings("unchecked")
-    public IRenderFactory<T> getRenderFactory() {
-        return this.renderFactory;
+    public IEntityRenderSupplier<T> getRenderSupplier() {
+        return this.renderSupplier;
     }
 
     @Nonnull
@@ -59,15 +58,15 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
     }
 
     public static <T extends Entity> Builder<T> entityTypeBuilder(
-            String name, Class<T> entityClass, EntityType.IFactory<T> clientFactory,
-            EntityClassification classification, EntitySize size) {
+            String name, Class<T> entityClass, EntityType.EntityFactory<T> clientFactory,
+            MobCategory classification, EntityDimensions size) {
 
         return new Builder<>(name, entityClass, clientFactory, classification, size);
     }
 
     public static <T extends Entity> Builder<T> entityTypeBuilder(
-            String name, Class<T> entityClass,  BiFunction<FMLPlayMessages.SpawnEntity, World, T>  clientFactory,
-            EntityClassification classification, EntitySize size) {
+            String name, Class<T> entityClass,  BiFunction<PlayMessages.SpawnEntity, Level, T>  clientFactory,
+            MobCategory classification, EntityDimensions size) {
 
         return new Builder<>(name, entityClass, clientFactory, classification, size);
     }
@@ -75,23 +74,23 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
     public static class Builder<T extends Entity> {
         protected final String name;
         protected final Class<T> entityClass;
-        protected final EntityClassification classification;
-        protected final EntitySize size;
+        protected final MobCategory classification;
+        protected final EntityDimensions size;
         protected final Set<Block> blocks;
-        protected final Set<Class<? extends MobEntity>> aggressors;
+        protected final Set<Class<? extends Mob>> aggressors;
 
-        protected EntityType.IFactory<T> factory;
+        protected EntityType.EntityFactory<T> factory;
         protected boolean serializable;
         protected boolean summonable;
         protected boolean immuneToFire;
-        protected boolean p_i231489_6_;
+        protected boolean mysteryBoolean;
         protected int trackingRange;
         protected int updateInterval;
         protected boolean velocityUpdates;
-        protected BiFunction<FMLPlayMessages.SpawnEntity, World, T> customClientFactory;
-        protected IRenderFactory<T> renderFactory;
+        protected BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory;
+        protected IEntityRenderSupplier<T> renderFactory;
 
-        private Builder(String name, Class<T> entityClass, EntityClassification classification, EntitySize size) {
+        private Builder(String name, Class<T> entityClass, MobCategory classification, EntityDimensions size) {
             this.name = name;
             this.entityClass = entityClass;
             this.classification = classification;
@@ -102,31 +101,31 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
             this.updateInterval = 1;
         }
 
-        protected Builder(String name, Class<T> entityClass, EntityType.IFactory<T> factory,
-                          EntityClassification classification, EntitySize size) {
+        protected Builder(String name, Class<T> entityClass, EntityType.EntityFactory<T> factory,
+                          MobCategory classification, EntityDimensions size) {
             this(name, entityClass, classification, size);
             this.factory = factory;
         }
 
-        protected Builder(String name, Class<T> entityClass, BiFunction<FMLPlayMessages.SpawnEntity, World, T> factory,
-                          EntityClassification classification, EntitySize size) {
+        protected Builder(String name, Class<T> entityClass, BiFunction<PlayMessages.SpawnEntity, Level, T> factory,
+                          MobCategory classification, EntityDimensions size) {
             this(name, entityClass, classification, size);
             this.customClientFactory = factory;
         }
 
         public EntityTypeBase<T> build() {
             return new EntityTypeBase<>(this.name, this.entityClass, this.factory, this.classification, this.serializable,
-                    this.summonable, this. immuneToFire, this.p_i231489_6_, ImmutableSet.copyOf(this.blocks), this.size,
+                    this.summonable, this. immuneToFire, this.mysteryBoolean, ImmutableSet.copyOf(this.blocks), this.size,
                     this.trackingRange, this.updateInterval, this.velocityUpdates, this.customClientFactory,
                     this.aggressors, this.renderFactory);
         }
 
-        public Builder<T> setCommonEntityFactory(EntityType.IFactory<T> factory) {
+        public Builder<T> setCommonEntityFactory(EntityType.EntityFactory<T> factory) {
             this.factory = factory;
             return this;
         }
 
-        public Builder<T> setClientEntityFactory(BiFunction<FMLPlayMessages.SpawnEntity, World, T> factory) {
+        public Builder<T> setClientEntityFactory(BiFunction<PlayMessages.SpawnEntity, Level, T> factory) {
             this.customClientFactory = factory;
             return this;
         }
@@ -151,7 +150,7 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
         }
 
         public Builder<T> setMysteryBoolean(boolean value) {  //TODO: figure out what the mystery boolean does
-            this.p_i231489_6_ = value;
+            this.mysteryBoolean = value;
             return this;
         }
 
@@ -185,22 +184,22 @@ public class EntityTypeBase<T extends Entity> extends EntityType<T> implements I
             return this;
         }
 
-        public Builder<T> addAggressor(Class<? extends MobEntity> aggressor) {
+        public Builder<T> addAggressor(Class<? extends Mob> aggressor) {
             this.aggressors.add(aggressor);
             return this;
         }
 
-        public Builder<T> addAggressors(Collection<Class<? extends MobEntity>> aggressors) {
+        public Builder<T> addAggressors(Collection<Class<? extends Mob>> aggressors) {
             this.aggressors.addAll(aggressors);
             return this;
         }
 
-        public Builder<T> addAggressors(Class<? extends MobEntity>... aggressors) {
+        public Builder<T> addAggressors(Class<? extends Mob>... aggressors) {
             this.aggressors.addAll(Arrays.asList(aggressors));
             return this;
         }
 
-        public Builder<T> setRenderFactory(IRenderFactory factory) {
+        public Builder<T> setRenderFactory(IEntityRenderSupplier<T> factory) {
             this.renderFactory = factory;
             return this;
         }

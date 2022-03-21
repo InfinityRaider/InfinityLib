@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.sound;
 
-import net.minecraft.util.math.vector.Vector3d;
+import com.mojang.math.Vector3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 

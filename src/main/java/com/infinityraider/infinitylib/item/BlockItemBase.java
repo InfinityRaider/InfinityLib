@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.item;
 
 import com.infinityraider.infinitylib.block.IInfinityBlock;
-import net.minecraft.item.BlockItem;
+import net.minecraft.world.item.BlockItem;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;

@@ -7,23 +7,24 @@ import com.infinityraider.infinitylib.config.ConfigurationHandler;
 import com.infinityraider.infinitylib.modules.dynamiccamera.IDynamicCameraController;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateServer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.concurrent.TickDelayedTask;
-import net.minecraft.world.World;
+import net.minecraft.server.TickTask;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.LogicalSidedProvider;
+import net.minecraftforge.event.server.*;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.LogicalSidedProvider;
-import net.minecraftforge.fml.common.thread.EffectiveSide;
 import net.minecraftforge.fml.event.lifecycle.*;
-import net.minecraftforge.fml.event.server.*;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.util.thread.EffectiveSide;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
@@ -84,13 +85,13 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
 
     default void onModLoadCompleteEvent(final FMLLoadCompleteEvent event) {}
 
-    default void onServerStartingEvent(final FMLServerStartingEvent event) {};
+    default void onServerStartingEvent(final ServerStartingEvent event) {};
 
-    default void onServerAboutToStartEvent(final FMLServerAboutToStartEvent event) {};
+    default void onServerAboutToStartEvent(final ServerAboutToStartEvent event) {};
 
-    default void onServerStoppingEvent(final FMLServerStoppingEvent event) {};
+    default void onServerStoppingEvent(final ServerStoppingEvent event) {};
 
-    default void onServerStoppedEvent(final FMLServerStoppedEvent event) {};
+    default void onServerStoppedEvent(final ServerStoppedEvent event) {};
 
     /**
      * ---------------
@@ -116,30 +117,30 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
      * @return The minecraft server instance
      */
     default MinecraftServer getMinecraftServer() {
-        return LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
+        return ServerLifecycleHooks.getCurrentServer();
     }
 
     /**
      * @return the instance of the EntityPlayer on the client, null on the server
      */
-    PlayerEntity getClientPlayer();
+    Player getClientPlayer();
 
     /**
      * @return the client World object on the client, null on the server
      */
-    World getClientWorld();
+    Level getClientWorld();
 
     /**
      *  @return  the entity in that World object with that id
      */
-    default Entity getEntityById(World world, int id) {
-        return world == null ? null : world.getEntityByID(id);
+    default Entity getEntityById(Level world, int id) {
+        return world == null ? null : world.getEntity(id);
     }
 
     /**
      *  @return  the entity in that World object with that id
      */
-    default Entity getEntityById(RegistryKey<World> dimension, int id) {
+    default Entity getEntityById(ResourceKey<Level> dimension, int id) {
         return this.getEntityById(this.getWorldFromDimension(dimension), id);
     }
 
@@ -159,7 +160,7 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     /**
      *  @return the World object ofr a given dimension key
      */
-    World getWorldFromDimension(RegistryKey<World> dimension);
+    Level getWorldFromDimension(ResourceKey<Level> dimension);
 
     /**
      *  @return the sound delegate for the relevant side
@@ -177,12 +178,7 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
 
     /** Queues a task to be executed on this side */
     default void queueTask(Runnable task) {
-        this.getMinecraftServer().enqueue(new TickDelayedTask(this.getMinecraftServer().getTickCounter() + 1, task));
-    }
-
-    /** Sets the ItemStackTileEntityRenderer in the properties on the client side */
-    default Item.Properties setItemRenderer(Item.Properties properties) {
-        return properties;
+        this.getMinecraftServer().submit(new TickTask(this.getMinecraftServer().getTickCount() + 1, task));
     }
 
     /**

@@ -2,10 +2,9 @@ package com.infinityraider.infinitylib.entity;
 
 import com.infinityraider.infinitylib.modules.entitytargeting.ModuleEntityTargeting;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
-import net.minecraftforge.fml.client.registry.IRenderFactory;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 
 public interface IInfinityEntityType extends IInfinityRegistrable<EntityType<?>> {
     /**
@@ -19,16 +18,16 @@ public interface IInfinityEntityType extends IInfinityRegistrable<EntityType<?>>
      * @param aggressors list containing classes to target this entity type
      * @return this
      */
-    default IInfinityEntityType setEntityTargetedBy(Class<? extends MobEntity>... aggressors) {
+    default IInfinityEntityType setEntityTargetedBy(Class<? extends Mob>... aggressors) {
         ModuleEntityTargeting module = ModuleEntityTargeting.getInstance();
         module.activate();
-        for(Class<? extends MobEntity> aggressor : aggressors) {
+        for(Class<? extends Mob> aggressor : aggressors) {
             module.registerEntityTargeting(this.getEntityClass(), aggressor);
         }
         return this;
     }
 
-    <T extends Entity> IRenderFactory<T> getRenderFactory();
+    <T extends Entity> IEntityRenderSupplier<T> getRenderSupplier();
 
 
 }

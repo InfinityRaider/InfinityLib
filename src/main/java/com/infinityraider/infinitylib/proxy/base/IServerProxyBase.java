@@ -1,20 +1,19 @@
 package com.infinityraider.infinitylib.proxy.base;
 
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public interface IServerProxyBase<C extends ConfigurationHandler.SidedModConfig> extends IProxyBase<C> {
     @Override
-    default PlayerEntity getClientPlayer() {
+    default Player getClientPlayer() {
         return null;
     }
 
     @Override
-    default World getClientWorld() {
+    default Level getClientWorld() {
         return null;
     }
 
@@ -25,7 +24,7 @@ public interface IServerProxyBase<C extends ConfigurationHandler.SidedModConfig>
     }
 
     @Override
-    default World getWorldFromDimension(RegistryKey<World> dimension) {
-        return ServerLifecycleHooks.getCurrentServer().getWorld(dimension);
+    default Level getWorldFromDimension(ResourceKey<Level> dimension) {
+        return this.getMinecraftServer().getLevel(dimension);
     }
 }

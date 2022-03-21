@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.world;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Set;
 

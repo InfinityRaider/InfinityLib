@@ -1,28 +1,21 @@
 package com.infinityraider.infinitylib.block;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.extensions.IForgeBlock;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.function.BiFunction;
 
-public interface IInfinityBlockWithTile<T extends TileEntity> extends IInfinityBlock, IForgeBlock, ITileEntityProvider {
+public interface IInfinityBlockWithTile<T extends BlockEntity> extends IInfinityBlock, IForgeBlock, EntityBlock {
     @Override
-    default T createNewTileEntity(IBlockReader world) {
-        return this.getTileEntityFactory().apply(this.cast().getDefaultState(), world);
+    @Nullable
+    default T newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
+        return this.getTileEntityFactory().apply(pos, state);
     }
 
-    @Override
-    default boolean hasTileEntity(BlockState state) {
-        return true;
-    }
-
-    @Override
-    default T createTileEntity(BlockState state, IBlockReader world) {
-        return this.getTileEntityFactory().apply(state, world);
-    }
-
-    BiFunction<BlockState, IBlockReader, T> getTileEntityFactory();
+    BiFunction<BlockPos, BlockState, T> getTileEntityFactory();
 }

@@ -5,10 +5,10 @@ import com.infinityraider.infinitylib.network.serialization.IMessageReader;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
 import com.infinityraider.infinitylib.network.serialization.MessageSerializerStore;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.function.Supplier;
 
@@ -32,17 +32,17 @@ public final class NetworkWrapperDummy implements INetworkWrapper {
     }
 
     @Override
-    public final void sendTo(MessageBase message, ServerPlayerEntity player) {
+    public final void sendTo(MessageBase message, ServerPlayer player) {
         this.logErrorMessage(message);
     }
 
     @Override
-    public final void sendToAllAround(MessageBase message, World world, double x, double y, double z, double range) {
+    public final void sendToAllAround(MessageBase message, Level world, double x, double y, double z, double range) {
         this.logErrorMessage(message);
     }
 
     @Override
-    public final void sendToAllAround(MessageBase message, RegistryKey<World> dimension, double x, double y, double z, double range) {
+    public final void sendToAllAround(MessageBase message, ResourceKey<Level> dimension, double x, double y, double z, double range) {
         this.logErrorMessage(message);
     }
 
@@ -52,12 +52,12 @@ public final class NetworkWrapperDummy implements INetworkWrapper {
     }
 
     @Override
-    public final void sendToDimension(MessageBase message, World world) {
+    public final void sendToDimension(MessageBase message, Level world) {
         this.logErrorMessage(message);
     }
 
     @Override
-    public final void sendToDimension(MessageBase message, RegistryKey<World> dimension) {
+    public final void sendToDimension(MessageBase message, ResourceKey<Level> dimension) {
         this.logErrorMessage(message);
     }
 

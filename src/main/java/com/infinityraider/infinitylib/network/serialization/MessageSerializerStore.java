@@ -1,16 +1,16 @@
 package com.infinityraider.infinitylib.network.serialization;
 
 import com.google.common.collect.Sets;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
+import com.mojang.math.Vector3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
 import java.util.Set;
@@ -55,15 +55,15 @@ public final class MessageSerializerStore {
         registerMessageSerializer(Character.class, PacketBufferUtil::writeChar, PacketBufferUtil::readChar);
         registerMessageSerializer(String.class, PacketBufferUtil::writeString, PacketBufferUtil::readString);
         registerMessageSerializer(Entity.class, PacketBufferUtil::writeEntity, PacketBufferUtil::readEntity);
-        registerMessageSerializer(TileEntity.class, PacketBufferUtil::writeTileEntity, PacketBufferUtil::readTileEntity);
+        registerMessageSerializer(BlockEntity.class, PacketBufferUtil::writeTileEntity, PacketBufferUtil::readTileEntity);
         registerMessageSerializer(BlockPos.class, PacketBufferUtil::writeBlockPos, PacketBufferUtil::readBlockPos);
         registerMessageSerializer(Block.class, PacketBufferUtil::writeBlock, PacketBufferUtil::readBlock);
         registerMessageSerializer(Item.class, PacketBufferUtil::writeItem, PacketBufferUtil::readItem);
         registerMessageSerializer(ItemStack.class, PacketBufferUtil::writeItemStack, PacketBufferUtil::readItemStack);
-        registerMessageSerializer(CompoundNBT.class, PacketBufferUtil::writeNBT, PacketBufferUtil::readNBT);
+        registerMessageSerializer(CompoundTag.class, PacketBufferUtil::writeNBT, PacketBufferUtil::readNBT);
         registerMessageSerializer(Vector3d.class, PacketBufferUtil::writeVec3d, PacketBufferUtil::readVec3d);
-        registerMessageSerializer(ITextComponent.class, PacketBufferUtil::writeTextComponent, PacketBufferUtil::readTextComponent);
-        registerMessageSerializer(RegistryKey.class, PacketBufferUtil::writeRegistryKey, PacketBufferUtil::readRegistryKey);
+        registerMessageSerializer(Component.class, PacketBufferUtil::writeTextComponent, PacketBufferUtil::readTextComponent);
+        registerMessageSerializer(ResourceKey.class, PacketBufferUtil::writeRegistryKey, PacketBufferUtil::readRegistryKey);
         registerMessageSerializer(MessageSerializerEnum.INSTANCE);
         registerMessageSerializer(MessageSerializerSubClass.TILE_ENTITY);
         registerMessageSerializer(MessageSerializerSubClass.ENTITY);

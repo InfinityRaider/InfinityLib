@@ -6,7 +6,7 @@ import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
 import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.container.IInfinityContainerType;
-import com.infinityraider.infinitylib.entity.EmptyEntityRenderFactory;
+import com.infinityraider.infinitylib.entity.EmptyEntityRenderSupplier;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.modules.Module;
@@ -21,18 +21,18 @@ import com.infinityraider.infinitylib.render.tile.ITileRenderer;
 import com.infinityraider.infinitylib.render.tile.TileEntityRendererWrapper;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScreenManager;
-import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraft.client.renderer.color.IBlockColor;
-import net.minecraft.item.ItemModelsProperties;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.event.lifecycle.*;
 
 @OnlyIn(Dist.CLIENT)
@@ -81,12 +81,12 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     public void registerGuiContainer(IInfinityContainerType containerType) {
         IInfinityContainerType.IGuiFactory<?> factory = containerType.getGuiFactory();
         if(factory != null) {
-            ScreenManager.registerFactory(containerType.cast(), IInfinityContainerType.castGuiFactory(factory));
+            MenuScreens.register(containerType.cast(), IInfinityContainerType.castGuiFactory(factory));
         }
     }
 
     @Override
-    public <T extends IParticleData> void onParticleRegistration(IInfinityParticleType<T> particleType) {
+    public <T extends ParticleOptions> void onParticleRegistration(IInfinityParticleType<T> particleType) {
         ParticleHelper.getInstance().registerType(particleType);
     }
 
@@ -105,9 +105,9 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         }
         ReflectionHelper.forEachValueIn(blockRegistry, IInfinityBlock.class, object -> {
             // Set render type
-            RenderTypeLookup.setRenderLayer(object.cast(), object.getRenderType());
+            ItemBlockRenderTypes.setRenderLayer(object.cast(), object.getRenderType());
             // Register block color
-            IBlockColor color = object.getColor();
+            BlockColor color = object.getColor();
             if(color != null) {
                 Minecraft.getInstance().getBlockColors().register(color, object.cast());
             }
@@ -121,10 +121,10 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         }
         ReflectionHelper.forEachValueIn(tileRegistry, IInfinityTileEntityType.class, object -> {
             // Create Renderer
-            ITileRenderer<? extends TileEntity> renderer = object.getRenderer();
+            ITileRenderer<? extends BlockEntity> renderer = object.getRenderer();
             if(renderer != null) {
                 // Register TileEntityRendererWrapper
-                ClientRegistry.bindTileEntityRenderer(object.cast(), (dispatcher) -> TileEntityRendererWrapper.createWrapper(dispatcher, renderer));}
+                BlockEntityRenderers.register(object.cast(), (dispatcher) -> TileEntityRendererWrapper.createWrapper(renderer));}
         });
     }
 
@@ -136,7 +136,7 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
             // Register custom item renderers
             InfItemRendererRegistry.getInstance().register(object);
             // Register model properties
-            object.getModelProperties().forEach(prop -> ItemModelsProperties.registerProperty(object.cast(), prop.getId(), prop::getValue));
+            object.getModelProperties().forEach(prop -> ItemProperties.register(object.cast(), prop.getId(), prop::getValue));
         });
     }
 
@@ -145,17 +145,17 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
             return;
         }
         ReflectionHelper.forEachValueIn(entityRegistry, IInfinityEntityType.class, object -> {
-            if (object.getRenderFactory() == null) {
+            if (object.getRenderSupplier() == null) {
                 InfinityLib.instance.getLogger().info("", "No entity rendering factory was found for entity " + object.getInternalName());
-                RenderingRegistry.registerEntityRenderingHandler(object.cast(), EmptyEntityRenderFactory.getInstance());
+                EntityRenderers.register(object.cast(), EmptyEntityRenderSupplier.getInstance());
             } else {
-                RenderingRegistry.registerEntityRenderingHandler(object.cast(), object.getRenderFactory());
+                EntityRenderers.register(object.cast(), object.getRenderSupplier());
             }
         });
     }
 
     @Override
     public void forceClientRenderUpdate(BlockPos pos) {
-        Minecraft.getInstance().worldRenderer.markBlockRangeForRenderUpdate(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
+        Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
 }

@@ -1,17 +1,17 @@
 package com.infinityraider.infinitylib.block.property;
 
 import com.infinityraider.infinitylib.utility.DirectionalConnectivity;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.state.*;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
+import net.minecraft.core.Direction;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.*;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.IExtensibleEnum;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -45,11 +45,11 @@ public class InfProperty<T extends Comparable<T>> {
         return this.property;
     }
 
-    public final Collection<T> getAllowedValues() {
-        return this.getProperty().getAllowedValues();
+    public final Collection<T> getPossibleValues() {
+        return this.getProperty().getPossibleValues();
     }
 
-    protected StateContainer.Builder<Block, BlockState> apply(StateContainer.Builder<Block, BlockState> builder) {
+    protected StateDefinition.Builder<Block, BlockState> apply(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(this.getProperty());
         return builder;
     }
@@ -59,11 +59,11 @@ public class InfProperty<T extends Comparable<T>> {
     }
 
     public final BlockState apply(BlockState state, T value) {
-        return state.with(this.getProperty(), value);
+        return state.setValue(this.getProperty(), value);
     }
 
     public final T fetch(BlockState state) {
-        return state.get(this.getProperty());
+        return state.getValue(this.getProperty());
     }
 
     public final BlockState mimic(BlockState from, BlockState to) {
@@ -83,7 +83,7 @@ public class InfProperty<T extends Comparable<T>> {
 
         private static final InfProperty<Boolean> WATERLOGGED = Creators.create(BlockStateProperties.WATERLOGGED, false);
         private static final InfProperty<Boolean> LAVALOGGED = Creators.create(BooleanProperty.create("lavalogged"), false);
-        private static final InfProperty<FluidLogged> FLUIDLOGGED  = Creators.create(EnumProperty.create("fluilogged", FluidLogged.class), FluidLogged.NONE);
+        private static final InfProperty<FluidLogged> FLUIDLOGGED  = Creators.create(EnumProperty.create("fluidlogged", FluidLogged.class), FluidLogged.NONE);
         private static final InfProperty<DirectionalConnectivity> CONNECTIVITY = Creators.create("connectivity", DirectionalConnectivity.NONE);
 
         public static InfProperty<Boolean> waterlogged() {
@@ -134,19 +134,19 @@ public class InfProperty<T extends Comparable<T>> {
             return create(Properties.Connectivity.create(name), defaultValue);
         }
 
-        public static <T extends Enum<T> & IStringSerializable> InfProperty<T> create(String name, Class<T> valueClass, T defaultValue) {
+        public static <T extends Enum<T> & StringRepresentable> InfProperty<T> create(String name, Class<T> valueClass, T defaultValue) {
             return create(EnumProperty.create(name, valueClass), defaultValue);
         }
 
-        public static <T extends Enum<T> & IStringSerializable> InfProperty<T> create(String name, Class<T> valueClass, T defaultValue, Collection<T> allowedValues) {
+        public static <T extends Enum<T> & StringRepresentable> InfProperty<T> create(String name, Class<T> valueClass, T defaultValue, Collection<T> allowedValues) {
             return create(EnumProperty.create(name, valueClass, allowedValues), defaultValue);
         }
 
-        public static <T extends Enum<T> & IStringSerializable> InfProperty<T> create(String name, Class<T> valueClass, T defaultValue, T... allowedValues) {
+        public static <T extends Enum<T> & StringRepresentable> InfProperty<T> create(String name, Class<T> valueClass, T defaultValue, T... allowedValues) {
             return create(EnumProperty.create(name, valueClass, allowedValues), defaultValue);
         }
 
-        public static <T extends Enum<T> & IStringSerializable> InfProperty<T> create(String name, Class<T> valueClass, T defaultValue, Predicate<T> allowedValues) {
+        public static <T extends Enum<T> & StringRepresentable> InfProperty<T> create(String name, Class<T> valueClass, T defaultValue, Predicate<T> allowedValues) {
             return create(EnumProperty.create(name, valueClass, allowedValues), defaultValue);
         }
 
@@ -186,7 +186,7 @@ public class InfProperty<T extends Comparable<T>> {
             }
 
             @Override
-            public Collection<DirectionalConnectivity> getAllowedValues() {
+            public Collection<DirectionalConnectivity> getPossibleValues() {
                 return DirectionalConnectivity.ALL;
             }
 
@@ -196,13 +196,13 @@ public class InfProperty<T extends Comparable<T>> {
             }
 
             @Override
-            public Optional<DirectionalConnectivity> parseValue(String value) {
+            public Optional<DirectionalConnectivity> getValue(String value) {
                 return Optional.empty();
             }
         }
     }
 
-    public enum FluidLogged implements IStringSerializable, IExtensibleEnum {
+    public enum FluidLogged implements StringRepresentable, IExtensibleEnum {
         NONE(Fluids.EMPTY),
         WATER(Fluids.WATER),
         LAVA(Fluids.LAVA);
@@ -222,7 +222,7 @@ public class InfProperty<T extends Comparable<T>> {
         }
 
         @Override
-        public String getString() {
+        public String getSerializedName() {
             return this.name().toLowerCase();
         }
 
@@ -231,7 +231,7 @@ public class InfProperty<T extends Comparable<T>> {
         }
 
         public static FluidLogged get(FluidState fluid) {
-            return get(fluid.getFluid());
+            return get(fluid.getType());
         }
 
         public static FluidLogged get(FluidStack fluid) {

@@ -3,43 +3,40 @@ package com.infinityraider.infinitylib.proxy.base;
 import com.infinityraider.infinitylib.config.ConfigurationHandler;
 import com.infinityraider.infinitylib.modules.dynamiccamera.IDynamicCameraController;
 import com.infinityraider.infinitylib.modules.dynamiccamera.ModuleDynamicCamera;
-import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig> extends IProxyBase<C> {
     @Override
     default Entity getRenderViewEntity() {
-        return Minecraft.getInstance().getRenderViewEntity();
+        return Minecraft.getInstance().getCameraEntity();
     }
 
     default void setRenderViewEntity(Entity entity) {
-        Minecraft.getInstance().setRenderViewEntity(entity);
+        Minecraft.getInstance().setCameraEntity(entity);
     }
 
     @Override
-    default PlayerEntity getClientPlayer() {
+    default Player getClientPlayer() {
         return Minecraft.getInstance().player;
     }
 
     @Override
-    default World getClientWorld() {
-        return Minecraft.getInstance().world;
+    default Level getClientWorld() {
+        return Minecraft.getInstance().level;
     }
 
     @Override
-    default World getWorldFromDimension(RegistryKey<World> dimension) {
+    default Level getWorldFromDimension(ResourceKey<Level> dimension) {
         LogicalSide effectiveSide = this.getLogicalSide();
         if(effectiveSide == LogicalSide.SERVER) {
-            return ServerLifecycleHooks.getCurrentServer().getWorld(dimension);
+            return getMinecraftServer().getLevel(dimension);
         } else {
             return getClientWorld();
         }
@@ -48,7 +45,7 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
     @Override
     default void queueTask(Runnable task) {
         if(getLogicalSide() == LogicalSide.CLIENT) {
-            Minecraft.getInstance().enqueue(task);
+            Minecraft.getInstance().submit(task);
         } else {
             IProxyBase.super.queueTask(task);
         }
@@ -56,7 +53,7 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
 
     @Override
     default SidedSoundDelegate getSoundDelegate() {
-        return new SoundDelegateClient(Minecraft.getInstance().getSoundHandler());
+        return new SoundDelegateClient(Minecraft.getInstance().getSoundManager());
     }
 
     /**
@@ -64,12 +61,7 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
      */
     @Override
     default double getFieldOfView() {
-        return Minecraft.getInstance().gameSettings.fov;
-    }
-
-    @Override
-    default Item.Properties setItemRenderer(Item.Properties properties) {
-        return properties.setISTER(InfItemRendererRegistry.getInstance().getISTER());
+        return Minecraft.getInstance().options.fov;
     }
 
     @Override

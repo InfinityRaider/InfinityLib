@@ -8,12 +8,12 @@ import com.infinityraider.infinitylib.container.IInfinityContainerType;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.crafting.RecipeSerializers;
 import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
-import com.infinityraider.infinitylib.effect.IInfinityEffect;
+import com.infinityraider.infinitylib.potion.IInfinityPotionEffect;
 import com.infinityraider.infinitylib.enchantment.EnchantmentBase;
 import com.infinityraider.infinitylib.enchantment.IInfinityEnchantment;
-import com.infinityraider.infinitylib.entity.AmbientSpawnHandler;
+import com.infinityraider.infinitylib.entity.EntityHandler;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
-import com.infinityraider.infinitylib.entity.IInfinityLivingEntityType;
+import com.infinityraider.infinitylib.entity.IMobEntityType;
 import com.infinityraider.infinitylib.fluid.IInfinityFluid;
 import com.infinityraider.infinitylib.item.IInfinityItem;
 import com.infinityraider.infinitylib.loot.IInfLootModifierSerializer;
@@ -26,27 +26,26 @@ import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import com.infinityraider.infinitylib.world.IInfStructure;
 import com.infinityraider.infinitylib.world.StructureRegistry;
 import com.mojang.brigadier.StringReader;
-import net.minecraft.block.Block;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.SpawnEggItem;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.particles.ParticleType;
-import net.minecraft.potion.Effect;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -67,7 +66,7 @@ public interface IProxy extends IProxyBase<Config> {
     @Override
     default void registerEventHandlers() {
         Module.getActiveModules().forEach(module -> module.getCommonEventHandlers().forEach(this::registerEventHandler));
-        this.registerEventHandler(AmbientSpawnHandler.getInstance());
+        this.registerEventHandler(EntityHandler.getInstance());
     }
 
     @Override
@@ -85,8 +84,8 @@ public interface IProxy extends IProxyBase<Config> {
     }
 
     @Override
-    default void onServerAboutToStartEvent(final FMLServerAboutToStartEvent event) {
-        StructureRegistry.getInstance().injectStructures(event.getServer().getDynamicRegistries());
+    default void onServerAboutToStartEvent(final ServerAboutToStartEvent event) {
+        StructureRegistry.getInstance().injectStructures(event.getServer().registryAccess());
     }
 
     default void forceClientRenderUpdate(BlockPos pos) {}
@@ -120,7 +119,7 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerTiles(InfinityMod<?,?> mod) {
         // Register tiles
-        this.registerObjects(mod, mod.getModTileRegistry(), Classes.TILE_ENTITY_TYPE, ForgeRegistries.TILE_ENTITIES);
+        this.registerObjects(mod, mod.getModTileRegistry(), Classes.TILE_ENTITY_TYPE, ForgeRegistries.BLOCK_ENTITIES);
     }
 
     default void registerItems(InfinityMod<?,?> mod) {
@@ -149,16 +148,16 @@ public interface IProxy extends IProxyBase<Config> {
         // Register entities
         this.registerObjects(mod, mod.getModEntityRegistry(), Classes.ENTITY_TYPE, ForgeRegistries.ENTITIES, entityType -> {
             // Tasks for living entities registration:
-            if (entityType instanceof IInfinityLivingEntityType) {
-                IInfinityLivingEntityType livingEntityType = (IInfinityLivingEntityType) entityType;
+            if (entityType instanceof IMobEntityType) {
+                IMobEntityType livingEntityType = (IMobEntityType) entityType;
                 //  Attributes
-                GlobalEntityTypeAttributes.put(livingEntityType.cast(), livingEntityType.createCustomAttributes());
+                EntityHandler.getInstance().registerAttribute(livingEntityType.cast(), livingEntityType.createCustomAttributes());
                 // Spawn egg
                 livingEntityType.getSpawnEggData().ifPresent(data -> {
                     Item.Properties properties = new Item.Properties();
-                    ItemGroup tab = data.tab();
+                    CreativeModeTab tab = data.tab();
                     if (tab != null) {
-                        properties = properties.group(tab);
+                        properties = properties.tab(tab);
                     }
                     // Create spawn egg
                     SpawnEggItem egg = new SpawnEggItem(livingEntityType.cast(), data.primaryColor(), data.secondaryColor(), properties);
@@ -167,7 +166,7 @@ public interface IProxy extends IProxyBase<Config> {
                 });
                 // Natural spawning
                 livingEntityType.getSpawnRules().forEach(rule ->
-                        AmbientSpawnHandler.getInstance().registerSpawnRule(livingEntityType.cast(), rule)
+                        EntityHandler.getInstance().registerSpawnRule(livingEntityType.cast(), rule)
                 );
             }
         });
@@ -185,11 +184,11 @@ public interface IProxy extends IProxyBase<Config> {
                 type -> this.onParticleRegistration((IInfinityParticleType<?>) type));
     }
 
-    default <T extends IParticleData> void onParticleRegistration(IInfinityParticleType<T> particleType) {}
+    default <T extends ParticleOptions> void onParticleRegistration(IInfinityParticleType<T> particleType) {}
 
     default void registerEffects(InfinityMod<?,?> mod) {
         // Register effects
-        this.registerObjects(mod, mod.getModEffectRegistry(), Classes.EFFECT, ForgeRegistries.POTIONS);
+        this.registerObjects(mod, mod.getModEffectRegistry(), Classes.POTION_EFFECT, ForgeRegistries.MOB_EFFECTS);
     }
 
     default void registerContainers(InfinityMod<?,?> mod) {
@@ -219,7 +218,7 @@ public interface IProxy extends IProxyBase<Config> {
     }
 
     default void registerLootModifiers(InfinityMod<?,?> mod) {
-        this.registerObjects(mod, mod.getModLootModifierSerializerRegistry(), Classes.LOOT_MODIFIER, ForgeRegistries.LOOT_MODIFIER_SERIALIZERS);
+        this.registerObjects(mod, mod.getModLootModifierSerializerRegistry(), Classes.LOOT_MODIFIER, ForgeRegistries.LOOT_MODIFIER_SERIALIZERS.get());
     }
 
     default void registerStructures(InfinityMod<?,?> mod) {
@@ -272,7 +271,7 @@ public interface IProxy extends IProxyBase<Config> {
     final class Classes {
         private static final Class<? extends IInfinityRegistrable<Block>> BLOCK = IInfinityBlock.class;
 
-        private static final Class<? extends IInfinityRegistrable<TileEntityType<?>>> TILE_ENTITY_TYPE = IInfinityTileEntityType.class;
+        private static final Class<? extends IInfinityRegistrable<BlockEntityType<?>>> TILE_ENTITY_TYPE = IInfinityTileEntityType.class;
 
         private static final Class<? extends IInfinityRegistrable<Item>> ITEM = IInfinityItem.class;
 
@@ -286,18 +285,18 @@ public interface IProxy extends IProxyBase<Config> {
 
         private static final Class<? extends IInfinityRegistrable<ParticleType<?>>> PARTICLE_TYPE;
 
-        private static final Class<? extends IInfinityRegistrable<Effect>> EFFECT = IInfinityEffect.class;
+        private static final Class<? extends IInfinityRegistrable<MobEffect>> POTION_EFFECT = IInfinityPotionEffect.class;
 
-        private static final Class<? extends IInfinityRegistrable<ContainerType<?>>> CONTAINER_TYPE = IInfinityContainerType.class;
+        private static final Class<? extends IInfinityRegistrable<MenuType<?>>> CONTAINER_TYPE = IInfinityContainerType.class;
 
-        private static final Class<? extends IInfinityRegistrable<IRecipeSerializer<?>>> RECIPE_SERIALIZER = IInfRecipeSerializer.class;
+        private static final Class<? extends IInfinityRegistrable<RecipeSerializer<?>>> RECIPE_SERIALIZER = IInfRecipeSerializer.class;
 
         private static final Class<? extends IInfinityRegistrable<GlobalLootModifierSerializer<?>>> LOOT_MODIFIER = IInfLootModifierSerializer.class;
 
         // DAMN GENERICS
         // tldr: yes this is an ugly hack to get the generics to work, if you know a better way, PR pls
         static {
-            PARTICLE_TYPE = (Class<? extends IInfinityRegistrable<ParticleType<?>>>) (new IInfinityParticleType<IParticleData>() {
+            PARTICLE_TYPE = (Class<? extends IInfinityRegistrable<ParticleType<?>>>) (new IInfinityParticleType<>() {
                 @Override
                 public boolean isEnabled() {
                     return false;
@@ -310,18 +309,18 @@ public interface IProxy extends IProxyBase<Config> {
                 }
 
                 @Override
-                public IParticleData deserializeData(@Nonnull StringReader reader)  {
+                public ParticleOptions deserializeData(@Nonnull StringReader reader)  {
                     return null;
                 }
 
                 @Override
-                public IParticleData readData(@Nonnull PacketBuffer buffer) {
+                public ParticleOptions readData(@Nonnull FriendlyByteBuf buffer) {
                     return null;
                 }
 
                 @Nonnull
                 @Override
-                public ParticleFactorySupplier<IParticleData> particleFactorySupplier() {
+                public ParticleFactorySupplier<ParticleOptions> particleFactorySupplier() {
                     return () -> null;
                 }
             }).getClass().getInterfaces()[0];

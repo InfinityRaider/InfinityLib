@@ -3,17 +3,17 @@ package com.infinityraider.infinitylib.block;
 import com.google.common.collect.Lists;
 import com.infinityraider.infinitylib.block.tile.TileEntityDynamicTexture;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameters;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.HitResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,9 +34,9 @@ public abstract class BlockDynamicTexture<T extends TileEntityDynamicTexture> ex
     }
 
     @Override
-    public final void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        TileEntity tile = world.getTileEntity(pos);
-        if((!world.isRemote()) && (stack.getItem() instanceof BlockItemDynamicTexture)) {
+    public final void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        BlockEntity tile = world.getBlockEntity(pos);
+        if((!world.isClientSide()) && (stack.getItem() instanceof BlockItemDynamicTexture)) {
             if(tile instanceof TileEntityDynamicTexture) {
                 TileEntityDynamicTexture dynTile = (TileEntityDynamicTexture) tile;
                 dynTile.setMaterial(((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack));
@@ -51,7 +51,7 @@ public abstract class BlockDynamicTexture<T extends TileEntityDynamicTexture> ex
     @SuppressWarnings({"deprecation", "unchecked"})
     public final List<ItemStack> getDrops(BlockState state, LootContext.Builder context) {
         List<ItemStack> drops = Lists.newArrayList();
-        TileEntity tile = context.get(LootParameters.BLOCK_ENTITY);
+        BlockEntity tile = context.getParameter(LootContextParams.BLOCK_ENTITY);
         if(tile instanceof TileEntityDynamicTexture) {
             BlockItemDynamicTexture item = this.asItem();
             ItemStack stack = new ItemStack(item);
@@ -63,18 +63,18 @@ public abstract class BlockDynamicTexture<T extends TileEntityDynamicTexture> ex
     }
 
     @Override
-    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
-        TileEntity tile = world.getTileEntity(pos);
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if(tile instanceof TileEntityDynamicTexture) {
             TileEntityDynamicTexture dynTile = (TileEntityDynamicTexture) tile;
             ItemStack stack = new ItemStack(this.asItem(), 1);
             this.asItem().setMaterial(stack, dynTile.getMaterial());
             return stack;
         }
-        return super.getPickBlock(state, target, world, pos, player);
+        return super.getCloneItemStack(state, target, world, pos, player);
     }
 
     public abstract void addDrops(Consumer<ItemStack> dropAcceptor, BlockState state, T tile, LootContext.Builder context);
 
-    public abstract void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack, @Nullable TileEntity tile);
+    public abstract void onBlockPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack, @Nullable BlockEntity tile);
 }

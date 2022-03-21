@@ -1,8 +1,9 @@
 package com.infinityraider.infinitylib.network;
 
-import net.minecraft.entity.Entity;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageSetEntityDead extends MessageBase {
     private Entity entity;
@@ -24,7 +25,7 @@ public class MessageSetEntityDead extends MessageBase {
     @Override
     protected void processMessage(NetworkEvent.Context ctx) {
         if(this.entity != null && this.entity.isAlive()) {
-            this.entity.remove(false);
+            this.entity.remove(Entity.RemovalReason.DISCARDED);
         }
     }
 }

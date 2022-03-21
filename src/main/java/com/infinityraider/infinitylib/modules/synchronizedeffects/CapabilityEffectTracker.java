@@ -2,10 +2,11 @@ package com.infinityraider.infinitylib.modules.synchronizedeffects;
 
 import com.infinityraider.infinitylib.capability.IInfSerializableCapabilityImplementation;
 import com.infinityraider.infinitylib.reference.Reference;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 
 import javax.annotation.Nullable;
 
@@ -18,8 +19,7 @@ public class CapabilityEffectTracker implements IInfSerializableCapabilityImplem
 
     public static ResourceLocation KEY = new ResourceLocation(Reference.MOD_ID.toLowerCase(), "potion_tracker");
 
-    @CapabilityInject(value = EffectTracker.class)
-    public static Capability<EffectTracker> CAPABILITY_POTION_TRACKER = null;
+    public static Capability<EffectTracker> CAPABILITY_POTION_TRACKER = CapabilityManager.get(new CapabilityToken<>(){});;
 
     private CapabilityEffectTracker() {}
 

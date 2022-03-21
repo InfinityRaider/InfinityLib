@@ -7,24 +7,21 @@ import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.render.model.InfModelLoader;
 import com.infinityraider.infinitylib.utility.InfinityLogger;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.server.*;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.*;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
@@ -383,28 +380,28 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public final void onServerStartingEvent(final FMLServerStartingEvent event) {
+    public final void onServerStartingEvent(final ServerStartingEvent event) {
         //forward to proxy
         this.proxy().onServerStartingEvent(event);
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public final void onServerAboutToStartEvent(final FMLServerAboutToStartEvent event) {
+    public final void onServerAboutToStartEvent(final ServerAboutToStartEvent event) {
         //forward to proxy
         this.proxy().onServerAboutToStartEvent(event);
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public final void onServerStoppingEvent(final FMLServerStoppingEvent event) {
+    public final void onServerStoppingEvent(final ServerStoppingEvent event) {
         //forward to proxy
         this.proxy().onServerStoppingEvent(event);
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public final void onServerStoppedEvent(final FMLServerStoppedEvent event) {
+    public final void onServerStoppedEvent(final ServerStoppedEvent event) {
         //forward to proxy
         this.proxy().onServerStoppedEvent(event);
     }
@@ -439,35 +436,35 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     /**
      * @return the instance of the EntityPlayer on the client, null on the server
      */
-    public final PlayerEntity getClientPlayer() {
+    public final Player getClientPlayer() {
         return this.proxy().getClientPlayer();
     }
 
     /**
      * @return the client World object on the client, null on the server
      */
-    public final World getClientWorld() {
+    public final Level getClientWorld() {
         return this.proxy().getClientWorld();
     }
 
     /**
      * @return the client World object on the client, null on the server
      */
-    public final World getWorldFromDimension(RegistryKey<World> dimension) {
+    public final Level getWorldFromDimension(ResourceKey<Level> dimension) {
         return this.proxy().getWorldFromDimension(dimension);
     }
 
     /**
      *  @return  the entity in that World object with that id
      */
-    public final Entity getEntityById(World world, int id) {
+    public final Entity getEntityById(Level world, int id) {
         return this.proxy().getEntityById(world, id);
     }
 
     /**
      *  @return  the entity in that World object with that id
      */
-    public final Entity getEntityById(RegistryKey<World> dimension, int id) {
+    public final Entity getEntityById(ResourceKey<Level> dimension, int id) {
         return this.proxy().getEntityById(dimension, id);
     }
 

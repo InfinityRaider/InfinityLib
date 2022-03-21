@@ -3,13 +3,16 @@ package com.infinityraider.infinitylib.block.property;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.infinityraider.infinitylib.utility.DirectionalConnectivity;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.*;
-import net.minecraft.util.Direction;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
+import net.minecraft.core.Direction;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.Collection;
 import java.util.Set;
@@ -34,7 +37,7 @@ public final class InfPropertyConfiguration {
         return this.properties.contains(property);
     }
 
-    public StateContainer.Builder<Block, BlockState> fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    public StateDefinition.Builder<Block, BlockState> fillStateContainer(StateDefinition.Builder<Block, BlockState> builder) {
         this.properties.forEach((prop) -> prop.apply(builder));
         return builder;
     }
@@ -113,19 +116,19 @@ public final class InfPropertyConfiguration {
             return this.add(InfProperty.Creators.create(name, defaultValue));
         }
 
-        public <T extends Enum<T> & IStringSerializable> Builder add(String name, Class<T> valueClass, T defaultValue) {
+        public <T extends Enum<T> & StringRepresentable> Builder add(String name, Class<T> valueClass, T defaultValue) {
             return this.add(InfProperty.Creators.create(EnumProperty.create(name, valueClass), defaultValue));
         }
 
-        public <T extends Enum<T> & IStringSerializable> Builder add(String name, Class<T> valueClass, T defaultValue, Collection<T> allowedValues) {
+        public <T extends Enum<T> & StringRepresentable> Builder add(String name, Class<T> valueClass, T defaultValue, Collection<T> allowedValues) {
             return this.add(InfProperty.Creators.create(EnumProperty.create(name, valueClass, allowedValues), defaultValue));
         }
 
-        public <T extends Enum<T> & IStringSerializable> Builder add(String name, Class<T> valueClass, T defaultValue, T... allowedValues) {
+        public <T extends Enum<T> & StringRepresentable> Builder add(String name, Class<T> valueClass, T defaultValue, T... allowedValues) {
             return this.add(InfProperty.Creators.create(EnumProperty.create(name, valueClass, allowedValues), defaultValue));
         }
 
-        public <T extends Enum<T> & IStringSerializable> Builder add(String name, Class<T> valueClass, T defaultValue, Predicate<T> allowedValues) {
+        public <T extends Enum<T> & StringRepresentable> Builder add(String name, Class<T> valueClass, T defaultValue, Predicate<T> allowedValues) {
             return this.add(InfProperty.Creators.create(EnumProperty.create(name, valueClass, allowedValues), defaultValue));
         }
 

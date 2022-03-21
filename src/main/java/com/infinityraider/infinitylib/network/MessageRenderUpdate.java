@@ -1,9 +1,9 @@
 package com.infinityraider.infinitylib.network;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageRenderUpdate extends MessageBase {
     private BlockPos pos;

@@ -1,30 +1,32 @@
 package com.infinityraider.infinitylib.entity;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.IPacket;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+
+import javax.annotation.Nonnull;
 
 public abstract class EntityLivingBase extends LivingEntity implements IBaseEntityImplementation<EntityLivingBase> {
-    protected EntityLivingBase(EntityType<? extends LivingEntity> type, World world) {
+    protected EntityLivingBase(EntityType<? extends LivingEntity> type, Level world) {
         super(type, world);
     }
 
     @Override
-    public final IPacket<?> createSpawnPacket() {
+    public final Packet<?> createSpawnPacket() {
         return IBaseEntityImplementation.super.createSpawnPacket();
     }
 
     @Override
-    public final void writeAdditional(CompoundNBT tag) {
-        super.writeAdditional(tag);
+    public final void addAdditionalSaveData(@Nonnull CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
         this.writeCustomEntityData(tag);
     }
 
     @Override
-    public final void readAdditional(CompoundNBT tag) {
-        super.readAdditional(tag);
+    public final void readAdditionalSaveData(@Nonnull CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
         this.readCustomEntityData(tag);
     }
 }

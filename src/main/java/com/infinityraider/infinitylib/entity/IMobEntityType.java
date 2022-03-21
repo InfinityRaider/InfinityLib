@@ -1,14 +1,15 @@
 package com.infinityraider.infinitylib.entity;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.AttributeModifierMap;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -16,13 +17,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public interface IInfinityLivingEntityType extends IInfinityEntityType {
+public interface IMobEntityType extends IInfinityEntityType {
     /**
      * Defines the entity's attributes
      *
      * @return An attribute modifier map defining the entity's attributes
      */
-    AttributeModifierMap createCustomAttributes();
+    AttributeSupplier createCustomAttributes();
 
     /**
      * Retrieves data for this entity's spawn egg
@@ -48,9 +49,9 @@ public interface IInfinityLivingEntityType extends IInfinityEntityType {
      */
     @Override
     @SuppressWarnings("Unchecked")
-    default EntityType<? extends LivingEntity> cast() {
+    default EntityType<? extends Mob> cast() {
         try {
-            return (EntityType<? extends LivingEntity>) this;
+            return (EntityType<? extends Mob>) this;
         } catch(Exception e) {
             throw new IllegalArgumentException("IInfinityLivingEntityType must only be implemented in objects extending EntityType<? extends LivingEntity>");
         }
@@ -62,12 +63,12 @@ public interface IInfinityLivingEntityType extends IInfinityEntityType {
         int secondaryColor();
 
         @Nullable
-        ItemGroup tab();
+        CreativeModeTab tab();
     }
 
     interface SpawnRule {
 
-        EntityClassification classification();
+        MobCategory classification();
 
         Predicate<Context> spawnRule();
 
@@ -78,7 +79,7 @@ public interface IInfinityLivingEntityType extends IInfinityEntityType {
         int weight();
 
         interface Context {
-            IWorld world();
+            Level world();
 
             BlockPos pos();
 

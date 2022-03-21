@@ -1,18 +1,18 @@
 package com.infinityraider.infinitylib.network.serialization;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class MessageSerializerSubClass<C extends P, P> implements IMessageSerializer<C> {
-    public static final IMessageSerializer<TileEntity> TILE_ENTITY = new MessageSerializerSubClass<>(TileEntity.class);
+    public static final IMessageSerializer<BlockEntity> TILE_ENTITY = new MessageSerializerSubClass<>(BlockEntity.class);
     public static final IMessageSerializer<Entity> ENTITY = new MessageSerializerSubClass<>(Entity.class);
     public static final IMessageSerializer<Block> BLOCK = new MessageSerializerSubClass<>(Block.class);
     public static final IMessageSerializer<Item> ITEM = new MessageSerializerSubClass<>(Item.class);
-    public static final IMessageSerializer<ITextComponent> TEXT = new MessageSerializerSubClass<>(ITextComponent.class);
+    public static final IMessageSerializer<Component> TEXT = new MessageSerializerSubClass<>(Component.class);
 
     private final Class<P> parentClass;
 

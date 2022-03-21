@@ -1,11 +1,12 @@
 package com.infinityraider.infinitylib.entity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.network.NetworkHooks;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.network.NetworkHooks;
 
 public interface IBaseEntityImplementation<E extends Entity> extends IEntityAdditionalSpawnData {
     @SuppressWarnings("Unchecked")
@@ -13,22 +14,22 @@ public interface IBaseEntityImplementation<E extends Entity> extends IEntityAddi
         return (E) this;
     }
 
-    default IPacket<?> createSpawnPacket() {
+    default Packet<?> createSpawnPacket() {
         return NetworkHooks.getEntitySpawningPacket(this.castToEntity());
     }
 
-    default void writeSpawnData(PacketBuffer buffer) {
-        buffer.writeCompoundTag(this.castToEntity().writeWithoutTypeId(new CompoundNBT()));
+    default void writeSpawnData(FriendlyByteBuf buffer) {
+        buffer.writeNbt(this.castToEntity().saveWithoutId(new CompoundTag()));
     }
 
-    default void readSpawnData(PacketBuffer buffer) {
-        CompoundNBT tag = buffer.readCompoundTag();
+    default void readSpawnData(FriendlyByteBuf buffer) {
+        CompoundTag tag = buffer.readNbt();
         if(tag != null) {
-            this.castToEntity().read(tag);
+            this.castToEntity().load(tag);
         }
     }
 
-    void writeCustomEntityData(CompoundNBT tag);
+    void writeCustomEntityData(CompoundTag tag);
 
-    void readCustomEntityData(CompoundNBT tag);
+    void readCustomEntityData(CompoundTag tag);
 }

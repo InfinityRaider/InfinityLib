@@ -2,7 +2,7 @@ package com.infinityraider.infinitylib.fluid;
 
 import com.infinityraider.infinitylib.render.fluid.IFluidRenderer;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
-import net.minecraft.fluid.Fluid;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 

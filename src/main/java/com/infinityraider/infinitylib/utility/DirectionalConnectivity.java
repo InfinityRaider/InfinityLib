@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Either;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Tuple;
 
 import java.util.*;
@@ -25,7 +25,7 @@ public class DirectionalConnectivity implements Comparable<DirectionalConnectivi
             if(dir == null) {
                 connections--;
             } else {
-                counter += dir.getIndex();
+                counter += dir.get3DDataValue();
             }
         }
         final int order = counter;
@@ -46,7 +46,7 @@ public class DirectionalConnectivity implements Comparable<DirectionalConnectivi
         int order = 0;
         StringBuilder builder = new StringBuilder();
         for(Direction dir : this.connections) {
-            order += dir.getIndex();
+            order += dir.get3DDataValue();
             builder.append(dir.name() + "_");
         }
         builder.deleteCharAt(builder.length() - 1);
@@ -165,7 +165,7 @@ public class DirectionalConnectivity implements Comparable<DirectionalConnectivi
         }
 
         private Builder addDirection(int ordinal) {
-            return this.addDirection(Direction.byIndex(ordinal));
+            return this.addDirection(Direction.from3DDataValue(ordinal));
         }
 
         private Builder addDirection(Direction connection) {

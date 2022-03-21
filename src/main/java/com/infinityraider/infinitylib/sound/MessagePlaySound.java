@@ -2,19 +2,19 @@ package com.infinityraider.infinitylib.sound;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.network.MessageBase;
-import com.infinityraider.infinitylib.network.serialization.PacketBufferUtil;
 import com.infinityraider.infinitylib.network.serialization.IMessageReader;
-import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.vector.Vector3d;
+import com.infinityraider.infinitylib.network.serialization.PacketBufferUtil;
+import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
+import com.mojang.math.Vector3d;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class MessagePlaySound extends MessageBase {
     private Vector3d position;
     private String uuid;
     private SoundEvent sound;
-    private SoundCategory category;
+    private SoundSource category;
     private float volume;
     private float pitch;
     private boolean repeat;

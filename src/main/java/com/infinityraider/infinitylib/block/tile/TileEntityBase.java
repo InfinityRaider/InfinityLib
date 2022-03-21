@@ -6,16 +6,18 @@ import com.infinityraider.infinitylib.network.MessageAutoSyncTileField;
 import com.infinityraider.infinitylib.network.MessageRenderUpdate;
 import com.infinityraider.infinitylib.network.MessageSyncTile;
 import com.infinityraider.infinitylib.reference.Names;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraftforge.fml.LogicalSide;
 
 import javax.annotation.Nonnull;
@@ -24,83 +26,83 @@ import java.util.Random;
 import java.util.function.*;
 
 @SuppressWarnings("unused")
-public abstract class TileEntityBase extends TileEntity {
+public abstract class TileEntityBase extends BlockEntity {
     private static final Random RANDOM = new Random();
 
     private final Map<Integer, AutoSyncedField<?>> syncedFields;
 
-    public TileEntityBase(TileEntityType<?> tileEntityTypeIn) {
-        super(tileEntityTypeIn);
+    public TileEntityBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         this.syncedFields = Maps.newHashMap();
     }
 
     public final int xCoord() {
-        return this.getPos().getX();
+        return this.getBlockPos().getX();
     }
 
     public final int yCoord() {
-        return this.getPos().getY();
+        return this.getBlockPos().getY();
     }
 
     public final int zCoord() {
-        return this.getPos().getZ();
+        return this.getBlockPos().getZ();
     }
 
-    public final Chunk getChunk() {
-        if(this.getWorld() == null) {
+    public final ChunkAccess getChunk() {
+        if(this.getLevel() == null) {
             return null;
         }
-        return this.getWorld().getChunkAt(this.getPos());
+        return this.getLevel().getChunk(this.getBlockPos());
     }
 
     public Random getRandom() {
-        return this.getWorld() == null ? RANDOM : this.getWorld().rand;
+        return this.getLevel() == null ? RANDOM : this.getLevel().getRandom();
     }
 
     public boolean isRemote() {
-        return this.getWorld() != null && this.getWorld().isRemote;
+        return this.getLevel() != null && this.getLevel().isClientSide();
     }
 
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        return new SUpdateTileEntityPacket(this.getPos(), -1, this.getUpdateTag()); //TODO: figure out the int argument
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Nonnull
     @Override
-    public CompoundNBT getUpdateTag() {
-        CompoundNBT tag = new CompoundNBT();
-        this.write(tag);
-        return tag;
+    public CompoundTag getUpdateTag() {
+        return this.saveWithFullMetadata();
     }
 
     //read data from packet
     @Override
-    public void onDataPacket(NetworkManager networkManager, SUpdateTileEntityPacket pkt){
-        if(this.getWorld() == null) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt){
+        if(this.getLevel() == null) {
             return;
         }
-        BlockState before = this.getBlockState();
-        this.read(before, pkt.getNbtCompound());
-        BlockState after = this.getWorld().getBlockState(pkt.getPos());
-        if(!after.equals(before)) {
-            this.getWorld().markBlockRangeForRenderUpdate(pkt.getPos(), before, after);
+        CompoundTag tag = pkt.getTag();
+        if(tag != null) {
+            BlockState before = this.getBlockState();
+            this.load(tag);
+            BlockState after = this.getLevel().getBlockState(pkt.getPos());
+            if (!after.equals(before)) {
+                this.getLevel().setBlocksDirty(pkt.getPos(), before, after);
+            }
         }
     }
 
     @Nonnull
     @Override
-    public final CompoundNBT write(@Nonnull CompoundNBT tag) {
-        super.write(tag);
+    public final void saveAdditional(@Nonnull CompoundTag tag) {
+        super.saveAdditional(tag);
         // Order shouldn't matter here
         this.syncedFields.values().forEach(field -> tag.put(Names.NBT.FIELD + "_" + field.getId(), field.serialize()));
         this.writeTileNBT(tag);
-        return tag;
     }
 
     @Override
-    public final void read(@Nonnull BlockState state, @Nonnull CompoundNBT tag) {
-        super.read(state, tag);
+    public final void load(@Nonnull CompoundTag tag) {
+        super.load(tag);
         // Again, order doesn't matter
         this.syncedFields.values().forEach(field -> {
             String key = Names.NBT.FIELD + "_" + field.getId();
@@ -108,18 +110,18 @@ public abstract class TileEntityBase extends TileEntity {
                 field.deserialize(tag.getCompound(key));
             }
         });
-        this.readTileNBT(state, tag);
+        this.readTileNBT(tag);
     }
 
-    protected abstract void writeTileNBT(@Nonnull CompoundNBT tag);
+    protected abstract void writeTileNBT(@Nonnull CompoundTag tag);
 
-    protected abstract void readTileNBT(@Nonnull BlockState state, @Nonnull CompoundNBT tag);
+    protected abstract void readTileNBT(@Nonnull CompoundTag tag);
 
     public void markForUpdateAndNotify() {
-        if(this.getWorld() != null) {
+        if(this.getLevel() != null) {
             BlockState state = this.getBlockState();
-            this.getWorld().notifyBlockUpdate(getPos(), state, state, 3);
-            this.markDirty();
+            this.getLevel().sendBlockUpdated(getBlockPos(), state, state, 3);
+            this.setChanged();
         }
     }
 
@@ -128,18 +130,18 @@ public abstract class TileEntityBase extends TileEntity {
     }
 
     public void syncToClient(boolean renderUpdate) {
-        World world = this.getWorld();
-        if(world != null && !this.getWorld().isRemote) {
-            new MessageSyncTile(this, renderUpdate).sendToAllAround(this.getWorld(), this.xCoord(), this.yCoord(), this.zCoord(), 128);
+        Level world = this.getLevel();
+        if(world != null && !this.getLevel().isClientSide()) {
+            new MessageSyncTile(this, renderUpdate).sendToAllAround(this.getLevel(), this.xCoord(), this.yCoord(), this.zCoord(), 128);
         }
     }
 
     public void forceRenderUpdate() {
         if(this.isRemote()) {
-            InfinityLib.instance.proxy().forceClientRenderUpdate(this.getPos());
+            InfinityLib.instance.proxy().forceClientRenderUpdate(this.getBlockPos());
         } else {
-            if(this.getWorld() != null) {
-                new MessageRenderUpdate(this.getPos()).sendToDimension(this.getWorld());
+            if(this.getLevel() != null) {
+                new MessageRenderUpdate(this.getBlockPos()).sendToDimension(this.getLevel());
             }
         }
     }
@@ -161,7 +163,7 @@ public abstract class TileEntityBase extends TileEntity {
      * @return a new AutoSyncedField object, wrapping the desired value
      */
     protected <F> AutoSyncedField<F> createAutoSyncedField(
-            F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
+            F value, BiConsumer<F, CompoundTag> serializer, Function<CompoundTag, F> deserializer) {
         return this.getAutoSyncedFieldBuilder(value, serializer, deserializer).build();
     }
 
@@ -181,22 +183,22 @@ public abstract class TileEntityBase extends TileEntity {
      * @return a new AutoSyncedField object, wrapping the desired value
      */
     protected <F> AutoSyncedField<F> createAutoSyncedField(
-            F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer, BooleanSupplier checker, F fallback) {
+            F value, BiConsumer<F, CompoundTag> serializer, Function<CompoundTag, F> deserializer, BooleanSupplier checker, F fallback) {
         return this.getAutoSyncedFieldBuilder(value, serializer, deserializer).withDelay(checker, fallback).build();
     }
 
     public <F> AutoSyncedFieldBuilder<F> getAutoSyncedFieldBuilder(
-            F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer, BooleanSupplier checker, F fallback) {
+            F value, BiConsumer<F, CompoundTag> serializer, Function<CompoundTag, F> deserializer, BooleanSupplier checker, F fallback) {
         return new AutoSyncedFieldBuilder<>(value, this, serializer, deserializer).withDelay(checker, fallback);
     }
 
     public <F> AutoSyncedFieldBuilder<F> getAutoSyncedFieldBuilder(
-            F value, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
+            F value, BiConsumer<F, CompoundTag> serializer, Function<CompoundTag, F> deserializer) {
         return new AutoSyncedFieldBuilder<>(value, this, serializer, deserializer);
     }
 
     public AutoSyncedFieldBuilder<Boolean> getAutoSyncedFieldBuilder(boolean value) {
-        return new AutoSyncedFieldBuilder<>(
+        return new AutoSyncedFieldBuilder<Boolean>(
                 value, this,
                 (b, tag) -> tag.putBoolean(Names.NBT.VALUE, b),
                 (tag) -> tag.contains(Names.NBT.VALUE) ? tag.getBoolean(Names.NBT.VALUE) : value
@@ -236,10 +238,10 @@ public abstract class TileEntityBase extends TileEntity {
     }
 
     public AutoSyncedFieldBuilder<ItemStack> getAutoSyncedFieldBuilder(ItemStack value) {
-        return new AutoSyncedFieldBuilder<>(
+        return new AutoSyncedFieldBuilder<ItemStack>(
                 value, this,
-                ItemStack::write,
-                ItemStack::read
+                ItemStack::save,
+                ItemStack::of
         );
     }
 
@@ -251,7 +253,7 @@ public abstract class TileEntityBase extends TileEntity {
                     if(tag.contains(Names.NBT.X) && tag.contains(Names.NBT.Y) && tag.contains(Names.NBT.Z)) {
                         return new BlockPos(tag.getInt(Names.NBT.X), tag.getInt(Names.NBT.Y), tag.getInt(Names.NBT.Z));
                     } else {
-                        return this.getPos();
+                        return this.getBlockPos();
                     }
                 }
         );
@@ -261,8 +263,8 @@ public abstract class TileEntityBase extends TileEntity {
         // Required fields
         private final F value;
         private final TileEntityBase tile;
-        private final BiConsumer<F, CompoundNBT> serializer;
-        private final Function<CompoundNBT, F> deserializer;
+        private final BiConsumer<F, CompoundTag> serializer;
+        private final Function<CompoundTag, F> deserializer;
 
         // Callback
         private Consumer<F> callback;
@@ -275,7 +277,7 @@ public abstract class TileEntityBase extends TileEntity {
         private BooleanSupplier delayedCheck;
         private F fallbackValue;
 
-        private AutoSyncedFieldBuilder(F value, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer) {
+        private AutoSyncedFieldBuilder(F value, TileEntityBase tile, BiConsumer<F, CompoundTag> serializer, Function<CompoundTag, F> deserializer) {
             // Required fields
             this.value = value;
             this.tile = tile;
@@ -328,14 +330,14 @@ public abstract class TileEntityBase extends TileEntity {
         private final TileEntityBase tile;
         private final LogicalSide side;
 
-        private final BiConsumer<F, CompoundNBT> serializer;
-        private final Function<CompoundNBT, F> deserializer;
+        private final BiConsumer<F, CompoundTag> serializer;
+        private final Function<CompoundTag, F> deserializer;
 
         private final Consumer<F> callback;
         private final Predicate<F> renderUpdateChecker;
 
         private AutoSyncedField(
-                F value, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer,
+                F value, TileEntityBase tile, BiConsumer<F, CompoundTag> serializer, Function<CompoundTag, F> deserializer,
                 Consumer<F> callback, Predicate<F> renderUpdateChecker) {
 
             this.value = value;
@@ -353,7 +355,7 @@ public abstract class TileEntityBase extends TileEntity {
             if(this.getSide().isServer() && !this.get().equals(value)) {
                 this.setInternal(value);
                 this.sync();
-                this.getTile().markDirty();
+                this.getTile().setChanged();
             }
         }
 
@@ -385,13 +387,13 @@ public abstract class TileEntityBase extends TileEntity {
             return this.side;
         }
 
-        public CompoundNBT serialize() {
-            CompoundNBT tag = new CompoundNBT();
+        public CompoundTag serialize() {
+            CompoundTag tag = new CompoundTag();
             this.serializer.accept(this.get(), tag);
             return tag;
         }
 
-        public void deserialize(CompoundNBT tag) {
+        public void deserialize(CompoundTag tag) {
             this.setInternal(this.deserializer.apply(tag));
         }
 
@@ -404,9 +406,9 @@ public abstract class TileEntityBase extends TileEntity {
         private final BooleanSupplier checker;
         private final F fallback;
 
-        private CompoundNBT data;
+        private CompoundTag data;
 
-        private AutoSyncedFieldDelayed(F value, TileEntityBase tile, BiConsumer<F, CompoundNBT> serializer, Function<CompoundNBT, F> deserializer,
+        private AutoSyncedFieldDelayed(F value, TileEntityBase tile, BiConsumer<F, CompoundTag> serializer, Function<CompoundTag, F> deserializer,
                                        Consumer<F> callback, Predicate<F> renderUpdateChecker, BooleanSupplier checker, F fallback) {
             super(value, tile, serializer, deserializer, callback, renderUpdateChecker);
             this.checker = checker;
@@ -438,7 +440,7 @@ public abstract class TileEntityBase extends TileEntity {
         }
 
         @Override
-        public void deserialize(CompoundNBT tag) {
+        public void deserialize(CompoundTag tag) {
             if(this.isReady()) {
                 super.deserialize(tag);
             } else {
@@ -447,7 +449,7 @@ public abstract class TileEntityBase extends TileEntity {
         }
 
         @Override
-        public CompoundNBT serialize() {
+        public CompoundTag serialize() {
             if(this.data == null) {
                 return super.serialize();
             }

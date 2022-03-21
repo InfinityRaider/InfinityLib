@@ -1,9 +1,9 @@
 package com.infinityraider.infinitylib.item;
 
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -21,5 +21,5 @@ public abstract class InfinityItemProperty {
         return this.id;
     }
 
-    public abstract float getValue(ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity entity);
+    public abstract float getValue(ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed);
 }

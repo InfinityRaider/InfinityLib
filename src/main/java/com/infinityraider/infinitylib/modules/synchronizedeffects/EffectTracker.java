@@ -3,9 +3,9 @@ package com.infinityraider.infinitylib.modules.synchronizedeffects;
 import com.google.common.primitives.Ints;
 import com.infinityraider.infinitylib.reference.Names;
 import com.infinityraider.infinitylib.utility.ISerializable;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.Effect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.alchemy.Potion;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,13 +24,13 @@ public class EffectTracker implements ISerializable {
         return entity;
     }
 
-    public void updatePotionEffects(List<Effect> effects) {
+    public void updatePotionEffects(List<MobEffectInstance> effects) {
         boolean update = false;
         //remove previously active effects from the effect list
         Iterator<Integer> it = activeEffects.iterator();
         while(it.hasNext()) {
             int id = it.next();
-            Effect effect = Effect.get(id);
+            MobEffectInstance effect = MobEffectInstance.get(id);
             if(!effects.contains(effect)) {
                 it.remove();
                 update = true;

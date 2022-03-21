@@ -1,29 +1,29 @@
 package com.infinityraider.infinitylib.container;
 
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
-import net.minecraft.client.gui.IHasContainer;
-import net.minecraft.client.gui.ScreenManager;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.MenuAccess;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 
-public interface IInfinityContainerType extends IInfinityRegistrable<ContainerType<?>> {
+public interface IInfinityContainerType extends IInfinityRegistrable<MenuType<?>> {
 
     @Nullable
     IGuiFactory<?> getGuiFactory();
 
-    interface IGuiFactory<T extends Container> {
+    interface IGuiFactory<T extends AbstractContainerMenu> {
         @OnlyIn(Dist.CLIENT)
-        <U extends Screen & IHasContainer<T>> ScreenManager.IScreenFactory<T, U> getGuiScreenProvider();
+        <U extends Screen & MenuAccess<T>> MenuScreens.ScreenConstructor<T, U> getGuiScreenProvider();
     }
 
     @OnlyIn(Dist.CLIENT)
     @SuppressWarnings("unchecked")
-    static <T extends Container, U extends Screen & IHasContainer<T>> ScreenManager.IScreenFactory<T,U> castGuiFactory(IGuiFactory factory) {
+    static <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> MenuScreens.ScreenConstructor<T,U> castGuiFactory(IGuiFactory factory) {
         return factory.getGuiScreenProvider();
     }
 }

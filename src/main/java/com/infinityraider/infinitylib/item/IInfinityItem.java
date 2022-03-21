@@ -3,7 +3,7 @@ package com.infinityraider.infinitylib.item;
 import com.google.common.collect.ImmutableSet;
 import com.infinityraider.infinitylib.render.item.InfItemRenderer;
 import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 

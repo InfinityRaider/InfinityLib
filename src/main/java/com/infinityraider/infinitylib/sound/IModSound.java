@@ -1,12 +1,12 @@
 package com.infinityraider.infinitylib.sound;
 
 import com.infinityraider.infinitylib.utility.IStoppable;
-import net.minecraft.client.audio.ISound;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public interface IModSound extends ISound, IStoppable {
+public interface IModSound extends SoundInstance, IStoppable {
     boolean repeat();
 
     int repeatDelay();

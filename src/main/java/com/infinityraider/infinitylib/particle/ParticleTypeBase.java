@@ -1,11 +1,11 @@
 package com.infinityraider.infinitylib.particle;
 
-import net.minecraft.particles.IParticleData;
-import net.minecraft.particles.ParticleType;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
 
 import javax.annotation.Nonnull;
 
-public abstract class ParticleTypeBase<D extends IParticleData> extends ParticleType<D> implements IInfinityParticleType<D> {
+public abstract class ParticleTypeBase<D extends ParticleOptions> extends ParticleType<D> implements IInfinityParticleType<D> {
     private final String internalName;
 
     @SuppressWarnings("deprecation")

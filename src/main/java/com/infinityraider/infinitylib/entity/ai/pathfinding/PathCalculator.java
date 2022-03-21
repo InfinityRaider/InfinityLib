@@ -1,13 +1,12 @@
 package com.infinityraider.infinitylib.entity.ai.pathfinding;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.pathfinding.PathPoint;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.pathfinder.Node;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -78,8 +77,8 @@ public class PathCalculator implements Runnable {
      * @param y the target y-coordinate
      * @param z the target z-coordinate
      */
-    public void calculatePath(MobEntity entity, double x, double y, double z) {
-        this.calculatePath(entity, new Vector3d(x, y, z), defaultOptions());
+    public void calculatePath(Mob entity, double x, double y, double z) {
+        this.calculatePath(entity, new Vec3(x, y, z), defaultOptions());
     }
 
     /**
@@ -91,8 +90,8 @@ public class PathCalculator implements Runnable {
      * @param z the target z-coordinate
      * @param options the options to use to determine the path
      */
-    public void calculatePath(MobEntity entity, double x, double y, double z, IPathOptions options) {
-        this.calculatePath(entity, new Vector3d(x, y, z), options);
+    public void calculatePath(Mob entity, double x, double y, double z, IPathOptions options) {
+        this.calculatePath(entity, new Vec3(x, y, z), options);
     }
 
     /**
@@ -102,19 +101,8 @@ public class PathCalculator implements Runnable {
      * @param entity the entity
      * @param target the target position
      */
-    public void calculatePath(MobEntity entity, BlockPos target) {
-        this.calculatePath(entity, new Vector3d(target.getX() + 0.5D, target.getY(), target.getZ() + 0.5D), defaultOptions());
-    }
-
-    /**
-     * Calculates a path for an entity to the specified coordinates, using the specified options
-     *
-     * @param entity the entity
-     * @param target the target position
-     * @param options the options to use to determine the path
-     */
-    public void calculatePath(MobEntity entity, Vector3i target, IPathOptions options) {
-        this.calculatePath(entity, new Vector3d(target.getX() + 0.5D, target.getY(), target.getZ() + 0.5D), options);
+    public void calculatePath(Mob entity, BlockPos target) {
+        this.calculatePath(entity, new Vec3(target.getX() + 0.5D, target.getY(), target.getZ() + 0.5D), defaultOptions());
     }
 
     /**
@@ -124,7 +112,7 @@ public class PathCalculator implements Runnable {
      * @param entity the entity
      * @param target the target position
      */
-    public void calculatePath(MobEntity entity, Vector3d target) {
+    public void calculatePath(Mob entity, Vec3 target) {
         this.calculatePath(entity, target, defaultOptions());
     }
 
@@ -135,10 +123,10 @@ public class PathCalculator implements Runnable {
      * @param target the target position
      * @param options the options to use to determine the path
      */
-    public void calculatePath(MobEntity entity, Vector3d target, IPathOptions options) {
+    public void calculatePath(Mob entity, Vec3 target, IPathOptions options) {
         ITarget iTarget =  new ITarget() {
             @Override
-            public Vector3d getTarget() {
+            public Vec3 getTarget() {
                 return target;
             }
 
@@ -148,7 +136,7 @@ public class PathCalculator implements Runnable {
             }
 
             @Override
-            public boolean hasTargetChanged(Vector3d previous) {
+            public boolean hasTargetChanged(Vec3 previous) {
                 return false;
             }
 
@@ -167,7 +155,7 @@ public class PathCalculator implements Runnable {
      * @param entity the entity
      * @param target the target entity
      */
-    public void calculatePath(MobEntity entity, Entity target) {
+    public void calculatePath(Mob entity, Entity target) {
         this.calculatePath(entity, target, defaultOptions());
     }
 
@@ -178,11 +166,11 @@ public class PathCalculator implements Runnable {
      * @param target the target entity
      * @param options the options to use to determine the path
      */
-    public void calculatePath(MobEntity entity, Entity target, IPathOptions options) {
+    public void calculatePath(Mob entity, Entity target, IPathOptions options) {
         ITarget iTarget = new ITarget() {
             @Override
-            public Vector3d getTarget() {
-                return target.getPositionVec();
+            public Vec3 getTarget() {
+                return target.position();
             }
 
             @Override
@@ -191,8 +179,8 @@ public class PathCalculator implements Runnable {
             }
 
             @Override
-            public boolean hasTargetChanged(Vector3d previous) {
-                Vector3d current = getTarget();
+            public boolean hasTargetChanged(Vec3 previous) {
+                Vec3 current = getTarget();
                 double dX = current.x - previous.x;
                 double dY = current.y - previous.y;
                 double dZ = current.z - previous.z;
@@ -214,7 +202,7 @@ public class PathCalculator implements Runnable {
      * @param entity the entity
      * @param target the target
      */
-    public void calculatePath(MobEntity entity, ITarget target) {
+    public void calculatePath(Mob entity, ITarget target) {
         calculatePath(entity, target, defaultOptions());
     }
 
@@ -225,7 +213,7 @@ public class PathCalculator implements Runnable {
      * @param target the target
      * @param options the options to use to determine the path
      */
-    public void calculatePath(MobEntity entity, ITarget target, IPathOptions options) {
+    public void calculatePath(Mob entity, ITarget target, IPathOptions options) {
         this.calculatePath(new PathFindJob(entity, target, options));
     }
 
@@ -352,14 +340,14 @@ public class PathCalculator implements Runnable {
         /**
          * @return the target coordinates
          */
-        Vector3d getTarget();
+        Vec3 getTarget();
 
         /**
          * @return the target coordinates converted to a PathPoint object
          */
-        default PathPoint getTargetPoint() {
-            Vector3d target = this.getTarget();
-            return new PathPoint(MathHelper.floor(target.x), MathHelper.floor(target.y), MathHelper.floor(target.z));
+        default Node getTargetPoint() {
+            Vec3 target = this.getTarget();
+            return new Node(Mth.floor(target.x), Mth.floor(target.y), Mth.floor(target.z));
         }
 
         /**
@@ -372,7 +360,7 @@ public class PathCalculator implements Runnable {
          * @param previous the previous target
          * @return true if the target has changed
          */
-        boolean hasTargetChanged(Vector3d previous);
+        boolean hasTargetChanged(Vec3 previous);
 
         /**
          * Checks if the target is still valid, a job with a non-valid target will be cancelled

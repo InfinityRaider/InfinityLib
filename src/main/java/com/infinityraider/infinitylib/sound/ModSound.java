@@ -1,11 +1,11 @@
 package com.infinityraider.infinitylib.sound;
 
-import net.minecraft.client.audio.TickableSound;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public abstract class ModSound extends TickableSound implements IModSound {
+public abstract class ModSound extends AbstractTickableSoundInstance implements IModSound {
     private final SoundDelegateClient delegate;
     private final String uuid;
 
@@ -21,12 +21,12 @@ public abstract class ModSound extends TickableSound implements IModSound {
 
     @Override
     public final boolean repeat() {
-        return this.repeat;
+        return this.looping;
     }
 
     @Override
     public final int repeatDelay() {
-        return this.repeatDelay;
+        return this.delay;
     }
 
     @Override
@@ -43,13 +43,13 @@ public abstract class ModSound extends TickableSound implements IModSound {
 
     @Override
     public final ModSound setRepeat(boolean repeat) {
-        this.repeat = repeat;
+        this.looping = repeat;
         return this;
     }
 
     @Override
     public final ModSound setRepeatDelay(int ticks) {
-        this.repeatDelay = ticks;
+        this.delay = ticks;
         return this;
     }
 
@@ -58,9 +58,8 @@ public abstract class ModSound extends TickableSound implements IModSound {
         return this.uuid;
     }
 
-    @Override
-    public final void stop() {
-        this.finishPlaying();
+    public final void stopPlaying() {
+        this.stop();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.network.serialization;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 public interface IMessageReader<T> {
     /**
@@ -8,5 +8,5 @@ public interface IMessageReader<T> {
      * @param buf the byte buffer
      * @return the read data
      */
-    T readData(PacketBuffer buf);
+    T readData(FriendlyByteBuf buf);
 }

@@ -1,14 +1,14 @@
 package com.infinityraider.infinitylib.network;
 
 import com.infinityraider.infinitylib.block.tile.TileEntityBase;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageAutoSyncTileField<F> extends MessageBase {
     private TileEntityBase tile;
     private int id;
-    private CompoundNBT tag;
+    private CompoundTag tag;
 
     public MessageAutoSyncTileField() {
         super();

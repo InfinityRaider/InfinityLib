@@ -8,16 +8,16 @@ import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
 import com.infinityraider.infinitylib.network.serialization.MessageElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -116,7 +116,7 @@ public abstract class MessageBase {
         return Collections.emptyList();
     }
 
-    public final <REQ extends MessageBase> REQ fromBytes(PacketBuffer buf) {
+    public final <REQ extends MessageBase> REQ fromBytes(FriendlyByteBuf buf) {
         Map<Class<? extends MessageBase>, List<MessageElement>> map = ELEMENT_MAP;
         if (ELEMENT_MAP.containsKey(this.getClass())) {
             for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
@@ -127,7 +127,7 @@ public abstract class MessageBase {
     }
 
     @SuppressWarnings("unchecked")
-    public final void toBytes(PacketBuffer buf) {
+    public final void toBytes(FriendlyByteBuf buf) {
         Map<Class<? extends MessageBase>, List<MessageElement>> map = ELEMENT_MAP;
         if (ELEMENT_MAP.containsKey(this.getClass())) {
             for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
@@ -149,9 +149,9 @@ public abstract class MessageBase {
      * Sends this message to one particular connected client
      * only valid if this message is handled on the client
      */
-    public final MessageBase sendTo(PlayerEntity player) {
-        if(player instanceof ServerPlayerEntity) {
-            this.getNetworkWrapper().sendTo(this, (ServerPlayerEntity) player);
+    public final MessageBase sendTo(Player player) {
+        if(player instanceof ServerPlayer) {
+            this.getNetworkWrapper().sendTo(this, (ServerPlayer) player);
         } else {
             InfinityLib.instance.getLogger().error("Can not send message directly to a player from a client");
         }
@@ -162,7 +162,7 @@ public abstract class MessageBase {
      * Sends this message to one particular connected client
      * only valid if this message is handled on the client
      */
-    public final MessageBase sendTo(ServerPlayerEntity player) {
+    public final MessageBase sendTo(ServerPlayer player) {
         this.getNetworkWrapper().sendTo(this, player);
         return this;
     }
@@ -171,7 +171,7 @@ public abstract class MessageBase {
      * Sends this message to all connected clients near a certain point,
      * only valid if this message is handled on the client
      */
-    public final MessageBase sendToAllAround(World world, double x, double y, double z, double range) {
+    public final MessageBase sendToAllAround(Level world, double x, double y, double z, double range) {
         this.getNetworkWrapper().sendToAllAround(this, world, x, y, z, range);
         return this;
     }
@@ -180,7 +180,7 @@ public abstract class MessageBase {
      * Sends this message to all connected clients near a certain point,
      * only valid if this message is handled on the client
      */
-    public final MessageBase sendToAllAround(RegistryKey<World> dimension, double x, double y, double z, double range) {
+    public final MessageBase sendToAllAround(ResourceKey<Level> dimension, double x, double y, double z, double range) {
         this.getNetworkWrapper().sendToAllAround(this, dimension, x, y, z, range);
         return this;
     }
@@ -198,7 +198,7 @@ public abstract class MessageBase {
      * Sends this message to all connected clients in a certain dimension,
      * only valid if this message is handled on the client
      */
-    public final MessageBase sendToDimension(World world) {
+    public final MessageBase sendToDimension(Level world) {
         this.getNetworkWrapper().sendToDimension(this, world);
         return this;
     }
@@ -207,7 +207,7 @@ public abstract class MessageBase {
      * Sends this message to all connected clients in a certain dimension,
      * only valid if this message is handled on the client
      */
-    public final MessageBase sendToDimension(RegistryKey<World> dimension) {
+    public final MessageBase sendToDimension(ResourceKey<Level> dimension) {
         this.getNetworkWrapper().sendToDimension(this, dimension);
         return this;
     }
@@ -223,8 +223,8 @@ public abstract class MessageBase {
 
     @OnlyIn(Dist.CLIENT)
     public final String getServerId() {
-        final ServerData data = Minecraft.getInstance().getCurrentServerData();
-        return "server_" + data.serverIP.replaceAll("\\.", "-").replaceAll(":", "_");
+        final ServerData data = Minecraft.getInstance().getCurrentServer();
+        return "server_" + data.ip.replaceAll("\\.", "-").replaceAll(":", "_");
     }
 
     static void onMessageRegistered(Class<? extends MessageBase> clazz, INetworkWrapper wrapper) {

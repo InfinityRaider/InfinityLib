@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.sound;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -16,11 +16,11 @@ public class ModSoundAtEntity extends ModSound {
     @Override
     public void updateSound() {
         if(this.entity.isAlive()) {
-            this.x = this.entity.getPosX();
-            this.y = this.entity.getPosY();
-            this.z = this.entity.getPosZ();
+            this.x = this.entity.getX();
+            this.y = this.entity.getY();
+            this.z = this.entity.getZ();
         } else {
-            this.finishPlaying();
+            this.stopPlaying();
         }
     }
 }

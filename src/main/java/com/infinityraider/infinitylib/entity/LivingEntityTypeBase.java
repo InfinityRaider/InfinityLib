@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-public class LivingEntityTypeBase<T extends LivingEntity> extends EntityTypeBase<T> implements IInfinityLivingEntityType {
+public class LivingEntityTypeBase<T extends LivingEntity> extends EntityTypeBase<T> implements IMobEntityType {
     private final Supplier<AttributeModifierMap> attributeSupplier;
     private final Optional<SpawnEggData> spawnEggData;
     private final Set<SpawnRule> spawnRules;
@@ -83,7 +83,7 @@ public class LivingEntityTypeBase<T extends LivingEntity> extends EntityTypeBase
         @Override
         public LivingEntityTypeBase<T> build() {
             return new LivingEntityTypeBase<>(this.name, this.entityClass, this.factory, this.classification, this.serializable,
-                    this.summonable, this. immuneToFire, this.p_i231489_6_, ImmutableSet.copyOf(this.blocks), this.size,
+                    this.summonable, this. immuneToFire, this.mysteryBoolean, ImmutableSet.copyOf(this.blocks), this.size,
                     this.trackingRange, this.updateInterval, this.velocityUpdates, this.customClientFactory,
                     this.aggressors, this.renderFactory, this.attributeSupplier, this.spawnEggData, this.spawnRules);
         }

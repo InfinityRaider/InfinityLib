@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.block.property;
 
-import net.minecraft.util.Direction;
-import net.minecraft.util.Rotation;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Rotation;
 
 public interface RotationHandler<T> {
     T handle(Rotation rotation, T value);

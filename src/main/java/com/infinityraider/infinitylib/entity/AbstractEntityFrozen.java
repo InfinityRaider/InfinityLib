@@ -1,33 +1,48 @@
 package com.infinityraider.infinitylib.entity;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.PushReaction;
-import net.minecraft.command.arguments.EntityAnchorArgument;
-import net.minecraft.entity.*;
-import net.minecraft.entity.effect.LightningBoltEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.*;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
+import com.google.common.collect.ImmutableSet;
+import net.minecraft.BlockUtil;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gameevent.GameEventListenerRegistrar;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.portal.PortalInfo;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.Team;
+import net.minecraftforge.common.util.ITeleporter;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -35,26 +50,35 @@ import java.util.stream.Stream;
  * This does not take up a Block or a TileEntity space in the world, and can be placed inside blocks
  */
 @SuppressWarnings("unused")
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public abstract class AbstractEntityFrozen extends Entity implements IEntityAdditionalSpawnData {
-    private static final AxisAlignedBB ZERO_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+    private static final AABB ZERO_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
 
-    private final ITextComponent name;
+    private final TextComponent name;
 
-    public AbstractEntityFrozen(EntityType<?> type, World world, double x, double y, double z) {
+    private Vec3 position;
+    private BlockPos blockPos;
+    private ChunkPos chunkPos;
+
+    public AbstractEntityFrozen(EntityType<?> type, Level world, double x, double y, double z) {
         super(type, world);
-        this.name = new StringTextComponent(this.name());
-        this.firstUpdate = false;
-        super.setRawPosition(x, y, z);
-        this.prevPosX = x;
-        this.prevPosY = y;
-        this.prevPosZ = z;
-        this.lastTickPosX = x;
-        this.lastTickPosY = y;
-        this.lastTickPosZ = z;
-        this.rotationYaw = 0;
-        this.rotationPitch = 0;
-        this.prevRotationYaw = 0;
-        this.prevRotationPitch = 0;
+        this.name = new TextComponent(this.name());
+        this.position = new Vec3(x, y, z);
+        this.blockPos = new BlockPos(this.position).immutable();
+        this.chunkPos = new ChunkPos(this.blockPos);
+        this.firstTick = false;
+        this.noPhysics = true;
+        this.xOld = x;
+        this.yOld = y;
+        this.zOld = z;
+        this.xo = x;
+        this.yo = y;
+        this.zo = z;
+        this.setYRot(0);
+        this.setXRot(0);
+        this.yRotO = 0;
+        this.xRotO = 0;
     }
 
     protected abstract String name();
@@ -63,403 +87,607 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
 
     protected abstract void onEntitySpawned();
 
-    protected abstract void readDataFromNBT(CompoundNBT tag);
+    protected abstract void readDataFromNBT(CompoundTag tag);
 
-    protected abstract void writeDataToNBT(CompoundNBT tag);
+    protected abstract void writeDataToNBT(CompoundTag tag);
 
     @Override
-    public final void writeSpawnData(PacketBuffer buffer) {
-        CompoundNBT tag = new CompoundNBT();
+    public Vec3 position() {
+        return this.position;
+    }
+
+    @Override
+    public BlockPos blockPosition() {
+        return this.blockPos;
+    }
+
+    @Override
+    public double getX(double pScale) {
+        return this.position().x;
+    }
+
+    @Override
+    public double getY(double pScale) {
+        return this.position().y;
+    }
+
+    @Override
+    public double getEyeY() {
+        return this.position().y;
+    }
+
+    @Override
+    public double getZ(double pScale) {
+        return this.position().z;
+    }
+
+    @Override
+    public BlockPos eyeBlockPosition() {
+        return this.blockPosition();
+    }
+
+    @Override
+    public ChunkPos chunkPosition() {
+        return this.chunkPos;
+    }
+
+    @Override
+    public final void writeSpawnData(FriendlyByteBuf buffer) {
+        CompoundTag tag = new CompoundTag();
         this.writeDataToNBT(tag);
-        buffer.writeCompoundTag(tag);
+        buffer.writeNbt(tag);
         this.onEntitySpawned();
     }
 
     @Override
-    public final void readSpawnData(PacketBuffer data) {
-        CompoundNBT tag = data.readCompoundTag();
+    public final void readSpawnData(FriendlyByteBuf data) {
+        CompoundTag tag = data.readNbt();
         this.readDataFromNBT(tag);
         this.onEntitySpawned();
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public final boolean func_242278_a(BlockPos pos, BlockState state) {
+    protected final void readAdditionalSaveData(CompoundTag tag) {
+        readDataFromNBT(tag);
+    }
+
+    @Override
+    protected final void addAdditionalSaveData(CompoundTag tag) {
+        writeDataToNBT(tag);
+    }
+
+    @Override
+    public boolean isColliding(BlockPos pPos, BlockState pState) {
         return false;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public final int getTeamColor() {
+    public int getTeamColor() {
         return 16777215;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    protected final void preparePlayerToSpawn() {}
-
-    @Override
-    public final void setPose(Pose poseIn) {}
-
-    @Override
-    public final Pose getPose() {
-        return Pose.STANDING;
+    public boolean isSpectator() {
+        return false;
     }
 
     @Override
-    protected final void setRotation(float yaw, float pitch) { }
+    public void setPose(Pose pPose) {}
 
     @Override
-    public final void setPosition(double x, double y, double z) {}
+    protected void setRot(float yaw, float pitch) {}
 
     @Override
-    protected final void recenterBoundingBox() {}
-
-    @OnlyIn(Dist.CLIENT)
-    public final void rotateTowards(double yaw, double pitch) {}
+    public void setPos(double x, double y, double z) {}
 
     @Override
-    public final void tick() {
-        this.update();
+    protected void reapplyPosition() { }
+
+    @Override
+    public void turn(double pYaw, double pPitch) {}
+
+    @Override
+    public void setSharedFlagOnFire(boolean pIsOnFire) {}
+
+    @Override
+    public void setPortalCooldown() {}
+
+    @Override
+    public boolean isOnPortalCooldown() {
+        return true;
     }
 
     @Override
-    public final void baseTick() {}
+    protected void processPortalCooldown() {}
 
     @Override
-    protected final void decrementTimeUntilPortal() {}
-
-    @Override
-    public final int getMaxInPortalTime() {
+    public int getPortalWaitTime() {
         return Integer.MAX_VALUE;
     }
 
     @Override
-    protected final void setOnFireFromLava() {}
+    public void lavaHurt() {}
 
     @Override
-    public void setFire(int seconds) {}
+    public void setSecondsOnFire(int pSeconds) {}
 
     @Override
-    public void forceFireTicks(int ticks) {}
+    public void setRemainingFireTicks(int pTicks) {}
 
     @Override
-    public final void extinguish() {}
-
-    @Override
-    protected final void outOfWorld() {}
-
-    @Override
-    public final boolean isOffsetPositionInLiquid(double x, double y, double z) {
-        return false;
-    }
-
-    private boolean isLiquidPresentInAABB(AxisAlignedBB bb) {
-        return false;
-    }
-
-    @Override
-    public final void move(MoverType typeIn, Vector3d pos) {}
-
-    @Override
-    protected final Vector3d maybeBackOffFromEdge(Vector3d vec, MoverType mover) {
-        return Vector3d.ZERO;
-    }
-
-    @Override
-    protected final Vector3d handlePistonMovement(Vector3d pos) {
-        return Vector3d.ZERO;
-    }
-
-    @Override
-    protected final void doBlockCollisions() {}
-
-    @Override
-    public final void resetPositionToBB() {}
-
-    @Override
-    protected final void playStepSound(BlockPos pos, BlockState block) {}
-
-    @Override
-    protected final void playSwimSound(float volume) {}
-
-    @Override
-    protected final boolean makeFlySound() {
-        return false;
-    }
-
-    @Override
-    public final void playSound(SoundEvent soundIn, float volume, float pitch) {}
-
-    @Override
-    public final boolean isSilent() {
-        return true;
-    }
-
-    @Override
-    public final void setSilent(boolean isSilent) {}
-
-    @Override
-    public final boolean hasNoGravity() {
-        return true;
-    }
-
-    @Override
-    public final void setNoGravity(boolean noGravity) {}
-
-    @Override
-    protected final boolean canTriggerWalking() {
-        return false;
-    }
-
-    @Override
-    protected final void updateFallState(double y, boolean onGroundIn, BlockState state, BlockPos pos) {}
-
-    @Override
-    public final boolean isImmuneToFire() {
-        return true;
-    }
-
-    @Override
-    public final boolean onLivingFall(float distance, float damageMultiplier) {
-        return false;
-    }
-
-    @Override
-    public final boolean canSwim() {
-        return false;
-    }
-
-    @Override
-    public final void updateSwimming() {}
-
-    @Override
-    protected final void doWaterSplashEffect() {}
-
-    @Override
-    public final boolean shouldSpawnRunningEffects() {
-        return false;
-    }
-
-    @Override
-    protected final void handleRunningEffect() {}
-
-    @Override
-    public final boolean isInLava() {
-        return false;
-    }
-
-    @Override
-    public final void moveRelative(float velocity, Vector3d direction) {}
-
-    @Override
-    public final void setWorld(World world) {}
-
-    @Override
-    public final void setPositionAndRotation(double x, double y, double z, float yaw, float pitch) {}
-
-    @Override
-    public final void setPositionWithinBounds(double x, double y, double z) {}
-
-    @Override
-    public final void moveForced(Vector3d vec) {}
-
-    @Override
-    public final void moveForced(double x, double y, double z) {}
-
-    @Override
-    public final void moveToBlockPosAndAngles(BlockPos pos, float rotationYawIn, float rotationPitchIn) {}
-
-    @Override
-    public final void setLocationAndAngles(double x, double y, double z, float yaw, float pitch) {}
-
-    @Override
-    public final void forceSetPosition(double x, double y, double z) {}
-
-    @Override
-    public final void onCollideWithPlayer(PlayerEntity entityIn) { }
-
-    @Override
-    public final void applyEntityCollision(Entity entityIn) {}
-
-    @Override
-    public final void addVelocity(double x, double y, double z) {}
-
-    @Override
-    protected final void markVelocityChanged() {}
-
-    @Override
-    public final boolean attackEntityFrom(DamageSource source, float amount) {
-        return false;
-    }
-
-    @Override
-    public final float getPitch(float partialTicks) {
-        return 0;
-    }
-    @Override
-    public final float getYaw(float partialTicks) {
+    public int getRemainingFireTicks() {
         return 0;
     }
 
     @Override
-    public final boolean isEntityInsideOpaqueBlock() {
+    public void clearFire() {}
+
+    @Override
+    protected void outOfWorld() {}
+
+    @Override
+    public void setOnGround(boolean pGrounded) {}
+
+    @Override
+    public boolean isOnGround() {
         return false;
     }
 
     @Override
-    public final boolean canBeCollidedWith() {
+    public void move(MoverType pType, Vec3 pPos) {}
+
+    @Override
+    protected boolean isHorizontalCollisionMinor(Vec3 vec) {
         return false;
     }
 
     @Override
-    public final boolean canBePushed() {
-        return false;
-    }
+    protected void tryCheckInsideBlocks() {}
 
     @Override
-    public final boolean canCollide(Entity entity) {
-        return false;
-    }
+    protected void playEntityOnFireExtinguishedSound() {}
 
     @Override
-    public final boolean func_241845_aY() {
-        return false;
-    }
+    protected void processFlappingMovement() {}
 
     @Override
-    public final void updateRidden() {}
-
-    @Override
-    public final void updatePassenger(Entity entity) {}
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public final void applyOrientationToEntity(Entity entityToUpdate) {}
-
-    @Override
-    public final double getMountedYOffset() {
+    protected float getBlockJumpFactor() {
         return 0;
     }
 
     @Override
-    public final boolean startRiding(Entity entityIn) {
+    protected float getBlockSpeedFactor() {
+        return 0;
+    }
+
+    @Override
+    protected BlockPos getBlockPosBelowThatAffectsMyMovement() {
+        return super.getBlockPosBelowThatAffectsMyMovement();
+    }
+
+    @Override
+    protected Vec3 maybeBackOffFromEdge(Vec3 pVec, MoverType pMover) {
+        return pVec;
+    }
+
+    @Override
+    protected Vec3 limitPistonMovement(Vec3 pPos) {
+        return pPos;
+    }
+
+    @Override
+    protected float nextStep() {
+        return 0;
+    }
+
+    @Override
+    protected SoundEvent getSwimSound() {
+        return super.getSwimSound();
+    }
+
+    @Override
+    protected SoundEvent getSwimSplashSound() {
+        return super.getSwimSound();
+    }
+
+    @Override
+    protected SoundEvent getSwimHighSpeedSplashSound() {
+        return super.getSwimSound();
+    }
+
+    @Override
+    protected void checkInsideBlocks() { }
+
+    @Override
+    protected void onInsideBlock(BlockState pState) {}
+
+    @Override
+    public void gameEvent(GameEvent pEvent, @Nullable Entity pEntity, BlockPos pPos) {}
+
+    @Override
+    public void gameEvent(GameEvent pEvent, @Nullable Entity pEntity) {}
+
+    @Override
+    public void gameEvent(GameEvent pEvent, BlockPos pPos) {}
+
+    @Override
+    public void gameEvent(GameEvent pEvent) {}
+
+    @Override
+    protected void playStepSound(BlockPos pPos, BlockState pBlock) {}
+
+    @Override
+    protected void playSwimSound(float pVolume) {}
+
+    @Override
+    protected void onFlap() {}
+
+    @Override
+    protected boolean isFlapping() {
         return false;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public final boolean isLiving() {
-        return false;
-    }
+    public void playSound(SoundEvent pSound, float pVolume, float pPitch) {}
 
     @Override
-    public final boolean startRiding(Entity entityIn, boolean force) {
-        return false;
-    }
-
-    @Override
-    protected final boolean canBeRidden(Entity entityIn) {
-        return false;
-    }
-
-    @Override
-    protected final boolean isPoseClear(Pose pose) {
+    public boolean isSilent() {
         return true;
     }
 
     @Override
-    public final void removePassengers() {}
+    public void setSilent(boolean pIsSilent) {}
 
     @Override
-    public final void dismount() {}
+    public boolean isNoGravity() {
+        return true;
+    }
 
     @Override
-    public final void stopRiding() {}
+    public void setNoGravity(boolean pNoGravity) { }
 
     @Override
-    protected final void addPassenger(Entity passenger) {}
+    protected MovementEmission getMovementEmission() {
+        return MovementEmission.NONE;
+    }
 
     @Override
-    protected final void removePassenger(Entity passenger) { }
-
-    @Override
-    protected final boolean canFitPassenger(Entity passenger) {
+    public boolean occludesVibrations() {
         return false;
     }
 
     @Override
-    public final float getCollisionBorderSize() {
+    protected void checkFallDamage(double pY, boolean pOnGround, BlockState pState, BlockPos pPos) {}
+
+    @Override
+    public boolean fireImmune() {
+        return true;
+    }
+
+    @Override
+    public boolean causeFallDamage(float pFallDistance, float pMultiplier, DamageSource pSource) {
+        return false;
+    }
+
+    @Override
+    public boolean isInWater() {
+        return super.isInWater();
+    }
+
+    @Override
+    public boolean isInWaterOrRain() {
+        return super.isInWaterOrRain();
+    }
+
+    @Override
+    public boolean isInWaterRainOrBubble() {
+        return super.isInWaterRainOrBubble();
+    }
+
+    @Override
+    public boolean isInWaterOrBubble() {
+        return super.isInWaterOrBubble();
+    }
+
+    @Override
+    public boolean isUnderWater() {
+        return super.isUnderWater();
+    }
+
+    @Override
+    public void updateSwimming() {}
+
+    @Override
+    protected boolean updateInWaterStateAndDoFluidPushing() {
+        return false;
+    }
+
+    @Override
+    protected void doWaterSplashEffect() {}
+
+    @Override
+    public boolean canSpawnSprintParticle() {
+        return false;
+    }
+
+    @Override
+    protected void spawnSprintParticle() {}
+
+    @Override
+    public void moveRelative(float pAmount, Vec3 pRelative) {}
+
+    @Override
+    public void absMoveTo(double pX, double pY, double pZ, float pYaw, float pPitch) {}
+
+    @Override
+    public void absMoveTo(double pX, double pY, double pZ) {}
+
+    @Override
+    public void moveTo(Vec3 pVec) { }
+
+    @Override
+    public void moveTo(double p_20105_, double p_20106_, double p_20107_) {}
+
+    @Override
+    public void moveTo(BlockPos pPos, float pRotationYaw, float pRotationPitch) { }
+
+    @Override
+    public void moveTo(double pX, double pY, double pZ, float pYaw, float pPitch) {}
+
+    @Override
+    public void playerTouch(Player pPlayer) {}
+
+    @Override
+    public void push(Entity pEntity) {}
+
+    @Override
+    public void push(double pX, double pY, double pZ) {}
+
+    @Override
+    protected void markHurt() {}
+
+    @Override
+    public boolean hurt(DamageSource pSource, float pAmount) {
+        return false;
+    }
+
+    @Override
+    public float getViewXRot(float pPartialTicks) {
         return 0;
     }
 
     @Override
-    public final void setPortal(BlockPos pos) {}
+    public float getViewYRot(float pPartialTicks) {
+        return 0;
+    }
 
     @Override
-    public final int getPortalCooldown() {
+    public boolean isPickable() {
+        return false;
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    public void awardKillScore(Entity pKilled, int pScoreValue, DamageSource pSource) {}
+
+    @Override
+    public boolean shouldRender(double pX, double pY, double pZ) {
+        return false;
+    }
+
+    @Override
+    public boolean shouldRenderAtSqrDistance(double pDistance) {
+        return false;
+    }
+
+    @Override
+    protected boolean repositionEntityAfterLoad() {
+        return false;
+    }
+
+    @Override
+    public InteractionResult interact(Player pPlayer, InteractionHand pHand) {
+        return InteractionResult.FAIL;
+    }
+
+    @Override
+    public boolean canCollideWith(Entity pEntity) {
+        return false;
+    }
+
+    @Override
+    public boolean canBeCollidedWith() {
+        return false;
+    }
+
+    @Override
+    public void rideTick() {}
+
+    @Override
+    public void positionRider(Entity pPassenger) {}
+
+    @Override
+    public void onPassengerTurned(Entity pEntityToUpdate) {}
+
+    @Override
+    public double getMyRidingOffset() {
+        return 0;
+    }
+
+    @Override
+    public double getPassengersRidingOffset() {
+        return 0;
+    }
+
+    @Override
+    public boolean startRiding(Entity pEntity) {
+        return false;
+    }
+
+    @Override
+    public boolean showVehicleHealth() {
+        return false;
+    }
+
+    @Override
+    public boolean startRiding(Entity pEntity, boolean pForce) {
+        return false;
+    }
+
+    @Override
+    protected boolean canRide(Entity pEntity) {
+        return false;
+    }
+
+    @Override
+    protected boolean canEnterPose(Pose pPose) {
+        return false;
+    }
+
+    @Override
+    public void ejectPassengers() {}
+
+    @Override
+    public void removeVehicle() {}
+
+    @Override
+    public void stopRiding() {}
+
+    @Override
+    protected void addPassenger(Entity pPassenger) {}
+
+    @Override
+    protected void removePassenger(Entity pPassenger) {}
+
+    @Override
+    protected boolean canAddPassenger(Entity pPassenger) {
+        return false;
+    }
+
+    @Override
+    public void lerpTo(double pX, double pY, double pZ, float pYaw, float pPitch, int pPosRotationIncrements, boolean pTeleport) {}
+
+    @Override
+    public void lerpHeadTo(float pYaw, int pPitch) {}
+
+    @Override
+    public float getPickRadius() {
+        return 0;
+    }
+
+    @Override
+    public Vec3 getLookAngle() {
+        return Vec3.ZERO;
+    }
+
+    @Override
+    public Vec3 getHandHoldingItemAngle(Item p_204035_) {
+        return Vec3.ZERO;
+    }
+
+    @Override
+    public Vec2 getRotationVector() {
+        return Vec2.ZERO;
+    }
+
+    @Override
+    public Vec3 getForward() {
+        return Vec3.ZERO;
+    }
+
+    @Override
+    public void handleInsidePortal(BlockPos pPos) {}
+
+    @Override
+    protected void handleNetherPortal() {}
+
+    @Override
+    public int getDimensionChangingDelay() {
         return Integer.MAX_VALUE;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public final void setVelocity(double x, double y, double z) {}
+    public void lerpMotion(double pX, double pY, double pZ) {}
 
     @Override
-    public final boolean isBurning() {
+    public void handleEntityEvent(byte pId) {}
+
+    @Override
+    public void animateHurt() {}
+
+    @Override
+    public Iterable<ItemStack> getHandSlots() {
+        return ImmutableSet.of();
+    }
+
+    @Override
+    public Iterable<ItemStack> getArmorSlots() {
+        return ImmutableSet.of();
+    }
+
+    @Override
+    public Iterable<ItemStack> getAllSlots() {
+        return ImmutableSet.of();
+    }
+
+    @Override
+    public void setItemSlot(EquipmentSlot pSlot, ItemStack pStack) {}
+
+    @Override
+    public boolean isOnFire() {
         return false;
     }
 
     @Override
-    public final boolean isPassenger() {
+    public boolean isPassenger() {
         return false;
     }
 
     @Override
-    public final boolean isBeingRidden() {
+    public boolean isVehicle() {
         return false;
     }
 
     @Override
-    public final boolean canBeRiddenInWater() {
+    @SuppressWarnings("deprecation")
+    public boolean rideableUnderWater() {
         return false;
     }
 
     @Override
-    public final boolean canBeRiddenInWater(Entity rider) {
+    public void setShiftKeyDown(boolean pKeyDown) {}
+
+    @Override
+    public boolean isShiftKeyDown() {
         return false;
     }
 
     @Override
-    public final void setSneaking(boolean keyDownIn) {}
-
-    @Override
-    public final boolean isSneaking() {
+    public boolean isSteppingCarefully() {
         return false;
     }
 
     @Override
-    public final boolean isSteppingCarefully() {
+    public boolean isSuppressingBounce() {
+        return true;
+    }
+
+    @Override
+    public boolean isDiscrete() {
+        return true;
+    }
+
+    @Override
+    public boolean isDescending() {
         return false;
     }
 
     @Override
-    public final boolean isSuppressingBounce() {
-        return false;
-    }
-
-    @Override
-    public final boolean isDiscrete() {
-        return false;
-    }
-
-    @Override
-    public final boolean isDescending() {
-        return false;
-    }
-
-    @Override
-    public final boolean isCrouching() {
+    public boolean isCrouching() {
         return false;
     }
 
@@ -469,7 +697,7 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    public void setSprinting(boolean sprinting) {}
+    public void setSprinting(boolean pSprinting) {}
 
     @Override
     public boolean isSwimming() {
@@ -477,147 +705,223 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    public boolean isActualySwimming() {
-        return false;
-    }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
     public boolean isVisuallySwimming() {
         return false;
     }
 
     @Override
-    public void setSwimming(boolean swimming) {}
-
-    @Override
-    public final boolean isInvisible() {
-        return true;
-    }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public final boolean isInvisibleToPlayer(PlayerEntity player) {
-        return true;
-    }
-
-    @Override
-    public final void setInvisible(boolean invisible) {}
-
-    @Override
-    protected final boolean getFlag(int flag) {
+    public boolean isVisuallyCrawling() {
         return false;
     }
 
     @Override
-    protected final void setFlag(int flag, boolean set) {}
+    public void setSwimming(boolean pSwimming) {}
 
     @Override
-    public final int getAir() {
+    public boolean isCurrentlyGlowing() {
+        return false;
+    }
+
+    @Override
+    public boolean isInvisible() {
+        return true;
+    }
+
+    @Override
+    public boolean isInvisibleTo(Player pPlayer) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public GameEventListenerRegistrar getGameEventListenerRegistrar() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Team getTeam() {
+        return null;
+    }
+
+    @Override
+    public boolean isAlliedTo(Entity pEntity) {
+        return false;
+    }
+
+    @Override
+    public boolean isAlliedTo(Team pTeam) {
+        return false;
+    }
+
+    @Override
+    public void setInvisible(boolean pInvisible) {}
+
+    @Override
+    public int getMaxAirSupply() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public int getAirSupply() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public void setAirSupply(int pAir) { }
+
+    @Override
+    public int getTicksFrozen() {
         return 0;
     }
 
     @Override
-    public final void setAir(int air) {}
+    public void setTicksFrozen(int pTicksFrozen) {}
 
     @Override
-    // onEntityStruckByLightning
-    public final void causeLightningStrike(ServerWorld world, LightningBoltEntity lightningBolt) {}
-
-    @Override
-    public final void onEnterBubbleColumnWithAirAbove(boolean downwards) {}
-
-    @Override
-    public void onEnterBubbleColumn(boolean downwards) {}
-
-    @Override
-    public void onKillEntity(ServerWorld world, LivingEntity entity) {}
-
-    @Override
-    protected final void pushOutOfBlocks(double x, double y, double z) {}
-
-    @Override
-    public final void setMotionMultiplier(BlockState state, Vector3d motionMultiplierIn) {}
-
-    @Override
-    public final ITextComponent getName() {
-        return this.name;
-    }
-
-    @Override
-    public boolean canBeAttackedWithItem() {
-        return false;
-    }
-
-    @Override
-    public final boolean hitByEntity(Entity entityIn) {
-        return true;
-    }
-
-    @Override
-    public final boolean isInvulnerableTo(DamageSource source) {
-        return true;
-    }
-
-    @Override
-    public final boolean isInvulnerable() {
-        return true;
-    }
-
-    @Override
-    public final void setInvulnerable(boolean isInvulnerable) {}
-
-    @Override
-    public final void copyLocationAndAnglesFrom(Entity entity) {}
-
-    @Override
-    public final Entity changeDimension(ServerWorld server) {
-        return null;
-    }
-
-    @Override
-    @Nullable
-    public Entity changeDimension(ServerWorld server, net.minecraftforge.common.util.ITeleporter teleporter) {
-        return null;
-    }
-
-    @Override
-    public final boolean canExplosionDestroyBlock(Explosion explosion, IBlockReader world, BlockPos pos, BlockState blockState, float explosionPower) {
-        return false;
-    }
-
-    @Override
-    public final int getMaxFallHeight() {
+    public float getPercentFrozen() {
         return 0;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public final boolean canRenderOnFire() {
+    public boolean isFullyFrozen() {
         return false;
     }
 
     @Override
-    public final boolean isPushedByWater() {
+    public int getTicksRequiredToFreeze() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public void thunderHit(ServerLevel pLevel, LightningBolt pLightning) {}
+
+    @Override
+    public void onAboveBubbleCol(boolean pDownwards) {}
+
+    @Override
+    public void onInsideBubbleColumn(boolean pDownwards) {}
+
+    @Override
+    public void killed(ServerLevel pLevel, LivingEntity pKilledEntity) {}
+
+    @Override
+    public void resetFallDistance() {}
+
+    @Override
+    protected void moveTowardsClosestSpace(double pX, double pY, double pZ) {}
+
+    @Override
+    public void makeStuckInBlock(BlockState pState, Vec3 pMotionMultiplier) {}
+
+    @Override
+    public float getYHeadRot() {
+        return 0;
+    }
+
+    @Override
+    public void setYHeadRot(float pRotation) {}
+
+    @Override
+    public void setYBodyRot(float pOffset) {}
+
+    @Override
+    public boolean isAttackable() {
         return false;
     }
 
     @Override
-    public void setCustomName(@Nullable ITextComponent name) {}
+    public boolean skipAttackInteraction(Entity pEntity) {
+        return true;
+    }
 
     @Override
+    public boolean isInvulnerableTo(DamageSource pSource) {
+        return false;
+    }
+
+    @Override
+    public boolean isInvulnerable() {
+        return true;
+    }
+
+    @Override
+    public void setInvulnerable(boolean pIsInvulnerable) {}
+
+    @Override
+    public void copyPosition(Entity pEntity) {}
+
+    @Override
+    public void restoreFrom(Entity pEntity) {}
+
     @Nullable
-    public final ITextComponent getCustomName() {
+    @Override
+    public Entity changeDimension(ServerLevel pDestination) {
+        return this;
+    }
+
+    @Nullable
+    @Override
+    public Entity changeDimension(ServerLevel pDestination, ITeleporter teleporter) {
+        return this;
+    }
+
+    @Override
+    protected void removeAfterChangingDimensions() {}
+
+    @Nullable
+    @Override
+    protected PortalInfo findDimensionEntryPoint(ServerLevel pDestination) {
         return null;
     }
 
     @Override
-    public final boolean hasCustomName() {
+    protected Optional<BlockUtil.FoundRectangle> getExitPortal(ServerLevel pDestination, BlockPos pFindFrom, boolean pIsToNether, WorldBorder pWorldBorder) {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean canChangeDimensions() {
         return false;
     }
 
     @Override
-    public final void setCustomNameVisible(boolean alwaysRenderNameTag) {}
+    public float getBlockExplosionResistance(Explosion pExplosion, BlockGetter pLevel, BlockPos pPos, BlockState pBlockState, FluidState pFluidState, float pExplosionPower) {
+        return Float.MAX_VALUE;
+    }
+
+    @Override
+    public boolean shouldBlockExplode(Explosion pExplosion, BlockGetter pLevel, BlockPos pPos, BlockState pBlockState, float pExplosionPower) {
+        return false;
+    }
+
+    @Override
+    public int getMaxFallDistance() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public boolean isIgnoringBlockTriggers() {
+        return true;
+    }
+
+    @Override
+    public boolean displayFireAnimation() {
+        return false;
+    }
+
+    @Override
+    public boolean isPushedByFluid() {
+        return false;
+    }
+
+    @Override
+    public boolean hasCustomName() {
+        return false;
+    }
+
+    @Override
+    public void setCustomNameVisible(boolean pAlwaysRenderNameTag) {}
 
     @Override
     public boolean isCustomNameVisible() {
@@ -625,160 +929,203 @@ public abstract class AbstractEntityFrozen extends Entity implements IEntityAddi
     }
 
     @Override
-    public final void setPositionAndUpdate(double x, double y, double z) {}
+    public void dismountTo(double pX, double pY, double pZ) {}
 
     @Override
-    public void recalculateSize() {}
+    public void teleportTo(double pX, double pY, double pZ) {}
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public final boolean getAlwaysRenderNameTagForRender() {
+    public boolean shouldShowName() {
         return false;
     }
 
-    public AxisAlignedBB getBoundingBox() {
+    @Override
+    public void refreshDimensions() {}
+
+    @Override
+    public Direction getDirection() {
+        return Direction.NORTH;
+    }
+
+    @Override
+    public Direction getMotionDirection() {
+        return Direction.NORTH;
+    }
+
+    @Override
+    public AABB getBoundingBoxForCulling() {
         return ZERO_AABB;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public AxisAlignedBB getRenderBoundingBox() {
+    protected AABB getBoundingBoxForPose(Pose pPose) {
         return ZERO_AABB;
     }
 
     @Override
-    protected AxisAlignedBB getBoundingBox(Pose pose) {
-        return ZERO_AABB;
+    public InteractionResult interactAt(Player pPlayer, Vec3 pVec, InteractionHand pHand) {
+        return InteractionResult.FAIL;
     }
 
     @Override
-    public final void setBoundingBox(AxisAlignedBB bb) {}
-
-    @Override
-    public final boolean isImmuneToExplosions() {
+    public boolean ignoreExplosion() {
         return true;
     }
 
     @Override
-    public final void applyEnchantments(LivingEntity livingEntity, Entity entityIn) {}
+    public void doEnchantDamageEffects(LivingEntity pLivingEntity, Entity pEntity) {}
 
     @Override
-    public final float getRotatedYaw(Rotation transformRotation) {
+    public void startSeenByPlayer(ServerPlayer pPlayer) {}
+
+    @Override
+    public void stopSeenByPlayer(ServerPlayer pPlayer) {}
+
+    @Override
+    public float rotate(Rotation pTransformRotation) {
         return 0;
     }
 
     @Override
-    public final float getMirroredYaw(Mirror transformMirror) {
+    public float mirror(Mirror pTransformMirror) {
         return 0;
     }
 
-    @Override
-    public final boolean ignoreItemEntityData() {
-        return false;
-    }
-
-    @Override
     @Nullable
-    public final Entity getControllingPassenger() {
+    @Override
+    public Entity getControllingPassenger() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Entity getFirstPassenger() {
         return null;
     }
 
     @Override
-    public final List<Entity> getPassengers() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public final boolean isPassenger(Entity entity) {
+    public boolean hasPassenger(Entity pEntity) {
         return false;
     }
 
     @Override
-    public final boolean isPassenger(Class<? extends Entity> entityClazz) {
+    public boolean hasPassenger(Predicate<Entity> pPredicate) {
         return false;
     }
 
     @Override
-    public final Collection<Entity> getRecursivePassengers() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public final Stream<Entity> getSelfAndPassengers() {
+    public Stream<Entity> getSelfAndPassengers() {
         return Stream.of(this);
     }
 
     @Override
-    public final boolean isOnePlayerRiding() {
+    public Stream<Entity> getPassengersAndSelf() {
+        return Stream.of(this);
+    }
+
+    @Override
+    public Iterable<Entity> getIndirectPassengers() {
+        return ImmutableSet.of();
+    }
+
+    @Override
+    public boolean hasExactlyOnePlayerPassenger() {
         return false;
     }
 
     @Override
-    public final Entity getLowestRidingEntity() {
+    public Entity getRootVehicle() {
         return this;
     }
 
     @Override
-    public final boolean isRidingSameEntity(Entity entityIn) {
+    public boolean isPassengerOfSameVehicle(Entity pEntity) {
         return false;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public final boolean isRidingOrBeingRiddenBy(Entity entityIn) {
+    public boolean hasIndirectPassenger(Entity pEntity) {
         return false;
     }
 
     @Override
-    public final boolean canPassengerSteer() {
+    public boolean isControlledByLocalInstance() {
         return false;
     }
 
-    @Override
     @Nullable
-    public final Entity getRidingEntity() {
+    @Override
+    public Entity getVehicle() {
         return null;
     }
 
     @Override
-    public final PushReaction getPushReaction() {
+    public PushReaction getPistonPushReaction() {
         return PushReaction.IGNORE;
     }
 
     @Override
-    protected final int getFireImmuneTicks() {
+    public SoundSource getSoundSource() {
+        return SoundSource.AMBIENT;
+    }
+
+    @Override
+    protected int getFireImmuneTicks() {
         return Integer.MAX_VALUE;
     }
 
     @Override
-    public final void lookAt(EntityAnchorArgument.Type anchor, Vector3d target) {}
+    public void lookAt(EntityAnchorArgument.Anchor pAnchor, Vec3 pTarget) {}
 
     @Override
-    public final boolean handleFluidAcceleration(ITag<Fluid> fluidTag, double p_210500_2_) {
+    public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> pFluidTag, double pMotionScale) {
         return false;
     }
 
     @Override
-    public final void setMotion(Vector3d motionIn) {}
+    public Vec3 getDeltaMovement() {
+        return Vec3.ZERO;
+    }
 
     @Override
-    public final void setMotion(double x, double y, double z) {}
+    public void setDeltaMovement(Vec3 pMotion) {}
 
     @Override
-    public final void setRawPosition(double x, double y, double z) {}
+    public void setDeltaMovement(double pX, double pY, double pZ) {}
 
     @Override
-    public final boolean canTrample(BlockState state, BlockPos pos, float fallDistance) {
+    public boolean canFreeze() {
         return false;
     }
 
     @Override
-    protected final void readAdditional(CompoundNBT tag) {
-        readDataFromNBT(tag);
+    public boolean isFreezing() {
+        return false;
     }
 
     @Override
-    protected final void writeAdditional(CompoundNBT tag) {
-        writeDataToNBT(tag);
+    public float getYRot() {
+        return 0;
+    }
+
+    @Override
+    public void setYRot(float pYRot) {}
+
+    @Override
+    public float getXRot() {
+        return 0;
+    }
+
+    @Override
+    public void setXRot(float pXRot) {}
+
+    @Override
+    public boolean mayInteract(Level pLevel, BlockPos pPos) {
+        return false;
+    }
+
+    @Override
+    public boolean canTrample(BlockState state, BlockPos pos, float fallDistance) {
+        return false;
     }
 }

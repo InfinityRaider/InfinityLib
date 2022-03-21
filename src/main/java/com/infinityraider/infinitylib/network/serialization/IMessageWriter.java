@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.network.serialization;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 public interface IMessageWriter<T> {
     /**
@@ -8,5 +8,5 @@ public interface IMessageWriter<T> {
      * @param buf the byte buffer
      * @param data the data to write
      */
-    void writeData(PacketBuffer buf, T data);
+    void writeData(FriendlyByteBuf buf, T data);
 }
