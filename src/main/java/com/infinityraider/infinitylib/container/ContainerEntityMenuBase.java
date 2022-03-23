@@ -8,11 +8,11 @@ import net.minecraft.world.inventory.MenuType;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-public class ContainerEntityBase<E extends Entity> extends ContainerBase {
+public class ContainerEntityMenuBase<E extends Entity> extends ContainerMenuBase {
 
     private final E entity;
 
-    public ContainerEntityBase(@Nullable MenuType<?> type, int id, E entity, Inventory inventory, int xOffset, int yOffset) {
+    public ContainerEntityMenuBase(@Nullable MenuType<?> type, int id, E entity, Inventory inventory, int xOffset, int yOffset) {
         super(type, id, inventory, xOffset, yOffset);
         // Set the Entity associated with the container.
         this.entity = Objects.requireNonNull(entity, "The Entity associated with an Entity Container may not be null!");
@@ -28,7 +28,7 @@ public class ContainerEntityBase<E extends Entity> extends ContainerBase {
     }
 
     @Override
-    public boolean canInteractWith(Player player) {
+    public boolean stillValid(Player player) {
         return this.getEntity().isAlive();
     }
 }

@@ -1,20 +1,17 @@
 package com.infinityraider.infinitylib.utility;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.Collection;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.Property;
-import net.minecraft.util.Direction;
 
-/**
- *
- */
 public class HashableBlockState {
 
     @Nonnull

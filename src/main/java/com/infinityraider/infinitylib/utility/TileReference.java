@@ -1,21 +1,21 @@
 package com.infinityraider.infinitylib.utility;
 
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.function.BiFunction;
 
-public class TileReference<T extends TileEntity> {
+public class TileReference<T extends BlockEntity> {
     private final BlockPos pos;
-    private final BiFunction<IWorldReader, BlockPos, T> getter;
+    private final BiFunction<LevelAccessor, BlockPos, T> getter;
 
     private Status status;
     private WeakReference<T> ref;
 
-    public TileReference(BlockPos pos, BiFunction<IWorldReader, BlockPos, T> getter) {
+    public TileReference(BlockPos pos, BiFunction<LevelAccessor, BlockPos, T> getter) {
         this.pos = pos;
         this.getter = getter;
         this.status = Status.UNLOADED;
@@ -42,7 +42,7 @@ public class TileReference<T extends TileEntity> {
     }
 
     @Nullable
-    public T getTile(IWorldReader world) {
+    public T getTile(LevelAccessor world) {
         switch (this.getStatus()) {
             case READY: return this.getTileReady(world);
             case UNLOADED: return this.getTileUnloaded(world);
@@ -51,7 +51,7 @@ public class TileReference<T extends TileEntity> {
         return null;    // never reached
     }
 
-    protected T getTileReady(IWorldReader world) {
+    protected T getTileReady(LevelAccessor world) {
         T tile = this.ref.get();
         if (tile == null) {
             this.status = this.checkLoaded(world) ? Status.REMOVED : Status.UNLOADED;
@@ -59,7 +59,7 @@ public class TileReference<T extends TileEntity> {
         return tile;
     }
 
-    protected T getTileUnloaded(IWorldReader world) {
+    protected T getTileUnloaded(LevelAccessor world) {
         if(this.checkLoaded(world)) {
             T tile = this.getter.apply(world, this.getPos());
             if(tile == null) {
@@ -74,11 +74,11 @@ public class TileReference<T extends TileEntity> {
         }
     }
 
-    protected T getTileRemoved(IWorldReader world) {
+    protected T getTileRemoved(LevelAccessor world) {
         return null;
     }
 
-    public boolean checkLoaded(IWorldReader world) {
+    public boolean checkLoaded(LevelAccessor world) {
         return world.isAreaLoaded(this.getPos(), 0);
     }
 

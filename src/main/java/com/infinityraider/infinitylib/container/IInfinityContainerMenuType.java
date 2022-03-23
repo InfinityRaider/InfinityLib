@@ -11,7 +11,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 
-public interface IInfinityContainerType extends IInfinityRegistrable<MenuType<?>> {
+public interface IInfinityContainerMenuType extends IInfinityRegistrable<MenuType<?>> {
 
     @Nullable
     IGuiFactory<?> getGuiFactory();

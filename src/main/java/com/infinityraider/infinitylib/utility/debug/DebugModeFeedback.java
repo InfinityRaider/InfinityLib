@@ -1,18 +1,18 @@
 package com.infinityraider.infinitylib.utility.debug;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.function.Consumer;
 
@@ -24,18 +24,18 @@ public class DebugModeFeedback extends DebugMode {
     }
 
     @Override
-    public void debugActionBlockClicked(ItemStack stack, ItemUseContext context) {
-        getDebugData(context.getWorld(), context.getPos(), l -> {
+    public void debugActionBlockClicked(ItemStack stack, UseOnContext context) {
+        getDebugData(context.getLevel(), context.getClickedPos(), l -> {
             InfinityLib.instance.getLogger().debug(l);
-            context.getPlayer().sendMessage(new StringTextComponent(l), Util.DUMMY_UUID);
+            context.getPlayer().sendMessage(new TextComponent(l), Util.NIL_UUID);
         });
     }
 
     @Override
-    public void debugActionClicked(ItemStack stack, World world, PlayerEntity player, Hand hand) {}
+    public void debugActionClicked(ItemStack stack, Level world, Player player, InteractionHand hand) {}
 
     @Override
-    public void debugActionEntityClicked(ItemStack stack, PlayerEntity player, LivingEntity target, Hand hand) {}
+    public void debugActionEntityClicked(ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {}
 
     /**
      * Gets strings representing the debug information for the
@@ -45,10 +45,10 @@ public class DebugModeFeedback extends DebugMode {
      * @param pos the block position
      * @param consumer a consumer accepting the lines of debug data.
      */
-    private void getDebugData(World world, BlockPos pos, Consumer<String> consumer) {
-        final boolean remote = world.isRemote();
+    private void getDebugData(Level world, BlockPos pos, Consumer<String> consumer) {
+        final boolean remote = world.isClientSide();
 
-        final TileEntity tile = world.getTileEntity(pos);
+        final BlockEntity tile = world.getBlockEntity(pos);
 
         consumer.accept("------------------");
         consumer.accept(remote ? "client" : "server" + " debug info:");

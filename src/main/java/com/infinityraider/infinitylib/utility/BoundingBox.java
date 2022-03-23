@@ -1,17 +1,17 @@
 package com.infinityraider.infinitylib.utility;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -190,103 +190,97 @@ public class BoundingBox implements Iterable<BlockPos> {
                 && !(this.maxX()+1 <= other.minX() || this.maxY()+1 <= other.minY() || this.maxZ()+1 <= other.minZ());
     }
 
-    public AxisAlignedBB toAxisAlignedBB() {
-        return new AxisAlignedBB(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
+    public AABB toAxisAlignedBB() {
+        return new AABB(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
     }
 
-    public boolean areAllChunksLoaded(World world) {
+    @SuppressWarnings("deprecation")
+    public boolean areAllChunksLoaded(Level world) {
         int chunkMinX = minX >> 4;
         int chunkMinZ = minZ >> 4;
         int chunkMaxX = maxX >> 4;
         int chunkMaxZ = maxZ >> 4;
-        return world.isAreaLoaded(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+        return world.hasChunksAt(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void renderWireFrame(Tessellator tessellator, Color color) {
-        BufferBuilder buffer = tessellator.getBuffer();
-        GlStateManager.disableTexture();
-        GlStateManager.disableLighting();
+    public void renderWireFrame(Tesselator tesselator, int red, int green, int blue, int alpha) {
+        BufferBuilder buffer = tesselator.getBuilder();
+        GlStateManager._disableTexture();
         GL11.glTranslatef(minX(), minY(), minZ());
 
         int x = xSize();
         int y = ySize();
         int z = zSize();
 
-        int red = color.getRed();
-        int green = color.getGreen();
-        int blue = color.getBlue();
-        int alpha = color.getAlpha();
-
         //x edges
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= x; i++) {
-            buffer.pos(i, 0.001F, 0.001F).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(i, 0.001F, 0.001F).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= x; i++) {
-            buffer.pos(i, y - 0.001F, 0.001F).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(i, y - 0.001F, 0.001F).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= x; i++) {
-            buffer.pos(i, y - 0.001F, z - 0.001F).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(i, y - 0.001F, z - 0.001F).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= x; i++) {
-            buffer.pos(i, 0.001F, z - 0.001F).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(i, 0.001F, z - 0.001F).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
+        tesselator.end();
 
         //y edges
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= y; i++) {
-            buffer.pos(0.001F, i, 0.001F).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(0.001F, i, 0.001F).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= y; i++) {
-            buffer.pos(x - 0.001F, i, 0.001F).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(x - 0.001F, i, 0.001F).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= y; i++) {
-            buffer.pos(x - 0.001F, i, z - 0.001F).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(x - 0.001F, i, z - 0.001F).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= y; i++) {
-            buffer.pos(0.001F, i, z - 0.001F).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(0.001F, i, z - 0.001F).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
+        tesselator.end();
 
         //z edges
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= z; i++) {
-            buffer.pos(0.001F, 0.001F, i).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(0.001F, 0.001F, i).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= z; i++) {
-            buffer.pos(x - 0.001F, 0.001F, i).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(x - 0.001F, 0.001F, i).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= z; i++) {
-            buffer.pos(x - 0.001F, y - 0.001F, i).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(x - 0.001F, y - 0.001F, i).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
-        buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        tesselator.end();
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         for(int i = 0; i <= z; i++) {
-            buffer.pos(0.001F, y - 0.001F, i).color(red, green, blue, alpha).endVertex();
+            buffer.vertex(0.001F, y - 0.001F, i).color(red, green, blue, alpha).endVertex();
         }
-        tessellator.draw();
+        tesselator.end();
 
         GL11.glTranslatef(-minX(), -minY(), -minZ());
-        GlStateManager.enableLighting();
-        GlStateManager.enableTexture();
+        GlStateManager._enableTexture();
     }
 
     @Override
@@ -341,7 +335,7 @@ public class BoundingBox implements Iterable<BlockPos> {
             int z = index / (X * Y);
             int y = (index - (X * Y * z))/X;
             index = index + 1;
-            return (x == 0 && y == 0 && z == 0) ? new BlockPos(offset) : offset.add(x, y, z);
+            return (x == 0 && y == 0 && z == 0) ? new BlockPos(offset) : offset.offset(x, y, z);
         }
     }
 }

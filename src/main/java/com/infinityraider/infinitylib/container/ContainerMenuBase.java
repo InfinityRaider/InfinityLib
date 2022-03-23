@@ -9,11 +9,11 @@ import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 
-public class ContainerBase extends AbstractContainerMenu {
+public class ContainerMenuBase extends AbstractContainerMenu {
 
     public static final int PLAYER_INVENTORY_SIZE = 36;
 
-    public ContainerBase(@Nullable MenuType<?> type, int id, Inventory inventory, int xOffset, int yOffset) {
+    public ContainerMenuBase(@Nullable MenuType<?> type, int id, Inventory inventory, int xOffset, int yOffset) {
         super(type, id);
         // Add the player's main inventory to the container.
         for (int i = 0; i < 3; i++) {
@@ -31,12 +31,12 @@ public class ContainerBase extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean canInteractWith(Player player) {
+    public boolean stillValid(Player player) {
         return true;
     }
 
     @Override
-    protected boolean mergeItemStack(ItemStack stack, int start, int stop, boolean backwards) {
+    protected boolean moveItemStackTo(ItemStack stack, int start, int stop, boolean backwards) {
         boolean foundSlot = false;
         int slotIndex = backwards ? stop - 1 : start;
         Slot slot;
@@ -44,19 +44,19 @@ public class ContainerBase extends AbstractContainerMenu {
         //try to stack with existing stacks first
         if (stack.isStackable()) {
             while (stack.getCount() > 0 && (!backwards && slotIndex < stop || backwards && slotIndex >= start)) {
-                slot = this.inventorySlots.get(slotIndex);
-                stackInSlot = slot.getStack();
-                if (!(stackInSlot.isEmpty()) && slot.isItemValid(stack) && stackInSlot.getItem() == stack.getItem() && ItemStack.areItemStackTagsEqual(stack, stackInSlot)) {
+                slot = this.slots.get(slotIndex);
+                stackInSlot = slot.getItem();
+                if (!(stackInSlot.isEmpty()) && slot.mayPlace(stack) && stackInSlot.getItem() == stack.getItem() && ItemStack.tagMatches(stack, stackInSlot)) {
                     int combinedSize = stackInSlot.getCount() + stack.getCount();
                     if (combinedSize <= stack.getMaxStackSize()) {
                         stack.setCount(0);
                         stackInSlot.setCount(combinedSize);
-                        slot.onSlotChanged();
+                        slot.setChanged();
                         foundSlot = true;
                     } else if (stackInSlot.getCount() < stack.getMaxStackSize()) {
                         stack.setCount(stack.getCount() - (stack.getMaxStackSize() - stackInSlot.getCount()));
                         stackInSlot.setCount(stack.getMaxStackSize());
-                        slot.onSlotChanged();
+                        slot.setChanged();
                         foundSlot = true;
                     }
                 }
@@ -67,11 +67,11 @@ public class ContainerBase extends AbstractContainerMenu {
         if (stack.getCount() > 0) {
             slotIndex = backwards ? stop - 1 : start;
             while (!backwards && slotIndex < stop || backwards && slotIndex >= start && !foundSlot) {
-                slot = this.inventorySlots.get(slotIndex);
-                stackInSlot = slot.getStack();
-                if (stackInSlot.isEmpty() && slot.isItemValid(stack)) {
-                    slot.putStack(stack.copy());
-                    slot.onSlotChanged();
+                slot = this.slots.get(slotIndex);
+                stackInSlot = slot.getItem();
+                if (stackInSlot.isEmpty() && slot.mayPlace(stack)) {
+                    slot.set(stack.copy());
+                    slot.setChanged();
                     stack.setCount(0);
                     foundSlot = true;
                     break;

@@ -10,10 +10,10 @@ import javax.annotation.Nonnull;
  * Simple class to wrap an IItemHandler as an IInventory while maintaining IItemHandler functionality
  */
 @SuppressWarnings("unused")
-public class InventoryItemHandler implements IInventoryItemHandler {
+public class ContainerItemHandler implements IContainerItemHandler {
     private final IItemHandler itemHandler;
 
-    public InventoryItemHandler(IItemHandler itemHandler) {
+    public ContainerItemHandler(IItemHandler itemHandler) {
         this.itemHandler = itemHandler;
     }
 

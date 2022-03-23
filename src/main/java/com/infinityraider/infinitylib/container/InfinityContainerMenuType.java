@@ -6,11 +6,11 @@ import net.minecraftforge.network.IContainerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class InfinityContainerType<T extends ContainerBase> extends MenuType<T> implements IInfinityContainerType {
+public class InfinityContainerMenuType<T extends ContainerMenuBase> extends MenuType<T> implements IInfinityContainerMenuType {
     private final String name;
     private final IGuiFactory<T> guiFactory;
 
-    private InfinityContainerType(String name, IContainerFactory<T> factory, IGuiFactory<T> guiFactory) {
+    private InfinityContainerMenuType(String name, IContainerFactory<T> factory, IGuiFactory<T> guiFactory) {
         super(factory);
         this.name = name;
         this.guiFactory = guiFactory;
@@ -27,7 +27,7 @@ public class InfinityContainerType<T extends ContainerBase> extends MenuType<T> 
         return true;
     }
 
-    public static <T extends ContainerBase> Builder<T> builder(String name, IContainerFactory<T> factory) {
+    public static <T extends ContainerMenuBase> Builder<T> builder(String name, IContainerFactory<T> factory) {
         return new Builder<>(name, factory);
     }
 
@@ -37,7 +37,7 @@ public class InfinityContainerType<T extends ContainerBase> extends MenuType<T> 
         return this.guiFactory;
     }
 
-    public static final class Builder<T extends ContainerBase> {
+    public static final class Builder<T extends ContainerMenuBase> {
         private final String name;
         private final IContainerFactory<T> factory;
         private IGuiFactory<T> guiFactory;
@@ -52,8 +52,8 @@ public class InfinityContainerType<T extends ContainerBase> extends MenuType<T> 
             return this;
         }
 
-        public InfinityContainerType<T> build() {
-            return new InfinityContainerType<>(this.name, this.factory, this.guiFactory);
+        public InfinityContainerMenuType<T> build() {
+            return new InfinityContainerMenuType<>(this.name, this.factory, this.guiFactory);
         }
     }
 

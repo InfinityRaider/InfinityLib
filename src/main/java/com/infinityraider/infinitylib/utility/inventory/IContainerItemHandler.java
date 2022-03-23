@@ -1,47 +1,47 @@
 package com.infinityraider.infinitylib.utility.inventory;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 
 /**
- * IInventory interface to link the IItemHandler methods automatically to the IInventory methods
+ * IInventory interface to link the IItemHandler methods automatically to the Container methods
  */
-public interface IInventoryItemHandler extends IInventoryWrapped, IItemHandlerWrapped {
+public interface IContainerItemHandler extends IContainerWrapped, IItemHandlerWrapped {
     @Nonnull
     @Override
-    default ItemStack getStackInSlot(int index) {
+    default ItemStack getItem(int index) {
         return IItemHandlerWrapped.super.getStackInSlot(index);
     }
 
     @Override
     default int getSlots() {
-        return this.getSizeInventory();
+        return this.getContainerSize();
     }
 
     @Override
     default int getSlotLimit(int slot) {
-        return this.getInventoryStackLimit();
+        return this.getMaxStackSize();
     }
 
     @Override
     @Nonnull
     default ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-        if(!isValidSlot(slot) || stack.isEmpty() || stack.getCount() <= 0 || !this.isItemValidForSlot(slot, stack)) {
+        if(!isValidSlot(slot) || stack.isEmpty() || stack.getCount() <= 0 || !this.canPlaceItem(slot, stack)) {
             return stack;
         }
         ItemStack inSlot = this.getStackInSlot(slot);
         if(inSlot.isEmpty() || inSlot.getCount() <= 0) {
             if(!simulate) {
-                this.setInventorySlotContents(slot, stack.copy());
+                this.setItem(slot, stack.copy());
             }
             return ItemStack.EMPTY;
-        } else if(ItemStack.areItemsEqual(inSlot, stack) && ItemStack.areItemStackTagsEqual(inSlot, stack)) {
+        } else if(ItemStack.matches(inSlot, stack) && ItemStack.tagMatches(inSlot, stack)) {
             int max = stack.getItem().getItemStackLimit(stack);
             int transfer = Math.min(stack.getCount(), max - inSlot.getCount());
             if(!simulate) {
                 inSlot.setCount(inSlot.getCount() + transfer);
-                this.setInventorySlotContents(slot, inSlot);
+                this.setItem(slot, inSlot);
             }
             if(transfer >= stack.getCount()) {
                 return ItemStack.EMPTY;
@@ -68,14 +68,14 @@ public interface IInventoryItemHandler extends IInventoryWrapped, IItemHandlerWr
             ItemStack stack = inSlot.copy();
             if(amount >= inSlot.getCount()) {
                 if(!simulate) {
-                    this.setInventorySlotContents(slot, ItemStack.EMPTY);
+                    this.setItem(slot, ItemStack.EMPTY);
                 }
                 return stack;
             } else {
                 stack.setCount(amount);
                 if(!simulate) {
                     inSlot.setCount(inSlot.getCount() - amount);
-                    this.setInventorySlotContents(slot, inSlot);
+                    this.setItem(slot, inSlot);
                 }
                 return stack;
             }
@@ -84,7 +84,7 @@ public interface IInventoryItemHandler extends IInventoryWrapped, IItemHandlerWr
 
     @Override
     default boolean isEmpty() {
-        for(int i = 0; i < this.getSizeInventory(); i++) {
+        for(int i = 0; i < this.getContainerSize(); i++) {
             if(!this.getStackInSlot(i).isEmpty()) {
                 return false;
             }
@@ -96,7 +96,7 @@ public interface IInventoryItemHandler extends IInventoryWrapped, IItemHandlerWr
 
     @Override
     default boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-        return this.isItemValidForSlot(slot, stack);
+        return this.canPlaceItem(slot, stack);
     }
 
     default boolean isValidSlot(int slot) {

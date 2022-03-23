@@ -4,7 +4,7 @@ import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
 import com.infinityraider.infinitylib.config.Config;
-import com.infinityraider.infinitylib.container.IInfinityContainerType;
+import com.infinityraider.infinitylib.container.IInfinityContainerMenuType;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.crafting.RecipeSerializers;
 import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
@@ -196,9 +196,9 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerContainers(InfinityMod<?,?> mod) {
         // Register containers
-        this.registerObjects(mod, mod.getModContainerRegistry(), Classes.CONTAINER_TYPE, ForgeRegistries.CONTAINERS, containerType -> {
-            if(containerType instanceof IInfinityContainerType) {
-                this.registerGuiContainer((IInfinityContainerType) containerType);
+        this.registerObjects(mod, mod.getModContainerRegistry(), Classes.CONTAINER_MENU_TYPE, ForgeRegistries.CONTAINERS, containerType -> {
+            if(containerType instanceof IInfinityContainerMenuType) {
+                this.registerGuiContainer((IInfinityContainerMenuType) containerType);
             }
         });
     }
@@ -235,7 +235,7 @@ public interface IProxy extends IProxyBase<Config> {
         }
     }
 
-    default void registerGuiContainer(IInfinityContainerType containerType) {}
+    default void registerGuiContainer(IInfinityContainerMenuType containerType) {}
 
     default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Object modRegistry,
                                                                     Class<? extends IInfinityRegistrable<T>> clazz,
@@ -290,7 +290,7 @@ public interface IProxy extends IProxyBase<Config> {
 
         private static final Class<? extends IInfinityRegistrable<MobEffect>> POTION_EFFECT = IInfinityPotionEffect.class;
 
-        private static final Class<? extends IInfinityRegistrable<MenuType<?>>> CONTAINER_TYPE = IInfinityContainerType.class;
+        private static final Class<? extends IInfinityRegistrable<MenuType<?>>> CONTAINER_MENU_TYPE = IInfinityContainerMenuType.class;
 
         private static final Class<? extends IInfinityRegistrable<RecipeSerializer<?>>> RECIPE_SERIALIZER = IInfRecipeSerializer.class;
 

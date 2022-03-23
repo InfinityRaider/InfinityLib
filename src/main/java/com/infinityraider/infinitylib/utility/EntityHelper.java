@@ -1,11 +1,11 @@
 package com.infinityraider.infinitylib.utility;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.ai.goal.GoalSelector;
-import net.minecraft.entity.ai.goal.PrioritizedGoal;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
@@ -16,7 +16,7 @@ public class EntityHelper {
     private static final Field goalsField;
     private static final Field priorityField;
 
-    public static boolean injectGoal(MobEntity entity, Goal goal, int priority) {
+    public static boolean injectGoal(Mob entity, Goal goal, int priority) {
         if(incrementPriorities(entity.goalSelector, priority)) {
             entity.goalSelector.addGoal(priority, goal);
             return true;
@@ -35,7 +35,7 @@ public class EntityHelper {
             return false;
         }
         try {
-            Set<PrioritizedGoal> goals = (Set<PrioritizedGoal>) goalsField.get(selector);
+            Set<WrappedGoal> goals = (Set<WrappedGoal>) goalsField.get(selector);
             return goals.stream().filter(goal -> goal.getPriority() >= priority).allMatch(goal -> {
                 try {
                     priorityField.set(goal, ((int) priorityField.get(goal)) + 1);
@@ -69,10 +69,11 @@ public class EntityHelper {
         }
     }
 
+    //TODO: fix this if reflection does not work
     private static Field initPriorityField() {
         try {
             // Retrieve field
-            Field field = ObfuscationReflectionHelper.findField(PrioritizedGoal.class, "field_220775_b");
+            Field field = ObfuscationReflectionHelper.findField(WrappedGoal.class, "field_220775_b");
             // Remove final modifier
             Field modifiersField = Field.class.getDeclaredField("modifiers");
             modifiersField.setAccessible(true);

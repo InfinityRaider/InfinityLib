@@ -5,7 +5,7 @@ import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
 import com.infinityraider.infinitylib.config.Config;
-import com.infinityraider.infinitylib.container.IInfinityContainerType;
+import com.infinityraider.infinitylib.container.IInfinityContainerMenuType;
 import com.infinityraider.infinitylib.entity.EmptyEntityRenderSupplier;
 import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.item.IInfinityItem;
@@ -25,7 +25,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -81,10 +80,10 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     }
 
     @Override
-    public void registerGuiContainer(IInfinityContainerType containerType) {
-        IInfinityContainerType.IGuiFactory<?> factory = containerType.getGuiFactory();
+    public void registerGuiContainer(IInfinityContainerMenuType containerType) {
+        IInfinityContainerMenuType.IGuiFactory<?> factory = containerType.getGuiFactory();
         if(factory != null) {
-            MenuScreens.register(containerType.cast(), IInfinityContainerType.castGuiFactory(factory));
+            MenuScreens.register(containerType.cast(), IInfinityContainerMenuType.castGuiFactory(factory));
         }
     }
 

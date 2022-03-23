@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.utility.inventory;
 
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 
@@ -14,10 +14,10 @@ import javax.annotation.Nonnull;
  *
  * It is ugly, I know
  */
-public interface IInventoryWrapped extends IInventory {
+public interface IContainerWrapped extends Container {
     @Nonnull
     @Override
-    default ItemStack getStackInSlot(int index) {
+    default ItemStack getItem(int index) {
         return this.getStackInInvSlot(index);
     }
 
