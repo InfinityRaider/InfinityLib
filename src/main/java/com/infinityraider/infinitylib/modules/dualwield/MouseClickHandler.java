@@ -1,14 +1,14 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.multiplayer.PlayerController;
-import net.minecraft.entity.*;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.GameType;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
@@ -19,7 +19,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class MouseClickHandler {
     private static final MouseClickHandler INSTANCE = new MouseClickHandler();
 
-    private PlayerController playerController;
+    private MultiPlayerGameMode playerController;
 
     private boolean leftButtonPressed = false;
     private boolean rightButtonPressed = false;
@@ -36,31 +36,31 @@ public class MouseClickHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onLeftClick(InputEvent.RawMouseEvent event) {
-        if(Minecraft.getInstance().currentScreen != null) {
+        if(Minecraft.getInstance().screen != null) {
             // We do not want to do anything while a GUI is open
             return;
         }
-        ClientPlayerEntity player = Minecraft.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if(player == null) {
             return;
         }
-        ItemStack stack = player.getHeldItemOffhand();
+        ItemStack stack = player.getOffhandItem();
         if(event.getButton() != LMB) {
             return;
         }
         leftButtonPressed = !leftButtonPressed;
-        if(stack == null || stack.isEmpty()) {
+        if(stack.isEmpty()) {
             return;
         }
         if(stack.getItem() instanceof IDualWieldedWeapon) {
             if(leftButtonPressed) {
-                boolean shift = Minecraft.getInstance().gameSettings.keyBindSneak.isKeyDown();
-                boolean ctrl = Minecraft.getInstance().gameSettings.keyBindSprint.isKeyDown();
+                boolean shift = Minecraft.getInstance().options.keyShift.isDown();
+                boolean ctrl = Minecraft.getInstance().options.keySprint.isDown();
                 IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-                attackEntity(weapon, player, stack, true, shift, ctrl, Hand.OFF_HAND);
-                weapon.onItemUsed(stack, player, shift, ctrl, Hand.OFF_HAND);
+                attackEntity(weapon, player, stack, true, shift, ctrl, InteractionHand.OFF_HAND);
+                weapon.onItemUsed(stack, player, shift, ctrl, InteractionHand.OFF_HAND);
                 new MessageMouseButtonPressed(true, shift, ctrl).sendToServer();
-                Minecraft.getInstance().player.swingArm(Hand.OFF_HAND);
+                Minecraft.getInstance().player.swing(InteractionHand.OFF_HAND);
             }
             event.setResult(Event.Result.DENY);
             event.setCanceled(true);
@@ -70,56 +70,56 @@ public class MouseClickHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onRightClick(InputEvent.RawMouseEvent event) {
-        if(Minecraft.getInstance().currentScreen != null) {
+        if(Minecraft.getInstance().screen != null) {
             // We do not want to do anything while a GUI is open
             return;
         }
-        ClientPlayerEntity player = Minecraft.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if(player == null) {
             return;
         }
-        ItemStack stack = player.getHeldItemMainhand();
+        ItemStack stack = player.getMainHandItem();
         if(event.getButton() != RMB) {
             return;
         }
         rightButtonPressed = !rightButtonPressed;
-        if(stack == null || stack.isEmpty()) {
+        if(stack.isEmpty()) {
             return;
         }
         if(stack.getItem() instanceof IDualWieldedWeapon) {
             if(rightButtonPressed) {
-                boolean shift = Minecraft.getInstance().gameSettings.keyBindSneak.isKeyDown();
-                boolean ctrl = Minecraft.getInstance().gameSettings.keyBindSprint.isKeyDown();
+                boolean shift = Minecraft.getInstance().options.keyShift.isDown();
+                boolean ctrl = Minecraft.getInstance().options.keySprint.isDown();
                 IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-                attackEntity(weapon, player, stack, false, shift, ctrl, Hand.MAIN_HAND);
-                weapon.onItemUsed(stack, player, shift, ctrl, Hand.MAIN_HAND);
+                attackEntity(weapon, player, stack, false, shift, ctrl, InteractionHand.MAIN_HAND);
+                weapon.onItemUsed(stack, player, shift, ctrl, InteractionHand.MAIN_HAND);
                 new MessageMouseButtonPressed(false, shift, ctrl).sendToServer();
-                Minecraft.getInstance().player.swingArm(Hand.MAIN_HAND);
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
             event.setResult(Event.Result.DENY);
             event.setCanceled(true);
         }
     }
 
-    private void attackEntity(IDualWieldedWeapon weapon, ClientPlayerEntity player, ItemStack stack, boolean left, boolean shift, boolean ctrl, Hand hand) {
-        if(Minecraft.getInstance().objectMouseOver == null) {
+    private void attackEntity(IDualWieldedWeapon weapon, LocalPlayer player, ItemStack stack, boolean left, boolean shift, boolean ctrl, InteractionHand hand) {
+        if(Minecraft.getInstance().hitResult == null) {
             return;
         }
         Entity target = null;
-        RayTraceResult mouseOverObj = Minecraft.getInstance().objectMouseOver;
-        if(mouseOverObj instanceof EntityRayTraceResult) {
-            target = ((EntityRayTraceResult) mouseOverObj).getEntity();
+        HitResult mouseOverObj = Minecraft.getInstance().hitResult;
+        if(mouseOverObj instanceof EntityHitResult) {
+            target = ((EntityHitResult) mouseOverObj).getEntity();
         }
         if(target != null) {
-            if(!weapon.onItemAttack(stack, player, target, shift, ctrl, left ? Hand.OFF_HAND : Hand.MAIN_HAND)) {
+            if(!weapon.onItemAttack(stack, player, target, shift, ctrl, left ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND)) {
                 if(this.playerController == null) {
-                    this.playerController = Minecraft.getInstance().playerController;
+                    this.playerController = Minecraft.getInstance().gameMode;
                 }
                 if(this.playerController != null) {
                     new MessageAttackDualWielded(target, left, shift, ctrl).sendToServer();
-                    if(this.playerController.getCurrentGameType() != GameType.SPECTATOR) {
+                    if(this.playerController.getPlayerMode() != GameType.SPECTATOR) {
                         ModuleDualWield.getInstance().attackTargetEntityWithCurrentItem(player, target, weapon, stack, hand);
-                        player.resetCooldown();
+                        player.resetAttackStrengthTicker();
                     }
                 }
             }

@@ -2,11 +2,12 @@ package com.infinityraider.infinitylib.modules.keyboard;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.modules.Module;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.KeyMapping;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
+import java.util.OptionalInt;
 
 public class ModuleKeyboard extends Module {
     private static final ModuleKeyboard INSTANCE = new ModuleKeyboard();
@@ -23,8 +24,13 @@ public class ModuleKeyboard extends Module {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public boolean isKeyPressed(KeyBinding key) {
-        return this.isKeyPressed(key.getKey().getKeyCode());
+    public boolean isKeyPressed(KeyMapping key) {
+        return this.isKeyPressed(key.getKey().getNumericKeyValue());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public boolean isKeyPressed(OptionalInt key) {
+        return key.isPresent() && this.isKeyPressed(key.getAsInt());
     }
 
     @OnlyIn(Dist.CLIENT)

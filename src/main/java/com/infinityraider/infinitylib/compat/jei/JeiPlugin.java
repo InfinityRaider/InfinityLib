@@ -7,7 +7,6 @@ import com.infinityraider.infinitylib.crafting.dynamictexture.IDynamicTextureIng
 import com.infinityraider.infinitylib.crafting.dynamictexture.ShapedDynamicTextureRecipe;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
 import mezz.jei.api.IModPlugin;
-import mezz.jei.api.MethodsReturnNonnullByDefault;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.ingredients.IIngredients;
@@ -16,9 +15,10 @@ import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICraftingCategor
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICustomCraftingCategoryExtension;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
-import net.minecraft.block.Block;
-import net.minecraft.item.crafting.ICraftingRecipe;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Size2i;
@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 @mezz.jei.api.JeiPlugin
 @OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
-@MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public class JeiPlugin implements IModPlugin {
 
     public static final ResourceLocation ID = new ResourceLocation(InfinityLib.instance.getModId(), "compat_jei");
@@ -45,7 +45,7 @@ public class JeiPlugin implements IModPlugin {
     @Override
     public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
         // Extend Vanilla crafting recipe category with the dynamic texture crafting
-        IExtendableRecipeCategory<ICraftingRecipe, ICraftingCategoryExtension> category = registration.getCraftingCategory();
+        IExtendableRecipeCategory<CraftingRecipe, ICraftingCategoryExtension> category = registration.getCraftingCategory();
         category.addCategoryExtension(ShapedDynamicTextureRecipe.class, Objects::nonNull, DynamicTextureRecipeExtension::new);
     }
 
@@ -77,7 +77,7 @@ public class JeiPlugin implements IModPlugin {
                             return materials.stream().map(((IDynamicTextureIngredient) ingredient)::asStackWithMaterial)
                                     .collect(Collectors.toList());
                         }
-                        return Lists.newArrayList(ingredient.getMatchingStacks());
+                        return Lists.newArrayList(ingredient.getItems());
                     }).collect(Collectors.toList())
             );
             // Set outputs

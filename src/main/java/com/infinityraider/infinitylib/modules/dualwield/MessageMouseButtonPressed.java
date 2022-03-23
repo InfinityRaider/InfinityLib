@@ -1,11 +1,11 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageMouseButtonPressed extends MessageBase {
     private boolean left;
@@ -28,15 +28,15 @@ public class MessageMouseButtonPressed extends MessageBase {
 
     @Override
     protected void processMessage(NetworkEvent.Context ctx) {
-        ServerPlayerEntity player = ctx.getSender();
-        ItemStack stack = player.getHeldItem(left ? Hand.OFF_HAND : Hand.MAIN_HAND);
+        ServerPlayer player = ctx.getSender();
+        ItemStack stack = player.getItemInHand(left ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
         // Forward item use to the stack
         if (stack != null && stack.getItem() instanceof IDualWieldedWeapon) {
             IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-            weapon.onItemUsed(stack, player, shift, ctrl, left ? Hand.OFF_HAND : Hand.MAIN_HAND);
+            weapon.onItemUsed(stack, player, shift, ctrl, left ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
         }
         // Notify all clients of the item usage (for animation)
-        new MessageSwingArm(player, left ? Hand.OFF_HAND : Hand.MAIN_HAND).sendToAll();
+        new MessageSwingArm(player, left ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND).sendToAll();
 
     }
 }

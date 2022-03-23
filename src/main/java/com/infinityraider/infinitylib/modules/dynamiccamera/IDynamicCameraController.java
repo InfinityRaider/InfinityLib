@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.modules.dynamiccamera;
 
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Methods in this interface are only called on the client
@@ -41,15 +41,15 @@ public interface IDynamicCameraController {
     /**
      * @return The required position to place the camera at
      */
-    Vector3d getObserverPosition();
+    Vec3 getObserverPosition();
 
     /**
      * @return The required orientation to place the camera in
      */
-    Vector2f getObserverOrientation();
+    Vec2 getObserverOrientation();
 
     /**
      * Callback for when the field of view changed, can be used to recalculate position or orientation
      */
-    void onFieldOfViewChanged(float fov);
+    void onFieldOfViewChanged(double fov);
 }

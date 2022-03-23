@@ -1,10 +1,10 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.modules.playeranimations.PlayerAnimationManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Effects;
-import net.minecraft.util.Hand;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderPlayerEvent;
@@ -23,29 +23,29 @@ public class ArmSwingHandler {
         return INSTANCE;
     }
 
-    private final Map<UUID, Map<Hand, SwingProgress>> swingHandlers;
+    private final Map<UUID, Map<InteractionHand, SwingProgress>> swingHandlers;
 
     private ArmSwingHandler() {
         this.swingHandlers = new HashMap<>();
     }
 
-    public void swingArm(PlayerEntity player, Hand hand) {
+    public void swingArm(Player player, InteractionHand hand) {
         this.getSwingProgressForPlayerAndHand(player, hand).swingArm();
     }
 
-    public float getSwingProgress(PlayerEntity player, Hand hand, float partialTick) {
+    public float getSwingProgress(Player player, InteractionHand hand, float partialTick) {
         return this.getSwingProgressForPlayerAndHand(player, hand).getSwingProgress(partialTick);
     }
 
-    public SwingProgress getSwingProgressForPlayerAndHand(PlayerEntity player, Hand hand) {
-        if(!swingHandlers.containsKey(player.getUniqueID())) {
+    public SwingProgress getSwingProgressForPlayerAndHand(Player player, InteractionHand hand) {
+        if(!swingHandlers.containsKey(player.getUUID())) {
             SwingProgress progress = new SwingProgress(player, hand);
-            Map<Hand, SwingProgress> subMap = new HashMap<>();
+            Map<InteractionHand, SwingProgress> subMap = new HashMap<>();
             subMap.put(hand, progress);
-            swingHandlers.put(player.getUniqueID(), subMap);
+            swingHandlers.put(player.getUUID(), subMap);
             return progress;
         }
-        Map<Hand, SwingProgress> subMap = swingHandlers.get(player.getUniqueID());
+        Map<InteractionHand, SwingProgress> subMap = swingHandlers.get(player.getUUID());
         if(!subMap.containsKey(hand)) {
             SwingProgress progress = new SwingProgress(player, hand);
             subMap.put(hand, progress);
@@ -58,7 +58,7 @@ public class ArmSwingHandler {
     @SuppressWarnings("unused")
     public void onUpdateTick(TickEvent.ClientTickEvent event) {
         if(event.phase == TickEvent.Phase.END) {
-            for(Map<Hand, SwingProgress> subMap : this.swingHandlers.values()) {
+            for(Map<InteractionHand, SwingProgress> subMap : this.swingHandlers.values()) {
                 subMap.values().forEach(SwingProgress::onUpdate);
             }
         }
@@ -67,30 +67,30 @@ public class ArmSwingHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onPlayerRenderCall(RenderPlayerEvent.Pre event) {
-        float left = this.getSwingProgress(event.getPlayer(), Hand.OFF_HAND, event.getPartialRenderTick());
-        float right = this.getSwingProgress(event.getPlayer(), Hand.MAIN_HAND, event.getPartialRenderTick());
+        float left = this.getSwingProgress(event.getPlayer(), InteractionHand.OFF_HAND, event.getPartialTick());
+        float right = this.getSwingProgress(event.getPlayer(), InteractionHand.MAIN_HAND, event.getPartialTick());
         PlayerAnimationManager.setSwingProgress(event.getRenderer(), left, right);
     }
 
     private static class SwingProgress {
-        private final PlayerEntity player;
-        private final Hand hand;
+        private final Player player;
+        private final InteractionHand hand;
 
         private float swingProgress;
         private float swingProgressPrev;
         private int swingProgressInt;
         private boolean isSwingInProgress;
 
-        private SwingProgress(PlayerEntity player, Hand hand) {
+        private SwingProgress(Player player, InteractionHand hand) {
             this.player = player;
             this.hand = hand;
         }
 
-        public PlayerEntity getPlayer() {
+        public Player getPlayer() {
             return this.player;
         }
 
-        public Hand getHand() {
+        public InteractionHand getHand() {
             return this.hand;
         }
 
@@ -122,8 +122,8 @@ public class ArmSwingHandler {
         }
 
         public void swingArm() {
-            ItemStack stack = this.getPlayer().getHeldItem(getHand());
-            if (stack != null && stack.getItem().onEntitySwing(stack, this.getPlayer())) {
+            ItemStack stack = this.getPlayer().getItemInHand(getHand());
+            if (stack.getItem().onEntitySwing(stack, this.getPlayer())) {
                 return;
             }
             if (!this.isSwingInProgress || this.swingProgressInt >= this.getArmSwingAnimationEnd() / 2 || this.swingProgressInt < 0) {
@@ -133,10 +133,10 @@ public class ArmSwingHandler {
         }
 
         private int getArmSwingAnimationEnd() {
-            return this.getPlayer().isPotionActive(Effects.HASTE)
-                    ? 6 - (1 + this.getPlayer().getActivePotionEffect(Effects.HASTE).getAmplifier())
-                    : (this.getPlayer().isPotionActive(Effects.MINING_FATIGUE)
-                    ? 6 + (1 + this.getPlayer().getActivePotionEffect(Effects.MINING_FATIGUE).getAmplifier()) * 2 : 6);
+            return this.getPlayer().hasEffect(MobEffects.DIG_SPEED)
+                    ? 6 - (1 + this.getPlayer().getEffect(MobEffects.DIG_SPEED).getAmplifier())
+                    : (this.getPlayer().hasEffect(MobEffects.DIG_SLOWDOWN)
+                    ? 6 + (1 + this.getPlayer().getEffect(MobEffects.DIG_SLOWDOWN).getAmplifier()) * 2 : 6);
         }
     }
 }

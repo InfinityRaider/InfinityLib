@@ -5,7 +5,7 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.modules.Module;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.FOVUpdateEvent;
+import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
@@ -88,7 +88,7 @@ public class ModuleDynamicCamera extends Module {
     @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
     public void onRenderPlayer(RenderPlayerEvent.Pre event) {
-        if(DynamicCamera.isCameraInPlayer(InfinityLib.instance.getClientPlayer(), event.getPartialRenderTick())) {
+        if(DynamicCamera.isCameraInPlayer(InfinityLib.instance.getClientPlayer(), event.getPartialTick())) {
             event.setResult(Event.Result.DENY);
             event.setCanceled(true);
         }
@@ -106,7 +106,7 @@ public class ModuleDynamicCamera extends Module {
 
     @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onFieldOfViewUpdate(FOVUpdateEvent event) {
-        DynamicCamera.onFieldOfViewUpdate(event.getNewfov());
+    public void onFieldOfViewUpdate(EntityViewRenderEvent.FieldOfView event) {
+        DynamicCamera.onFieldOfViewUpdate(event.getFOV());
     }
 }

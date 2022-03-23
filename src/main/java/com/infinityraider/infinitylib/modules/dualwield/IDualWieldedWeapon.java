@@ -1,9 +1,9 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Interface implemented in Item classes which should be dual wielding weapons,
@@ -27,7 +27,7 @@ public interface IDualWieldedWeapon {
      * @param ctrl if ctrl was held
      * @param hand the hand with which the item was used
      */
-    void onItemUsed(ItemStack stack, PlayerEntity player, boolean shift, boolean ctrl, Hand hand);
+    void onItemUsed(ItemStack stack, Player player, boolean shift, boolean ctrl, InteractionHand hand);
 
     /**
      * Called when an entity is attacked with the weapon, can only be cancelled client side.
@@ -45,7 +45,7 @@ public interface IDualWieldedWeapon {
      * @param hand the hand with which the item was used to attack
      * @return if the attack should be cancelled
      */
-    boolean onItemAttack(ItemStack stack, PlayerEntity player, Entity e, boolean shift, boolean ctrl, Hand hand);
+    boolean onItemAttack(ItemStack stack, Player player, Entity e, boolean shift, boolean ctrl, InteractionHand hand);
 
     /**
      * When attacking a player using an axe, and if the player is blocking with a shield, it is possible to break the target's blocking.

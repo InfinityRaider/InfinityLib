@@ -1,20 +1,20 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Hand;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageSwingArm extends MessageBase {
-    private PlayerEntity player;
+    private Player player;
     private int hand;
 
     public MessageSwingArm() {
         super();
     }
 
-    public MessageSwingArm(PlayerEntity player, Hand hand) {
+    public MessageSwingArm(Player player, InteractionHand hand) {
         this();
         this.player = player;
         this.hand = hand.ordinal();
@@ -28,7 +28,7 @@ public class MessageSwingArm extends MessageBase {
     @Override
     protected void processMessage(NetworkEvent.Context ctx) {
         if(this.player != null) {
-            ArmSwingHandler.getInstance().swingArm(this.player, Hand.values()[this.hand]);
+            ArmSwingHandler.getInstance().swingArm(this.player, InteractionHand.values()[this.hand]);
         }
     }
 }

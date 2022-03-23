@@ -1,12 +1,12 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageAttackDualWielded extends MessageBase {
     private boolean left;
@@ -33,12 +33,12 @@ public class MessageAttackDualWielded extends MessageBase {
 
     @Override
     protected void processMessage(NetworkEvent.Context ctx) {
-        ServerPlayerEntity player = ctx.getSender();
+        ServerPlayer player = ctx.getSender();
         if(player != null) {
-            ItemStack stack = player.getHeldItem(left ? Hand.OFF_HAND : Hand.MAIN_HAND);
+            ItemStack stack = player.getItemInHand(left ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
             if(stack != null && stack.getItem() instanceof IDualWieldedWeapon) {
                 IDualWieldedWeapon weapon = (IDualWieldedWeapon) stack.getItem();
-                Hand hand = left ? Hand.OFF_HAND : Hand.MAIN_HAND;
+                InteractionHand hand = left ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
                 weapon.onItemAttack(stack, player, entity, shift, ctrl, hand);
                 ModuleDualWield.getInstance().attackTargetEntityWithCurrentItem(player, entity, weapon, stack, hand);
             }

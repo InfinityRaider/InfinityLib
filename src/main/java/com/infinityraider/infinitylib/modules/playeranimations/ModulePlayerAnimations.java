@@ -16,6 +16,6 @@ public class ModulePlayerAnimations extends Module {
     @Override
     @OnlyIn(Dist.CLIENT)
     public void postInitClient() {
-        ModelPlayerCustomized.replaceOldModel();
+        //ModelPlayerCustomized.replaceOldModel();
     }
 }

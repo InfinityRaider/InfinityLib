@@ -37,11 +37,7 @@ public class MessageSyncState extends MessageBase {
     @Override
     protected void processMessage(NetworkEvent.Context ctx) {
         if(this.player != null) {
-            PlayerStateHandler.getInstance().getState(this.player)
-                    .setInvisible(((this.state) & 1) == 1)
-                    .setInvulnerable(((this.state >> 1) & 1) == 1)
-                    .setEthereal(((this.state >> 2) & 1) == 1)
-                    .setUndetectable(((this.state >> 3) & 1) == 1);
+            ModulePlayerState.getInstance().getState(this.player).onSync(this.state);
         }
     }
 }

@@ -8,6 +8,7 @@ import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
@@ -78,7 +79,7 @@ public class DynamicTextureIngredient extends Ingredient implements IDynamicText
             if(!json.has("material")) {
                 throw new JsonParseException("com.infinityraider.infinitylib.crafting.DynamicTextureIngredient requires a material element");
             }
-            return new DynamicTextureIngredient(new ResourceLocation(JSONUtils.getString(json, "material")));
+            return new DynamicTextureIngredient(new ResourceLocation(GsonHelper.getAsString(json, "material")));
         }
 
         @Override

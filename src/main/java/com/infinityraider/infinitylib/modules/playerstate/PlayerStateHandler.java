@@ -16,9 +16,6 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.HashMap;
-import java.util.UUID;
-
 public class PlayerStateHandler {
     private static final PlayerStateHandler INSTANCE = new PlayerStateHandler();
 
@@ -26,18 +23,7 @@ public class PlayerStateHandler {
         return INSTANCE;
     }
 
-    private final ThreadLocal<HashMap<UUID, PlayerState>> states;
-
-    private PlayerStateHandler() {
-        this.states = ThreadLocal.withInitial(HashMap::new);
-    }
-
-    PlayerState getState(Player player) {
-        if(!states.get().containsKey(player.getUUID())) {
-            states.get().put(player.getUUID(), PlayerState.createState(player));
-        }
-        return states.get().get(player.getUUID());
-    }
+    private PlayerStateHandler() {}
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     @SuppressWarnings("unused")
@@ -46,7 +32,7 @@ public class PlayerStateHandler {
             Entity hit = ((EntityHitResult) event.getRayTraceResult()).getEntity();
             if(hit instanceof Player) {
                 Player player = (Player) hit;
-                if (getState(player).isEthereal()) {
+                if (StatusEffect.ETHEREAL.isActive(player)) {
                     event.setCanceled(true);
                     event.setResult(Event.Result.DENY);
                 }
@@ -59,7 +45,7 @@ public class PlayerStateHandler {
     public void onEntityHurtEvent(LivingHurtEvent event) {
         if(event.getEntityLiving() instanceof Player) {
             Player player = (Player) event.getEntityLiving();
-            if(getState(player).isInvulnerable()) {
+            if(StatusEffect.INVULNERABLE.isActive(player)) {
                 event.setCanceled(true);
                 event.setResult(Event.Result.DENY);
             }
@@ -82,7 +68,7 @@ public class PlayerStateHandler {
 
     @OnlyIn(Dist.CLIENT)
     private void cancelRenderEvent(RenderPlayerEvent event) {
-        if(getState(event.getPlayer()).isInvisible()) {
+        if(StatusEffect.INVISIBLE.isActive(event.getPlayer())) {
             if(event.isCancelable()) {
                 event.setCanceled(true);
             }
@@ -98,7 +84,7 @@ public class PlayerStateHandler {
         if(target == null || attacker == null || !(target instanceof Player) || !(attacker instanceof LivingEntity)) {
             return;
         }
-        if(getState((Player) target).isUndetectable()) {
+        if(StatusEffect.UNDETECTABLE.isActive((Player) target)) {
             if (attacker instanceof Mob) {
                 Mob mob = (Mob) attacker;
                 mob.setAggressive(false);

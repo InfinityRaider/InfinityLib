@@ -4,22 +4,21 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.entity.EntityTypeBase;
 import com.infinityraider.infinitylib.reference.Constants;
 import com.infinityraider.infinitylib.reference.Names;
+import com.infinityraider.infinitylib.render.IRenderUtilities;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.PointOfView;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntitySize;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.IPacket;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,11 +30,11 @@ import java.util.function.Function;
  * We also only need only one instance of this entity per client
  */
 @OnlyIn(Dist.CLIENT)
-public class DynamicCamera extends Entity {
+public class DynamicCamera extends Entity implements IRenderUtilities {
     private static final EntityType<DynamicCamera> TYPE =
             EntityTypeBase.entityTypeBuilder(
-                    Names.Entities.CAMERA, DynamicCamera.class, SpawnFactory.getInstance(), EntityClassification.MISC,
-                    EntitySize.fixed(Constants.UNIT, Constants.UNIT)
+                    Names.Entities.CAMERA, DynamicCamera.class, SpawnFactory.getInstance(), MobCategory.MISC,
+                    EntityDimensions.fixed(Constants.UNIT, Constants.UNIT)
             ).build();
 
     private static DynamicCamera INSTANCE;
@@ -116,18 +115,18 @@ public class DynamicCamera extends Entity {
         return camera != null && camera.getStatus().isActive();
     }
 
-    public static void onFieldOfViewUpdate(float fov) {
+    public static void onFieldOfViewUpdate(double fov) {
         DynamicCamera camera = getInstance();
         if(camera != null) {
             camera.onFieldOfViewChange(fov);
         }
     }
 
-    public static boolean isCameraInPlayer(PlayerEntity player, float partialTick) {
+    public static boolean isCameraInPlayer(Player player, float partialTick) {
         if(isCameraActive()) {
             DynamicCamera camera = getInstance();
             if(camera != null) {
-                return player.getRenderBoundingBox().contains(camera.getPosition(partialTick));
+                return player.getBoundingBoxForCulling().contains(camera.getPosition(partialTick));
             }
         }
         return false;
@@ -138,17 +137,17 @@ public class DynamicCamera extends Entity {
     private IDynamicCameraController controller;
 
     private Entity originalCamera;
-    private Vector3d originalPosition;
-    private Vector2f originalOrientation;
-    private PointOfView originalPov;
+    private Vec3 originalPosition;
+    private Vec2 originalOrientation;
+    private CameraType originalPov;
 
     private int counter;
 
-    public DynamicCamera(World world) {
+    public DynamicCamera(Level world) {
         this(TYPE, world);
     }
 
-    public DynamicCamera(EntityType<DynamicCamera> type, World world) {
+    public DynamicCamera(EntityType<DynamicCamera> type, Level world) {
         super(type, world);
         this.status = Status.IDLE;
     }
@@ -161,7 +160,7 @@ public class DynamicCamera extends Entity {
         this.status = status;
     }
 
-    public void onFieldOfViewChange(float fov) {
+    public void onFieldOfViewChange(double fov) {
         if(this.controller != null) {
             this.controller.onFieldOfViewChanged(fov);
         }
@@ -175,14 +174,12 @@ public class DynamicCamera extends Entity {
         this.controller = controller;
         this.originalCamera = InfinityLib.instance.proxy().getRenderViewEntity();
         Entity prevCamera = this.getOriginalRenderViewEntity();
-        this.originalPosition = prevCamera.getEyePosition(1);
-        this.originalOrientation = new Vector2f(prevCamera.getPitch(1), prevCamera.getYaw(1));
-        this.setPositionAndRotation(
-                this.originalPosition.getX(), this.originalPosition.getY(), this.originalPosition.getZ(),
-                this.originalOrientation.x, this.originalOrientation.y);
+        this.originalPosition = prevCamera.getEyePosition(this.getPartialTick());
+        this.originalOrientation = new Vec2(prevCamera.getViewXRot(this.getPartialTick()), prevCamera.getViewYRot(this.getPartialTick()));
+        this.setPositionAndRotation(this.originalPosition, this.originalOrientation);
         this.status = Status.POSITIONING;
-        this.originalPov = Minecraft.getInstance().gameSettings.getPointOfView();
-        Minecraft.getInstance().gameSettings.setPointOfView(PointOfView.FIRST_PERSON);
+        this.originalPov = Minecraft.getInstance().options.getCameraType();
+        Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
         InfinityLib.instance.proxy().setRenderViewEntity(this);
         return true;
     }
@@ -200,51 +197,50 @@ public class DynamicCamera extends Entity {
         return this.controller.shouldContinueObserving();
     }
 
-    public Vector3d getOriginalPosition() {
+    public Vec3 getOriginalPosition() {
         return this.originalPosition;
     }
 
-    public Vector2f getOriginalOrientation() {
+    public Vec2 getOriginalOrientation() {
         return this.originalOrientation;
     }
 
-    public Vector3d getTargetPosition() {
+    public Vec3 getTargetPosition() {
         return this.controller.getObserverPosition();
     }
 
-    public Vector2f getTargetOrientation() {
+    public Vec2 getTargetOrientation() {
         return this.controller.getObserverOrientation();
     }
 
-    public Vector3d getReturnPosition() {
-        return this.getOriginalRenderViewEntity().getEyePosition(1);
+    public Vec3 getReturnPosition() {
+        return this.getOriginalRenderViewEntity().getEyePosition(this.getPartialTick());
     }
 
-    public Vector2f getReturnOrientation() {
+    public Vec2 getReturnOrientation() {
         Entity original = this.getOriginalRenderViewEntity();
-        return new Vector2f(original.getPitch(1), original.getYaw(1));
+        return new Vec2(original.getViewXRot(this.getPartialTick()), original.getViewYRot(this.getPartialTick()));
     }
 
     protected Entity getOriginalRenderViewEntity() {
         return this.originalCamera == null ? InfinityLib.instance.getClientPlayer() : this.originalCamera;
     }
 
-    public void setPositionAndRotation(Vector3d position, Vector2f orientation) {
+    public void setPositionAndRotation(Vec3 position, Vec2 orientation) {
         this.setPositionAndRotation(position, orientation.x, orientation.y);
     }
 
-    public void setPositionAndRotation(Vector3d position, float pitch, float yaw) {
-        this.prevPosX = this.getPosX();
-        this.prevPosY = this.getPosY();
-        this.prevPosZ = this.getPosZ();
-        this.setRawPosition(position.getX(), position.getY(), position.getZ());
-        this.prevRotationYaw = this.rotationYaw;
-        this.prevRotationPitch = this.rotationPitch;
-        this.rotationYaw = yaw;
-        this.rotationPitch = pitch;
+    public void setPositionAndRotation(Vec3 position, float pitch, float yaw) {
+        this.xOld = this.getX();
+        this.yOld = this.getY();
+        this.zOld = this.getZ();
+        this.setPosRaw(position.x(), position.y(), position.z());
+        this.xRotO = this.getXRot();
+        this.yRotO = this.getYRot();
+        this.setRot(yaw, pitch);
     }
 
-    protected boolean moveIncrement(Vector3d startPos, Vector2f startOri, Vector3d endPos, Vector2f endOri) {
+    protected boolean moveIncrement(Vec3 startPos, Vec2 startOri, Vec3 endPos, Vec2 endOri) {
         int duration = this.getTransitionDuration();
         if (this.counter >= duration) {
             this.setPositionAndRotation(endPos, endOri);
@@ -272,12 +268,18 @@ public class DynamicCamera extends Entity {
         }
     }
 
-    protected Vector3d getPosition(float partialTicks) {
-        return new Vector3d(
-                MathHelper.lerp(partialTicks, this.prevPosX, this.getPosX()),
-                MathHelper.lerp(partialTicks, this.prevPosY, this.getPosY()),
-                MathHelper.lerp(partialTicks, this.prevPosZ, this.getPosZ())
-        );
+    @Override
+    protected void readAdditionalSaveData(CompoundTag tag) {}
+
+    @Override
+    protected void addAdditionalSaveData(CompoundTag tag) {}
+
+    @Override
+    protected void defineSynchedData() {}
+
+    @Override
+    public Packet<?> getAddEntityPacket() {
+        return null;
     }
 
     protected int getTransitionDuration() {
@@ -285,15 +287,14 @@ public class DynamicCamera extends Entity {
     }
 
     // Holds the camera in place, preventing jerking back and forth
-    protected void holdPositionAndOrientation(Vector3d position, Vector2f orientation) {
-        this.setRawPosition(position.getX(), position.getY(), position.getZ());
-        this.prevPosX = this.getPosX();
-        this.prevPosY = this.getPosY();
-        this.prevPosZ = this.getPosZ();
-        this.rotationPitch = orientation.x;
-        this.prevRotationPitch = this.rotationPitch;
-        this.rotationYaw = orientation.y;
-        this.prevRotationYaw = this.rotationYaw;
+    protected void holdPositionAndOrientation(Vec3 position, Vec2 orientation) {
+        this.setPosRaw(position.x(), position.y(), position.z());
+        this.xOld = this.getX();
+        this.yOld = this.getY();
+        this.zOld = this.getZ();
+        this.setRot(orientation.x, orientation.y);
+        this.xRotO = orientation.x;
+        this.yRotO = orientation.y;
     }
 
     @Override
@@ -319,27 +320,12 @@ public class DynamicCamera extends Entity {
         }
         InfinityLib.instance.proxy().setRenderViewEntity(InfinityLib.instance.getClientPlayer());
         if (this.originalPov != null) {
-            Minecraft.getInstance().gameSettings.setPointOfView(this.originalPov);
+            Minecraft.getInstance().options.setCameraType(this.originalPov);
         }
         this.originalCamera = null;
         this.originalPosition = null;
         this.originalOrientation = null;
         this.originalPov = null;
-    }
-
-    @Override
-    protected void registerData() {}
-
-    @Override
-    protected void readAdditional(@Nonnull CompoundNBT compound) {}
-
-    @Override
-    protected void writeAdditional(@Nonnull CompoundNBT compound) {}
-
-    @Override
-    @Nonnull
-    public IPacket<?> createSpawnPacket() {
-        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     private static final Function<DynamicCamera, Status> IDLE_TICK = (camera) -> Status.IDLE;
@@ -425,7 +411,7 @@ public class DynamicCamera extends Entity {
         }
     }
 
-    public static class SpawnFactory implements EntityType.IFactory<DynamicCamera> {
+    public static class SpawnFactory implements EntityType.EntityFactory<DynamicCamera> {
         private static final SpawnFactory INSTANCE = new SpawnFactory();
 
         public static SpawnFactory getInstance() {
@@ -435,8 +421,7 @@ public class DynamicCamera extends Entity {
         private SpawnFactory() {}
 
         @Override
-        @Nonnull
-        public DynamicCamera create(@Nonnull EntityType<DynamicCamera> type, @Nonnull World world) {
+        public DynamicCamera create(@Nonnull EntityType<DynamicCamera> type, @Nonnull Level world) {
             return new DynamicCamera(type, world);
         }
     }
