@@ -4,12 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.*;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
@@ -17,7 +16,7 @@ import javax.annotation.Nullable;
 
 public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
     public static final String ID = "crafting_shapeless_dynamic_texture";
-    public static final IRecipeSerializer<ShapelessDynamicTextureRecipe> SERIALIZER = new Serializer();
+    public static final RecipeSerializer<ShapelessDynamicTextureRecipe> SERIALIZER = new Serializer();
 
     public ShapelessDynamicTextureRecipe(ShapelessRecipe parent) {
         super(parent.getId(), parent.getGroup(), parent.getRecipeOutput(), parent.getIngredients());
@@ -25,7 +24,7 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
 
     @Override
     @Nonnull
-    public IRecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<?> getSerializer() {
         return SERIALIZER;
     }
 
@@ -53,8 +52,8 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
         return super.getCraftingResult(inv);
     }
 
-    public static class Serializer extends ForgeRegistryEntry<IRecipeSerializer<?>>
-            implements IRecipeSerializer<ShapelessDynamicTextureRecipe>, IInfRecipeSerializer {
+    public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>>
+            implements RecipeSerializer<ShapelessDynamicTextureRecipe>, IInfRecipeSerializer {
 
         private Serializer() {}
 
@@ -71,14 +70,14 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
 
         @Nonnull
         @Override
-        public ShapelessDynamicTextureRecipe read(@Nonnull ResourceLocation recipeId, @Nonnull JsonObject json) {
-            return this.convert(IRecipeSerializer.CRAFTING_SHAPELESS.read(recipeId, json));
+        public ShapelessDynamicTextureRecipe fromJson(@Nonnull ResourceLocation recipeId, @Nonnull JsonObject json) {
+            return this.convert(RecipeSerializer.SHAPELESS_RECIPE.fromJson(recipeId, json));
         }
 
         @Nullable
         @Override
-        public ShapelessDynamicTextureRecipe read(@Nonnull ResourceLocation recipeId, @Nonnull PacketBuffer buffer) {
-            return this.convert(IRecipeSerializer.CRAFTING_SHAPELESS.read(recipeId, buffer));
+        public ShapelessDynamicTextureRecipe fromNetwork(@Nonnull ResourceLocation recipeId, @Nonnull FriendlyByteBuf buffer) {
+            return this.convert(RecipeSerializer.SHAPELESS_RECIPE.fromNetwork(recipeId, buffer));
         }
 
         protected ShapelessDynamicTextureRecipe convert(@Nullable ShapelessRecipe recipe) {
@@ -86,8 +85,8 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
         }
 
         @Override
-        public void write(@Nonnull PacketBuffer buffer, @Nonnull ShapelessDynamicTextureRecipe recipe) {
-            IRecipeSerializer.CRAFTING_SHAPELESS.write(buffer, recipe);
+        public void toNetwork(@Nonnull FriendlyByteBuf buffer, @Nonnull ShapelessDynamicTextureRecipe recipe) {
+            RecipeSerializer.SHAPELESS_RECIPE.toNetwork(buffer, recipe);
         }
 
         @Override

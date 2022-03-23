@@ -13,6 +13,7 @@ import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.particle.IInfinityParticleType;
 import com.infinityraider.infinitylib.particle.ParticleHelper;
 import com.infinityraider.infinitylib.proxy.base.IClientProxyBase;
+import com.infinityraider.infinitylib.render.RenderRegisteringHandler;
 import com.infinityraider.infinitylib.render.fluid.InfFluidRenderer;
 import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
 import com.infinityraider.infinitylib.render.model.TransformingFaceBakery;
@@ -24,16 +25,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.IItemRenderProperties;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.*;
+
+import java.util.function.Consumer;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientProxy implements IProxy, IClientProxyBase<Config> {
@@ -71,6 +73,7 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     @Override
     public void registerEventHandlers() {
         IProxy.super.registerEventHandlers();
+        this.registerEventHandler(RenderRegisteringHandler.getInstance());
         this.registerEventHandler(ModelLoaderRegistrar.getInstance());
         for (Module module : Module.getActiveModules()) {
             module.getClientEventHandlers().forEach(this::registerEventHandler);
@@ -124,7 +127,7 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
             ITileRenderer<? extends BlockEntity> renderer = object.getRenderer();
             if(renderer != null) {
                 // Register TileEntityRendererWrapper
-                BlockEntityRenderers.register(object.cast(), (dispatcher) -> TileEntityRendererWrapper.createWrapper(renderer));}
+                RenderRegisteringHandler.getInstance().register(object.cast(), (dispatcher) -> TileEntityRendererWrapper.createWrapper(renderer));}
         });
     }
 
@@ -132,12 +135,7 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         if (itemRegistry == null) {
             return;
         }
-        ReflectionHelper.forEachValueIn(itemRegistry, IInfinityItem.class, object -> {
-            // Register custom item renderers
-            InfItemRendererRegistry.getInstance().register(object);
-            // Register model properties
-            object.getModelProperties().forEach(prop -> ItemProperties.register(object.cast(), prop.getId(), prop::getValue));
-        });
+        ReflectionHelper.forEachValueIn(itemRegistry, IInfinityItem.class, object -> InfItemRendererRegistry.getInstance().register(object));
     }
 
     private void registerEntityRenderers(Object entityRegistry) {
@@ -147,9 +145,9 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         ReflectionHelper.forEachValueIn(entityRegistry, IInfinityEntityType.class, object -> {
             if (object.getRenderSupplier() == null) {
                 InfinityLib.instance.getLogger().info("", "No entity rendering factory was found for entity " + object.getInternalName());
-                EntityRenderers.register(object.cast(), EmptyEntityRenderSupplier.getInstance());
+                RenderRegisteringHandler.getInstance().register(object.cast(), EmptyEntityRenderSupplier.getInstance());
             } else {
-                EntityRenderers.register(object.cast(), object.getRenderSupplier());
+                RenderRegisteringHandler.getInstance().register(object.cast(), object.getRenderSupplier());
             }
         });
     }
@@ -157,5 +155,10 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     @Override
     public void forceClientRenderUpdate(BlockPos pos) {
         Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    @Override
+    public void initItemRenderer(Consumer<IItemRenderProperties> consumer) {
+        consumer.accept(InfItemRendererRegistry.getInstance().getItemRenderer());
     }
 }

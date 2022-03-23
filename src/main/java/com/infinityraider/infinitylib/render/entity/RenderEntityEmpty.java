@@ -11,7 +11,7 @@ import net.minecraft.world.entity.Entity;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-public class RenderEntityEmpty extends EntityRenderer<Entity> {
+public class RenderEntityEmpty<T extends Entity> extends EntityRenderer<T> {
 
     public RenderEntityEmpty(EntityRendererProvider.Context renderManager) {
         super(renderManager);
@@ -19,12 +19,13 @@ public class RenderEntityEmpty extends EntityRenderer<Entity> {
 
     @Override
     @ParametersAreNonnullByDefault
-    public void render(Entity entity, float yaw, float partialTicks, PoseStack transforms, MultiBufferSource buffer, int light) {
+    public void render(T entity, float yaw, float partialTicks, PoseStack transforms, MultiBufferSource buffer, int light) {
         //NOOP
     }
 
+    @Nonnull
     @Override
-    public ResourceLocation getTextureLocation(@Nonnull Entity entity) {
+    public ResourceLocation getTextureLocation(@Nonnull T entity) {
         return null;
     }
 }

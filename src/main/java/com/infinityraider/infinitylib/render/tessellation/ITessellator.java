@@ -2,17 +2,17 @@ package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.render.IRenderUtilities;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.RenderMaterial;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 
 @OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
-public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprite>, IRenderUtilities {
+public interface ITessellator extends Function<Material, TextureAtlasSprite>, IRenderUtilities {
 
     /**
      * Method to start constructing quads
@@ -457,7 +457,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
      * @param source the ResourceLocation
      * @return the icon
      */
-    TextureAtlasSprite getIcon(RenderMaterial source);
+    TextureAtlasSprite getIcon(Material source);
 
     /**
      * Sets the current face being drawn.
@@ -637,7 +637,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
     boolean getApplyDiffuseLighting();
 
     @Override
-    default TextureAtlasSprite apply(RenderMaterial source) {
+    default TextureAtlasSprite apply(Material source) {
         return this.getIcon(source);
     }
 
@@ -680,7 +680,7 @@ public interface ITessellator extends Function<RenderMaterial, TextureAtlasSprit
         }
 
         Face(Direction direction) {
-            this(dir -> dir == direction, direction.toVector3f());
+            this(dir -> dir == direction, direction.step());
         }
 
         Face(Predicate<Direction> test, Vector3f normal) {

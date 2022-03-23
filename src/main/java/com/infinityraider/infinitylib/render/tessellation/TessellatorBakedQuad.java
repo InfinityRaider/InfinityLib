@@ -1,13 +1,13 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.RenderMaterial;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Vector4f;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
@@ -41,7 +41,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     private TextureAtlasSprite icon;
 
     /** Texture function */
-    private Function<RenderMaterial, TextureAtlasSprite> textureFunction;
+    private Function<Material, TextureAtlasSprite> textureFunction;
 
     /**
      * constructor
@@ -87,7 +87,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
 
     @Override
     public VertexFormat getVertexFormat() {
-        return DefaultVertexFormats.BLOCK;
+        return DefaultVertexFormat.BLOCK;
     }
 
     /**
@@ -116,7 +116,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         if (drawMode != DRAW_MODE_NOT_DRAWING) {
             for (BakedQuad quad : quads) {
                 final BakedQuad trans = transformQuads(quad);
-                if (this.getFace().accepts(trans.getFace())) {
+                if (this.getFace().accepts(trans.getDirection())) {
                     this.quads.add(trans);
                 }
             }
@@ -142,7 +142,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
             sprite = this.getMissingSprite();
         }
         this.icon = sprite;
-        return this.addVertexWithUV(x, y, z, sprite.getInterpolatedU(u), sprite.getInterpolatedV(v));
+        return this.addVertexWithUV(x, y, z, sprite.getU(u), sprite.getV(v));
     }
 
     /**
@@ -166,14 +166,14 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
         
         // Create the new vertex data element.
         final VertexData vert = new VertexData(getVertexFormat());
-        vert.setXYZ(pos.getX(), pos.getY(), pos.getZ());
+        vert.setXYZ(pos.x(), pos.y(), pos.z());
         vert.setUV(u, v);
         vert.setRGBA(this.getRed(), this.getGreen(), this.getBlue(), this.getAlpha());
-        vert.setNormal(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());
+        vert.setNormal(this.getNormal().x(), this.getNormal().y(), this.getNormal().z());
         this.vertexData.add(vert);
         
         if (this.vertexData.size() == this.drawMode) {
-            final Direction dir = Direction.getFacingFromVector(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());
+            final Direction dir = Direction.getNearest(this.getNormal().x(), this.getNormal().y(), this.getNormal().z());
             if (this.getFace().accepts(dir)) {
                 BakedQuadBuilder builder = new BakedQuadBuilder();
                 builder.setQuadTint(this.getTintIndex());
@@ -199,7 +199,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     }
 
     @Override
-    public TextureAtlasSprite getIcon(RenderMaterial source) {
+    public TextureAtlasSprite getIcon(Material source) {
         if (this.textureFunction == null || source == null) {
             return super.getIcon(source);
         } else {
@@ -210,7 +210,7 @@ public class TessellatorBakedQuad extends TessellatorAbstractBase {
     @Override
     protected void applyColorMultiplier(Direction side) {}
 
-    public TessellatorBakedQuad setTextureFunction(Function<RenderMaterial, TextureAtlasSprite> function) {
+    public TessellatorBakedQuad setTextureFunction(Function<Material, TextureAtlasSprite> function) {
         this.textureFunction = function;
         return this;
     }

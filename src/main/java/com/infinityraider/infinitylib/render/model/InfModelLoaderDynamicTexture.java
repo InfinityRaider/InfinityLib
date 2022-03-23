@@ -9,21 +9,22 @@ import com.infinityraider.infinitylib.block.tile.TileEntityDynamicTexture;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
 import com.infinityraider.infinitylib.render.IRenderUtilities;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraft.client.renderer.model.*;
-import net.minecraft.client.renderer.texture.MissingTextureSprite;
+import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.Direction;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.client.resources.model.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.IModelConfiguration;
@@ -55,7 +56,7 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
     }
 
     @Override
-    public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {}
+    public void onResourceManagerReload(@Nonnull ResourceManager resourceManager) {}
 
     @Nonnull
     @Override
@@ -70,24 +71,24 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         }
         String defaultTexture = textureJson.get("default").getAsString();
         // Fetch model parts
-        List<BlockPart> parts = Lists.newArrayList();
+        List<BlockElement> parts = Lists.newArrayList();
         if(modelContents.has("elements")) {
-            for(JsonElement jsonelement : JSONUtils.getJsonArray(modelContents, "elements")) {
-                parts.add(context.deserialize(jsonelement, BlockPart.class));
+            for(JsonElement jsonelement : GsonHelper.convertToJsonArray(modelContents, "elements")) {
+                parts.add(context.deserialize(jsonelement, BlockElement.class));
             }
         }
         // Fetch Item Model transforms
-        ItemCameraTransforms itemCameraTransforms = ItemCameraTransforms.DEFAULT;
+        ItemTransforms itemCameraTransforms = ItemTransforms.NO_TRANSFORMS;
         if (modelContents.has("display")) {
-            JsonObject transforms = JSONUtils.getJsonObject(modelContents, "display");
-            itemCameraTransforms = context.deserialize(transforms, ItemCameraTransforms.class);
+            JsonObject transforms = GsonHelper.convertToJsonObject(modelContents, "display");
+            itemCameraTransforms = context.deserialize(transforms, ItemTransforms.class);
         }
         // Return geometry
         return new Geometry(this.flagDynamicTextures(parts), defaultTexture, itemCameraTransforms);
     }
 
-    private List<BlockPart> flagDynamicTextures(List<BlockPart> parts) {
-        parts.forEach(part -> part.mapFaces.replaceAll((dir, face) -> {
+    private List<BlockElement> flagDynamicTextures(List<BlockElement> parts) {
+        parts.forEach(part -> part.faces.replaceAll((dir, face) -> {
             if(DYNAMIC_TEXTURE.equals(face.texture)) {
                 return new DynamicFace(face);
             } else {
@@ -97,53 +98,53 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         return parts;
     }
 
-    private static class DynamicFace extends BlockPartFace {
-        public DynamicFace(BlockPartFace parent) {
-            super(parent.cullFace, parent.tintIndex, parent.texture, parent.blockFaceUV);
+    private static class DynamicFace extends BlockElementFace {
+        public DynamicFace(BlockElementFace parent) {
+            super(parent.cullForDirection, parent.tintIndex, parent.texture, parent.uv);
         }
     }
 
     public static class Geometry implements IModelGeometry<Geometry>, IRenderUtilities {
-        private final List<BlockPart> parts;
+        private final List<BlockElement> parts;
         private final String defaultTexture;
-        private final ItemCameraTransforms transforms;
+        private final ItemTransforms transforms;
 
-        private Geometry(List<BlockPart> parts, String defaultTexture, ItemCameraTransforms transforms) {
+        private Geometry(List<BlockElement> parts, String defaultTexture, ItemTransforms transforms) {
             this.parts = parts;
             this.defaultTexture = defaultTexture;
             this.transforms = transforms;
         }
 
         @Override
-        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter,
-                                IModelTransform transform, ItemOverrideList overrides, ResourceLocation modelLocation) {
+        public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter,
+                               ModelState transform, ItemOverrides overrides, ResourceLocation modelLocation) {
             return new DynamicTextureModel(
                     this.parts, owner, this.transforms, spriteGetter, transform, overrides, modelLocation, this.defaultTexture);
         }
 
         @Override
-        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter,
+        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter,
                                                       Set<Pair<String, String>> missingTextureErrors) {
             // Create new set
-            Set<RenderMaterial> textures = Sets.newHashSet();
+            Set<Material> textures = Sets.newHashSet();
             // Add textures for the parts
-            for(BlockPart part : this.parts) {
-                for(BlockPartFace face : part.mapFaces.values()) {
+            for(BlockElement part : this.parts) {
+                for(BlockElementFace face : part.faces.values()) {
                     // Skip if it is a dynamic texture
                     if(face instanceof DynamicFace) {
                         continue;
                     }
                     // Add otherwise
-                    RenderMaterial texture = owner.resolveTexture(face.texture);
-                    if (Objects.equals(texture.getTextureLocation(), MissingTextureSprite.getLocation())) {
+                    Material texture = owner.resolveTexture(face.texture);
+                    if (Objects.equals(texture.texture(), MissingTextureAtlasSprite.getLocation())) {
                         missingTextureErrors.add(Pair.of(face.texture, owner.getModelName()));
                     }
                     textures.add(texture);
                 }
             }
             // Add the default texture
-            RenderMaterial texture = this.getRenderMaterial(this.defaultTexture);
-            if (Objects.equals(texture.getTextureLocation(), MissingTextureSprite.getLocation())) {
+            Material texture = this.getRenderMaterial(this.defaultTexture);
+            if (Objects.equals(texture.texture(), MissingTextureAtlasSprite.getLocation())) {
                 missingTextureErrors.add(Pair.of(this.defaultTexture, owner.getModelName()));
             }
             textures.add(owner.resolveTexture(this.defaultTexture));
@@ -152,25 +153,25 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         }
     }
 
-    public static class DynamicTextureModel implements IBakedModel, IRenderUtilities {
+    public static class DynamicTextureModel implements BakedModel, IRenderUtilities {
         private static final ModelProperty<ItemStack> PROPERTY_MATERIAL = TileEntityDynamicTexture.PROPERTY_MATERIAL;
 
-        private final Map<TextureAtlasSprite, IBakedModel> quadCache;
+        private final Map<TextureAtlasSprite, BakedModel> quadCache;
 
-        private final IBakedModel defaultModel;
+        private final BakedModel defaultModel;
         private final TextureAtlasSprite defaultSprite;
 
-        private final List<BlockPart> parts;
+        private final List<BlockElement> parts;
         private final IModelConfiguration owner;
-        private final ItemCameraTransforms transforms;
-        private final Function<RenderMaterial, TextureAtlasSprite> spriteGetter;
-        private final IModelTransform transform;
-        private final ItemOverrideList overrides;
+        private final ItemTransforms transforms;
+        private final Function<Material, TextureAtlasSprite> spriteGetter;
+        private final ModelState transform;
+        private final ItemOverrides overrides;
         private final ResourceLocation modelLocation;
 
-        private DynamicTextureModel(List<BlockPart> parts, IModelConfiguration owner, ItemCameraTransforms transforms,
-                                    Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform transform,
-                                    ItemOverrideList overrides, ResourceLocation modelLocation, String defaultTexture) {
+        private DynamicTextureModel(List<BlockElement> parts, IModelConfiguration owner, ItemTransforms transforms,
+                                    Function<Material, TextureAtlasSprite> spriteGetter, ModelState transform,
+                                    ItemOverrides overrides, ResourceLocation modelLocation, String defaultTexture) {
             this.quadCache = Maps.newConcurrentMap();
             this.parts = parts;
             this.owner = owner;
@@ -183,7 +184,7 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
             this.defaultModel = this.bakeSubModel(this.getDefaultSprite());
         }
 
-        public IBakedModel getDefaultModel() {
+        public BakedModel getDefaultModel() {
             return this.defaultModel;
         }
 
@@ -200,14 +201,14 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
             }
             if(material.getItem() instanceof BlockItem) {
                 Block block = ((BlockItem) material.getItem()).getBlock();
-                return this.getModelForState(block.getDefaultState()).getParticleTexture();
+                return this.getModelForState(block.defaultBlockState()).getParticleIcon();
             }
             return this.getDefaultSprite();
         }
 
         @Nonnull
         @Override
-        public IModelData getModelData(@Nonnull IBlockDisplayReader world, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull IModelData modelData) {
+        public IModelData getModelData(@Nonnull BlockAndTintGetter world, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull IModelData modelData) {
             return modelData;
         }
 
@@ -233,23 +234,23 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
             return this.getSubModel(material).getQuads(state, side, rand);
         }
 
-        public IBakedModel getSubModel(@Nonnull TextureAtlasSprite material) {
+        public BakedModel getSubModel(@Nonnull TextureAtlasSprite material) {
             if(material.getName().equals(this.getDefaultSprite().getName())) {
                 return this.getDefaultModel();
             }
             return this.quadCache.computeIfAbsent(material, this::bakeSubModel);
         }
 
-        protected IBakedModel bakeSubModel(@Nonnull TextureAtlasSprite material) {
+        protected BakedModel bakeSubModel(@Nonnull TextureAtlasSprite material) {
             // Initialize quad lists
             List<BakedQuad> generalQuads = Lists.newArrayList();
             Map<Direction, List<BakedQuad>> faceQuads = Maps.newEnumMap(Direction.class);
             Arrays.stream(Direction.values()).forEach((dir) -> faceQuads.put(dir, Lists.newArrayList()));
             // Iterate over all parts
-            for (BlockPart part : this.parts) {
+            for (BlockElement part : this.parts) {
                 // Iterate over the faces
-                for (Direction direction : part.mapFaces.keySet()) {
-                    BlockPartFace face = part.mapFaces.get(direction);
+                for (Direction direction : part.faces.keySet()) {
+                    BlockElementFace face = part.faces.get(direction);
                     // Fetch the necessary texture
                     TextureAtlasSprite sprite;
                     if (face instanceof DynamicFace) {
@@ -258,10 +259,10 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
                         sprite = this.spriteGetter.apply(this.owner.resolveTexture(face.texture));
                     }
                     // Add the quad to the model builder
-                    if (face.cullFace == null) {
+                    if (face.cullForDirection == null) {
                         generalQuads.add(BlockModel.makeBakedQuad(part, face, sprite, direction, this.transform, this.modelLocation));
                     } else {
-                        faceQuads.get(this.transform.getRotation().rotateTransform(face.cullFace))
+                        faceQuads.get(this.transform.getRotation().rotateTransform(face.cullForDirection))
                                 .add(BlockModel.makeBakedQuad(part, face, sprite, direction, this.transform, this.modelLocation));
                     }
                 }
@@ -271,11 +272,11 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
                     ImmutableList.copyOf(generalQuads),
                     ImmutableMap.copyOf(Maps.transformValues(faceQuads, ImmutableList::copyOf)),
                     this.owner.useSmoothLighting(), this.owner.isSideLit(), this.owner.isShadedInGui(),
-                    material, this.getItemCameraTransforms(), this.getOverrides());
+                    material, this.getTransforms(), this.getOverrides());
         }
 
         @Override
-        public boolean isAmbientOcclusion() {
+        public boolean useAmbientOcclusion() {
             return true;
         }
 
@@ -285,26 +286,26 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         }
 
         @Override
-        public boolean isSideLit() {
+        public boolean usesBlockLight() {
             return false;
         }
 
         @Override
-        public boolean isBuiltInRenderer() {
+        public boolean isCustomRenderer() {
             return false;
         }
 
         @Nonnull
         @Override
-        public TextureAtlasSprite getParticleTexture() {
+        public TextureAtlasSprite getParticleIcon() {
             return this.getDefaultSprite();
         }
 
         @Nonnull
         @Override
-        public TextureAtlasSprite getParticleTexture(@Nonnull IModelData extraData) {
+        public TextureAtlasSprite getParticleIcon(@Nonnull IModelData extraData) {
             if (!extraData.hasProperty(PROPERTY_MATERIAL)) {
-                return this.getParticleTexture();
+                return this.getParticleIcon();
             }
             return this.getMaterialSprite(extraData.getData(PROPERTY_MATERIAL));
         }
@@ -313,13 +314,13 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         @Override
         @Deprecated
         @SuppressWarnings("deprecation")
-        public ItemCameraTransforms getItemCameraTransforms() {
+        public ItemTransforms getTransforms() {
             return this.transforms;
         }
 
         @Nonnull
         @Override
-        public ItemOverrideList getOverrides() {
+        public ItemOverrides getOverrides() {
             return this.overrides;
         }
 
@@ -329,10 +330,10 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         }
 
         @Override
-        public List<Pair<IBakedModel, RenderType>> getLayerModels(ItemStack stack, boolean fabulous) {
+        public List<Pair<BakedModel, RenderType>> getLayerModels(ItemStack stack, boolean fabulous) {
             return Collections.singletonList(Pair.of(
                     this.getSubModel(this.getMaterialSprite(this.getMaterialFromStack(stack))),
-                    RenderTypeLookup.func_239219_a_(stack, fabulous)));
+                    ItemBlockRenderTypes.getRenderType(stack, fabulous)));
         }
 
         @Nonnull

@@ -6,16 +6,15 @@ import com.google.gson.JsonParseException;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tags.ITag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
+import net.minecraftforge.registries.tags.ITag;
 
 import javax.annotation.Nullable;
 import java.util.stream.Stream;
@@ -113,7 +112,7 @@ public class FallbackIngredient extends Ingredient {
         }
 
         @Override
-        public FallbackIngredient parse(PacketBuffer buffer) {
+        public FallbackIngredient parse(FriendlyByteBuf buffer) {
             boolean flag = buffer.readBoolean();
             ITag<Item> tag = null;
             if(flag) {
@@ -147,7 +146,7 @@ public class FallbackIngredient extends Ingredient {
         }
 
         @Override
-        public void write(PacketBuffer buffer, FallbackIngredient ingredient) {
+        public void write(FriendlyByteBuf buffer, FallbackIngredient ingredient) {
             ResourceLocation rl = ItemTags.getCollection().getDirectIdFromTag(ingredient.getTag());
             boolean flag = rl != null;
             buffer.writeBoolean(flag);

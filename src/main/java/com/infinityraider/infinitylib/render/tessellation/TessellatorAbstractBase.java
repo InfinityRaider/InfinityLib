@@ -1,17 +1,17 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.infinityraider.infinitylib.reference.Constants;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.RenderMaterial;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.mojang.math.*;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.*;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.QuadTransformer;
 
 import javax.annotation.Nonnull;
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 public abstract class TessellatorAbstractBase implements ITessellator {
     /** Current transformation matrix */
-    private final MatrixStack matrices;
+    private final PoseStack matrices;
 
     /** Face being drawn */
     private Face face;
@@ -49,7 +49,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     private QuadTransformer cachedTransformer;
 
     protected TessellatorAbstractBase() {
-        this.matrices = new MatrixStack();
+        this.matrices = new PoseStack();
         this.face = Face.NONE;
         this.normal = Defaults.NORMAL;
         this.setColorRGBA(Defaults.COLOR, Defaults.COLOR, Defaults.COLOR, Defaults.COLOR);
@@ -59,26 +59,26 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         this.applyDiffuseLighting = false;
     }
 
-    private void manipulateMatrixStack(Consumer<MatrixStack> operator) {
+    private void manipulateMatrixStack(Consumer<PoseStack> operator) {
         this.cachedTransformer = null;
         operator.accept(this.matrices);
     }
 
-    private MatrixStack getMatrixStack() {
+    private PoseStack getMatrixStack() {
         return this.matrices;
     }
 
-    protected MatrixStack.Entry getMatrixStackEntry() {
-        return this.getMatrixStack().getLast();
+    protected PoseStack.Pose getMatrixStackEntry() {
+        return this.getMatrixStack().last();
     }
 
     protected Matrix4f getCurrentMatrix() {
-        return this.getMatrixStackEntry().getMatrix();
+        return this.getMatrixStackEntry().pose();
     }
 
     protected QuadTransformer getCachedQuadTransformer() {
         if (this.cachedTransformer == null) {
-            this.cachedTransformer = new QuadTransformer(new TransformationMatrix(this.getCurrentMatrix()));
+            this.cachedTransformer = new QuadTransformer(new Transformation(this.getCurrentMatrix()));
         }
         return this.cachedTransformer;
     }
@@ -105,7 +105,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         this.setOverlay(Defaults.OVERLAY);
         this.tintIndex = -1;
         this.applyDiffuseLighting = false;
-        this.manipulateMatrixStack(MatrixStack::clear);
+        this.manipulateMatrixStack(PoseStack::clear);
         return this;
     }
 
@@ -117,13 +117,13 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public TessellatorAbstractBase pushMatrix() {
-        this.manipulateMatrixStack(MatrixStack::push);
+        this.manipulateMatrixStack(PoseStack::pushPose);
         return this;
     }
 
     @Override
     public TessellatorAbstractBase popMatrix() {
-        this.manipulateMatrixStack(MatrixStack::pop);
+        this.manipulateMatrixStack(PoseStack::popPose);
         return this;
     }
 
@@ -132,7 +132,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         if (sprite == null) {
             sprite = this.getMissingSprite();
         }
-        return this.addVertexWithUV(x, y, z, sprite.getInterpolatedU(u), sprite.getInterpolatedV(v));
+        return this.addVertexWithUV(x, y, z, sprite.getU(u), sprite.getV(v));
     }
 
     @Override
@@ -242,7 +242,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         float bPrev = this.b;
         float aPrev = this.a;
         this.applyColorMultiplier(face);
-        this.setNormal(face.getXOffset(), face.getYOffset(), face.getZOffset());
+        this.setNormal(face.getStepX(), face.getStepY(), face.getStepZ());
         addScaledVertexWithUV(x1, y1, z1, u1f, v1f);
         addScaledVertexWithUV(x2, y2, z2, u2f, v2f);
         addScaledVertexWithUV(x3, y3, z3, u3f, v3f);
@@ -345,7 +345,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
         float bPrev = this.b;
         float aPrev = this.a;
         this.applyColorMultiplier(face);
-        this.setNormal(face.getXOffset(), face.getYOffset(), face.getZOffset());
+        this.setNormal(face.getStepX(), face.getStepY(), face.getStepZ());
         addScaledVertexWithUV(x1, y1, z1, icon, u1f, v1f);
         addScaledVertexWithUV(x2, y2, z2, icon, u2f, v2f);
         addScaledVertexWithUV(x3, y3, z3, icon, u3f, v3f);
@@ -554,7 +554,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public TessellatorAbstractBase rotate(Quaternion quaternion) {
-        this.manipulateMatrixStack(stack -> stack.rotate(quaternion));
+        this.manipulateMatrixStack(stack -> stack.mulPose(quaternion));
         return this;
     }
 
@@ -567,16 +567,16 @@ public abstract class TessellatorAbstractBase implements ITessellator {
     @Override
     public TessellatorAbstractBase applyTransformation(Matrix4f matrix) {
         this.manipulateMatrixStack(stack -> {
-            stack.getLast().getMatrix().mul(matrix);
-            stack.getLast().getNormal().mul(new Matrix3f(matrix));
+            stack.last().pose().multiply(matrix);
+            stack.last().normal().mul(new Matrix3f(matrix));
         });
         return this;
     }
 
     @Override
-    public TextureAtlasSprite getIcon(RenderMaterial source) {
+    public TextureAtlasSprite getIcon(Material source) {
         if (source != null) {
-            return ModelLoader.defaultTextureGetter().apply(source);
+            return ForgeModelBakery.defaultTextureGetter().apply(source);
         } else {
             return this.getMissingSprite();
         }
@@ -619,7 +619,7 @@ public abstract class TessellatorAbstractBase implements ITessellator {
 
     @Override
     public TessellatorAbstractBase setColorRGB(Vector3f color) {
-        return this.setColorRGB(color.getX(), color.getY(), color.getZ());
+        return this.setColorRGB(color.x(), color.y(), color.z());
     }
 
     @Override
@@ -728,9 +728,9 @@ public abstract class TessellatorAbstractBase implements ITessellator {
             case NORMAL:
                 Vector4f temp = new Vector4f(data[0], data[1], data[2], 1);
                 temp.transform(this.getCurrentMatrix());
-                data[0] = temp.getX();
-                data[1] = temp.getY();
-                data[2] = temp.getZ();
+                data[0] = temp.x();
+                data[1] = temp.y();
+                data[2] = temp.z();
                 break;
             case COLOR:
                 data[0] = getRed();

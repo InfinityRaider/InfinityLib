@@ -1,19 +1,19 @@
 package com.infinityraider.infinitylib.container;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 
-public class ContainerBase extends Container {
+public class ContainerBase extends AbstractContainerMenu {
 
     public static final int PLAYER_INVENTORY_SIZE = 36;
 
-    public ContainerBase(@Nullable ContainerType<?> type, int id, PlayerInventory inventory, int xOffset, int yOffset) {
+    public ContainerBase(@Nullable MenuType<?> type, int id, Inventory inventory, int xOffset, int yOffset) {
         super(type, id);
         // Add the player's main inventory to the container.
         for (int i = 0; i < 3; i++) {
@@ -31,7 +31,7 @@ public class ContainerBase extends Container {
     }
 
     @Override
-    public boolean canInteractWith(PlayerEntity player) {
+    public boolean canInteractWith(Player player) {
         return true;
     }
 

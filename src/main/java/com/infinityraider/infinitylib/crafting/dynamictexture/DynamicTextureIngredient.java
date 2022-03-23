@@ -5,15 +5,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
+import net.minecraftforge.registries.tags.ITag;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -70,7 +69,7 @@ public class DynamicTextureIngredient extends Ingredient implements IDynamicText
         }
 
         @Override
-        public DynamicTextureIngredient parse(PacketBuffer buffer) {
+        public DynamicTextureIngredient parse(FriendlyByteBuf buffer) {
             return new DynamicTextureIngredient(buffer.readResourceLocation());
         }
 
@@ -83,7 +82,7 @@ public class DynamicTextureIngredient extends Ingredient implements IDynamicText
         }
 
         @Override
-        public void write(PacketBuffer buffer, DynamicTextureIngredient ingredient) {
+        public void write(FriendlyByteBuf buffer, DynamicTextureIngredient ingredient) {
             buffer.writeResourceLocation(ingredient.getTagId());
         }
     }

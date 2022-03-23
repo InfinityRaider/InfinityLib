@@ -8,19 +8,19 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.function.Supplier;
 
-public class EmptyEntityRenderSupplier implements IEntityRenderSupplier<Entity> {
-    private static final EmptyEntityRenderSupplier INSTANCE = new EmptyEntityRenderSupplier();
+public class EmptyEntityRenderSupplier<T extends Entity> implements IEntityRenderSupplier<T> {
+    private static final EmptyEntityRenderSupplier<?> INSTANCE = new EmptyEntityRenderSupplier<>();
 
     @SuppressWarnings("unchecked")
-    public static IEntityRenderSupplier<Entity> getInstance() {
-        return INSTANCE;
+    public static <T extends Entity> IEntityRenderSupplier<T> getInstance() {
+        return (EmptyEntityRenderSupplier<T>) INSTANCE;
     }
 
     private EmptyEntityRenderSupplier() {}
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public Supplier<EntityRendererProvider<Entity>> supplyRenderer() {
+    public Supplier<EntityRendererProvider<T>> supplyRenderer() {
         return () -> RenderEntityEmpty::new;
     }
 }

@@ -1,13 +1,13 @@
 package com.infinityraider.infinitylib.render.fluid;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockDisplayReader;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public interface IFluidRenderer {
-    void render(IBlockDisplayReader world, BlockPos pos, IVertexBuilder builder, FluidState state);
+    void render(BlockAndTintGetter world, BlockPos pos, VertexConsumer builder, FluidState state);
 }

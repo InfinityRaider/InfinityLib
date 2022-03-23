@@ -1,18 +1,18 @@
 package com.infinityraider.infinitylib.container;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-public class ContainerTileBase<T extends TileEntity> extends ContainerBase {
+public class ContainerTileBase<T extends BlockEntity> extends ContainerBase {
 
     private final T tile;
 
-    public ContainerTileBase(@Nullable ContainerType<?> type, int id, T tile, PlayerInventory inventory, int xOffset, int yOffset) {
+    public ContainerTileBase(@Nullable MenuType<?> type, int id, T tile, Inventory inventory, int xOffset, int yOffset) {
         super(type, id, inventory, xOffset, yOffset);
         // Set the TileEntity associated with the container.
         this.tile = Objects.requireNonNull(tile, "The TileEntity associated with a TileEntity Container may not be null!");
@@ -28,7 +28,7 @@ public class ContainerTileBase<T extends TileEntity> extends ContainerBase {
     }
 
     @Override
-    public boolean canInteractWith(PlayerEntity player) {
+    public boolean canInteractWith(Player player) {
         return !getTile().isRemoved();
     }
 }

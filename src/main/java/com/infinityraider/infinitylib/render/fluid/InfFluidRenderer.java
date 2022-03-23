@@ -2,15 +2,17 @@ package com.infinityraider.infinitylib.render.fluid;
 
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.fluid.IInfinityFluid;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.FluidBlockRenderer;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.LiquidBlockRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import sun.misc.Unsafe;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Field;
@@ -19,32 +21,33 @@ import java.util.Arrays;
 
 @OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
-public class InfFluidRenderer extends FluidBlockRenderer {
+public class InfFluidRenderer extends LiquidBlockRenderer {
     // Previous FluidBlockRenderer object, calls are forwarded to this, so we don't break someone else's shit
     // in case they also injected their own fluid renderer
-    private final FluidBlockRenderer previous;
+    private final LiquidBlockRenderer previous;
 
-    private InfFluidRenderer(FluidBlockRenderer previous) {
+    private InfFluidRenderer(LiquidBlockRenderer previous) {
         this.previous = previous;
     }
 
     @Override
-    public boolean render(IBlockDisplayReader world, BlockPos pos, IVertexBuilder builder, FluidState state) {
-        if(state.getFluid() instanceof IInfinityFluid) {
-            IFluidRenderer renderer = ((IInfinityFluid) state.getFluid()).getRenderer();
+    public boolean tesselate(BlockAndTintGetter world, BlockPos pos, VertexConsumer builder, BlockState block, FluidState fluid) {
+        if(fluid.getType() instanceof IInfinityFluid) {
+            IFluidRenderer renderer = ((IInfinityFluid) fluid.getType()).getRenderer();
             if(renderer != null) {
-                renderer.render(world, pos, builder, state);
+                renderer.render(world, pos, builder, fluid);
                 return true;
             }
         }
-        return this.previous.render(world, pos, builder, state);
+        return this.previous.tesselate(world, pos, builder, block, fluid);
     }
 
     // Method to inject our own fluid renderer into vanilla's
     public static void init() {
+        // TODO: this reflection will no longer work in Java 17, replace it with sun.misc.Unsafe usage
         InfinityLib.instance.getLogger().info("Trying to inject Fluid Renderer");
-        Arrays.stream(BlockRendererDispatcher.class.getDeclaredFields())
-                .filter(field -> field.getType().isAssignableFrom(FluidBlockRenderer.class))
+        Arrays.stream(BlockRenderDispatcher.class.getDeclaredFields())
+                .filter(field -> field.getType().isAssignableFrom(LiquidBlockRenderer.class))
                 .findAny()
                 .map(field -> {
                     try {
@@ -55,10 +58,10 @@ public class InfFluidRenderer extends FluidBlockRenderer {
                         modifiers.setAccessible(true);
                         modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
                         // Fetch previous value
-                        FluidBlockRenderer previous = (FluidBlockRenderer) field.get(Minecraft.getInstance().getBlockRendererDispatcher());
+                        LiquidBlockRenderer previous = (LiquidBlockRenderer) field.get(Minecraft.getInstance().getBlockRenderer());
                         // Set field
                         InfFluidRenderer renderer = new InfFluidRenderer(previous);
-                        field.set(Minecraft.getInstance().getBlockRendererDispatcher(), renderer);
+                        field.set(Minecraft.getInstance().getBlockRenderer(), renderer);
                         InfinityLib.instance.getLogger().info("Successfully injected fluid renderer");
                     } catch(Exception e) {
                         // this might happen

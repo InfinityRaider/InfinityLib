@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.crafting.dynamictexture.ShapedDynamicTextureRecipe;
 import com.infinityraider.infinitylib.crafting.dynamictexture.ShapelessDynamicTextureRecipe;
 import com.infinityraider.infinitylib.crafting.fallback.FallbackIngredient;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraftforge.common.crafting.CraftingHelper;
 
 import java.util.Map;
@@ -21,8 +21,8 @@ public class RecipeSerializers {
 
     public final IInfIngredientSerializer<FallbackIngredient> fallbackIngredient;
 
-    public final IRecipeSerializer<ShapedDynamicTextureRecipe> shapedDynamicTextureRecipe;
-    public final IRecipeSerializer<ShapelessDynamicTextureRecipe> shapelessDynamicTextureRecipe;
+    public final RecipeSerializer<ShapedDynamicTextureRecipe> shapedDynamicTextureRecipe;
+    public final RecipeSerializer<ShapelessDynamicTextureRecipe> shapelessDynamicTextureRecipe;
 
     private RecipeSerializers() {
         // ingredients

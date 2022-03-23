@@ -4,26 +4,33 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.block.BlockState;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.model.*;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.block.model.ItemModelGenerator;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.*;
-import net.minecraft.client.settings.PointOfView;
-import net.minecraft.inventory.container.PlayerContainer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.Color;
-import net.minecraft.world.IBlockDisplayReader;
-import net.minecraft.world.World;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.data.EmptyModelData;
@@ -47,7 +54,7 @@ public interface IRenderUtilities {
     /**
      * Returns a new tessellator object to tessellate directly to the vertex buffer
      */
-    default ITessellator getVertexBufferTessellator(IRenderTypeBuffer.Impl buffer, RenderType renderType) {
+    default ITessellator getVertexBufferTessellator(MultiBufferSource.BufferSource buffer, RenderType renderType) {
         return new TessellatorVertexBuffer(buffer, renderType);
     }
 
@@ -61,41 +68,41 @@ public interface IRenderUtilities {
     /**
      * Renders an item
      */
-    default void renderItem(ItemStack stack, ItemCameraTransforms.TransformType perspective, int light,
-                            MatrixStack transforms, IRenderTypeBuffer buffer) {
+    default void renderItem(ItemStack stack, ItemTransforms.TransformType perspective, int light,
+                            PoseStack transforms, MultiBufferSource buffer) {
         this.renderItem(stack, perspective, light, OverlayTexture.NO_OVERLAY, transforms, buffer);
     }
 
     /**
      * Renders an item
      */
-    default void renderItem(ItemStack stack, ItemCameraTransforms.TransformType perspective, int light, int overlay,
-                            MatrixStack transforms, IRenderTypeBuffer buffer) {
-        this.getItemRenderer().renderItem(stack, perspective, light, overlay, transforms, buffer);
+    default void renderItem(ItemStack stack, ItemTransforms.TransformType perspective, int light, int overlay,
+                            PoseStack transforms, MultiBufferSource buffer) {
+        this.getItemRenderer().renderStatic(stack, perspective, light, overlay, transforms, buffer, 0);
     }
 
     /**
      * Renders a block state
      */
-    default boolean renderBlockState(BlockState state, MatrixStack transforms, IVertexBuilder buffer) {
+    default boolean renderBlockState(BlockState state, PoseStack transforms, VertexConsumer buffer) {
         return this.renderBlockState(state, Objects.DEFAULT_POS, transforms, buffer, OverlayTexture.NO_OVERLAY);
     }
 
     /**
      * Renders a block state
      */
-    default boolean renderBlockState(BlockState state, BlockPos pos, MatrixStack transforms, IVertexBuilder buffer, int overlay) {
-        World world =InfinityLib.instance.getClientWorld();
+    default boolean renderBlockState(BlockState state, BlockPos pos, PoseStack transforms, VertexConsumer buffer, int overlay) {
+        Level world =InfinityLib.instance.getClientWorld();
         return this.renderBlockModel(world, this.getModelForState(state), state, pos,
-                transforms, buffer, false, world.getRandom(), state.getPositionRandom(pos), overlay, EmptyModelData.INSTANCE);
+                transforms, buffer, false, world.getRandom(), state.getSeed(pos), overlay, EmptyModelData.INSTANCE);
     }
 
     /**
      * Renders a block model
      */
-    default boolean renderBlockModel(IBlockDisplayReader world, IBakedModel model, BlockState state, BlockPos pos, MatrixStack transforms,
-                                     IVertexBuilder buffer, boolean checkSides, Random random, long rand, int overlay, IModelData modelData) {
-        return this.getBlockRenderer().renderModel(world, model, state, pos, transforms, buffer, checkSides, random, rand, overlay, modelData);
+    default boolean renderBlockModel(BlockAndTintGetter world, BakedModel model, BlockState state, BlockPos pos, PoseStack transforms,
+                                     VertexConsumer buffer, boolean checkSides, Random random, long rand, int overlay, IModelData modelData) {
+        return this.getBlockRenderer().tesselateBlock(world, model, state, pos, transforms, buffer, checkSides, random, rand, overlay, modelData);
     }
 
     /**
@@ -103,7 +110,7 @@ public interface IRenderUtilities {
      */
     default TextureAtlasSprite getMissingSprite() {
         if (Objects.missingSprite == null) {
-            Objects.missingSprite = this.getSprite(MissingTextureSprite.getLocation());
+            Objects.missingSprite = this.getSprite(MissingTextureAtlasSprite.getLocation());
         }
         return Objects.missingSprite;
     }
@@ -124,8 +131,8 @@ public interface IRenderUtilities {
      * @param material the render material
      * @return the sprite
      */
-    default TextureAtlasSprite getSprite(RenderMaterial material) {
-        return this.getTextureAtlas(material.getTextureLocation()).getSprite(material.getTextureLocation());
+    default TextureAtlasSprite getSprite(Material material) {
+        return this.getTextureAtlas(material.atlasLocation()).getSprite(material.texture());
     }
 
     /**
@@ -142,7 +149,7 @@ public interface IRenderUtilities {
      * @param string the String
      * @return the RenderMaterial
      */
-    default RenderMaterial getRenderMaterial(String string) {
+    default Material getRenderMaterial(String string) {
         return this.getRenderMaterial(this.getResourceLocation(string));
     }
 
@@ -151,8 +158,8 @@ public interface IRenderUtilities {
      * @param texture the ResourceLocation
      * @return the RenderMaterial
      */
-    default RenderMaterial getRenderMaterial(ResourceLocation texture) {
-        return new RenderMaterial(this.getTextureAtlasLocation(), texture);
+    default Material getRenderMaterial(ResourceLocation texture) {
+        return new Material(this.getTextureAtlasLocation(), texture);
     }
 
     /**
@@ -161,7 +168,7 @@ public interface IRenderUtilities {
      * @param location the ResourceLocation for the texture
      */
     default void bindTexture(ResourceLocation location) {
-        this.getTextureManager().bindTexture(location);
+        this.getTextureManager().bindForSetup(location);
     }
 
     /**
@@ -176,7 +183,7 @@ public interface IRenderUtilities {
      *
      * @return the AtlasTexture object
      */
-    default AtlasTexture getTextureAtlas() {
+    default TextureAtlas getTextureAtlas() {
         return this.getTextureAtlas(this.getTextureAtlasLocation());
     }
 
@@ -186,8 +193,8 @@ public interface IRenderUtilities {
      * @param location the location for the atlas
      * @return the AtlasTexture object
      */
-    default AtlasTexture getTextureAtlas(ResourceLocation location) {
-        return this.getModelManager().getAtlasTexture(location);
+    default TextureAtlas getTextureAtlas(ResourceLocation location) {
+        return this.getModelManager().getAtlas(location);
     }
 
     /**
@@ -196,7 +203,7 @@ public interface IRenderUtilities {
      * @return ResourceLocation for the Texture Atlas
      */
     default ResourceLocation getTextureAtlasLocation() {
-        return PlayerContainer.LOCATION_BLOCKS_TEXTURE;
+        return InventoryMenu.BLOCK_ATLAS;
     }
 
     /**
@@ -222,8 +229,8 @@ public interface IRenderUtilities {
      *
      * @return the BlockRendererDispatcher object
      */
-    default BlockRendererDispatcher getBlockRendererDispatcher() {
-        return Minecraft.getInstance().getBlockRendererDispatcher();
+    default BlockRenderDispatcher getBlockRendererDispatcher() {
+        return Minecraft.getInstance().getBlockRenderer();
     }
 
     /**
@@ -231,8 +238,8 @@ public interface IRenderUtilities {
      *
      * @return the BlockModelRenderer object
      */
-    default BlockModelRenderer getBlockRenderer() {
-        return this.getBlockRendererDispatcher().getBlockModelRenderer();
+    default ModelBlockRenderer getBlockRenderer() {
+        return this.getBlockRendererDispatcher().getModelRenderer();
     }
 
     /**
@@ -241,8 +248,8 @@ public interface IRenderUtilities {
      * @param state the BlockState
      * @return the IBakedModel
      */
-    default IBakedModel getModelForState(BlockState state) {
-        return this.getBlockRendererDispatcher().getModelForState(state);
+    default BakedModel getModelForState(BlockState state) {
+        return this.getBlockRendererDispatcher().getBlockModel(state);
     }
 
     /**
@@ -266,8 +273,8 @@ public interface IRenderUtilities {
      *
      * @return the EntityRendererManager object
      */
-    default EntityRendererManager getEntityRendererManager() {
-        return Minecraft.getInstance().getRenderManager();
+    default EntityRenderDispatcher getEntityRendererManager() {
+        return Minecraft.getInstance().getEntityRenderDispatcher();
     }
 
 
@@ -276,8 +283,8 @@ public interface IRenderUtilities {
      *
      * @return the FontRenderer object
      */
-    default FontRenderer getFontRenderer() {
-        return Minecraft.getInstance().fontRenderer;
+    default Font getFontRenderer() {
+        return Minecraft.getInstance().font;
     }
 
     /**
@@ -286,7 +293,7 @@ public interface IRenderUtilities {
      * @return a Quaternion object representing the orientation of the camera
      */
     default Quaternion getCameraOrientation() {
-        return this.getEntityRendererManager().getCameraOrientation();
+        return this.getEntityRendererManager().cameraOrientation();
     }
 
     /**
@@ -294,28 +301,28 @@ public interface IRenderUtilities {
      *
      * @return the PointOfView object
      */
-    default PointOfView getPointOfView() {
-        return this.getEntityRendererManager().options.getPointOfView();
+    default CameraType getPointOfView() {
+        return this.getEntityRendererManager().options.getCameraType();
     }
 
     /**
      * @return The width in pixels of the Minecraft window
      */
     default int getScaledWindowWidth() {
-        return Minecraft.getInstance().getMainWindow().getScaledWidth();
+        return Minecraft.getInstance().getWindow().getGuiScaledWidth();
     }
     /**
      * @return The height in pixels of the Minecraft window
      */
     default int getScaledWindowHeight() {
-        return Minecraft.getInstance().getMainWindow().getScaledHeight();
+        return Minecraft.getInstance().getWindow().getGuiScaledHeight();
     }
 
     /**
      * @return The render type buffer implementation
      */
-    default IRenderTypeBuffer.Impl getRenderTypeBuffer() {
-        return  Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
+    default MultiBufferSource.BufferSource getRenderTypeBuffer() {
+        return  Minecraft.getInstance().renderBuffers().bufferSource();
     }
 
     /**
@@ -323,7 +330,7 @@ public interface IRenderUtilities {
      * @param renderType the RenderType
      * @return an IVertexBuilder
      */
-    default IVertexBuilder getVertexBuilder(RenderType renderType) {
+    default VertexConsumer getVertexBuilder(RenderType renderType) {
         return this.getVertexBuilder(this.getRenderTypeBuffer(), renderType);
     }
 
@@ -333,16 +340,16 @@ public interface IRenderUtilities {
      * @param renderType the RenderType
      * @return an IVertexBuilder
      */
-    default IVertexBuilder getVertexBuilder(IRenderTypeBuffer buffer, RenderType renderType) {
+    default VertexConsumer getVertexBuilder(MultiBufferSource buffer, RenderType renderType) {
         return buffer.getBuffer(renderType);
     }
 
-    default Color convertColor(Vector3f color) {
-        return Color.fromInt(this.calculateColor(color));
+    default TextColor convertColor(Vector3f color) {
+        return TextColor.fromRgb(this.calculateColor(color));
     }
 
     default int calculateColor(Vector3f color) {
-        return this.calculateColor(color.getX(), color.getX(), color.getZ());
+        return this.calculateColor(color.x(), color.y(), color.z());
     }
 
     default int calculateColor(float r, float g, float b) {
@@ -354,7 +361,7 @@ public interface IRenderUtilities {
     }
 
     default float getPartialTick() {
-        return Minecraft.getInstance().getRenderPartialTicks();
+        return Minecraft.getInstance().getFrameTime();
     }
 
     /**
@@ -362,18 +369,18 @@ public interface IRenderUtilities {
      * length 1 starting from (0, 0, 0): red line along x axis, green line along y axis and blue
      * line along z axis.
      */
-    default void renderCoordinateSystem(MatrixStack transforms, IRenderTypeBuffer buffer) {
-        IVertexBuilder builder = this.getVertexBuilder(buffer, RenderType.getLines());
-        Matrix4f matrix = transforms.getLast().getMatrix();
+    default void renderCoordinateSystem(PoseStack transforms, MultiBufferSource buffer) {
+        VertexConsumer builder = this.getVertexBuilder(buffer, RenderType.lines());
+        Matrix4f matrix = transforms.last().pose();
         // X-axis
-        builder.pos(matrix, 0, 0, 0).color(255, 0, 0, 255).endVertex();
-        builder.pos(matrix, 1, 0, 0).color(255, 0, 0, 255).endVertex();
+        builder.vertex(matrix, 0, 0, 0).color(255, 0, 0, 255).endVertex();
+        builder.vertex(matrix, 1, 0, 0).color(255, 0, 0, 255).endVertex();
         // Y-axis
-        builder.pos(matrix, 0, 0, 0).color(0, 255, 0, 255).endVertex();
-        builder.pos(matrix, 0, 1, 0).color(0, 255, 0, 255).endVertex();
+        builder.vertex(matrix, 0, 0, 0).color(0, 255, 0, 255).endVertex();
+        builder.vertex(matrix, 0, 1, 0).color(0, 255, 0, 255).endVertex();
         // Z-axis
-        builder.pos(matrix, 0, 0, 0).color(0, 0, 255, 255).endVertex();
-        builder.pos(matrix, 0, 0, 1).color(0, 0, 255, 255).endVertex();
+        builder.vertex(matrix, 0, 0, 0).color(0, 0, 255, 255).endVertex();
+        builder.vertex(matrix, 0, 0, 1).color(0, 0, 255, 255).endVertex();
     }
 
     /**

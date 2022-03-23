@@ -6,16 +6,15 @@ import com.google.gson.JsonSyntaxException;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.tags.ITag;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -33,7 +32,7 @@ public class DynamicTextureParentIngredient extends Ingredient implements IDynam
     }
 
     protected DynamicTextureParentIngredient(ItemStack parent, DynamicTextureIngredient.BlockTagList tagList) {
-        super(Stream.of(new Ingredient.SingleItemList(parent)));
+        super(Stream.of(new Ingredient.ItemValue(parent)));
         this.parent = parent;
         this.tagList = tagList;
     }
@@ -80,8 +79,8 @@ public class DynamicTextureParentIngredient extends Ingredient implements IDynam
         }
 
         @Override
-        public DynamicTextureParentIngredient parse(PacketBuffer buffer) {
-            return new DynamicTextureParentIngredient(buffer.readItemStack(), buffer.readResourceLocation());
+        public DynamicTextureParentIngredient parse(FriendlyByteBuf buffer) {
+            return new DynamicTextureParentIngredient(buffer.readItem(), buffer.readResourceLocation());
         }
 
         @Override
@@ -99,8 +98,8 @@ public class DynamicTextureParentIngredient extends Ingredient implements IDynam
         }
 
         @Override
-        public void write(PacketBuffer buffer, DynamicTextureParentIngredient ingredient) {
-            buffer.writeItemStack(ingredient.getParent());
+        public void write(FriendlyByteBuf buffer, DynamicTextureParentIngredient ingredient) {
+            buffer.writeItemStack(ingredient.getParent(), false);
             buffer.writeResourceLocation(ingredient.getTagId());
         }
     }

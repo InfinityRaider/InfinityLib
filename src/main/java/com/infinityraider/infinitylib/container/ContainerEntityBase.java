@@ -1,9 +1,9 @@
 package com.infinityraider.infinitylib.container;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -12,7 +12,7 @@ public class ContainerEntityBase<E extends Entity> extends ContainerBase {
 
     private final E entity;
 
-    public ContainerEntityBase(@Nullable ContainerType<?> type, int id, E entity, PlayerInventory inventory, int xOffset, int yOffset) {
+    public ContainerEntityBase(@Nullable MenuType<?> type, int id, E entity, Inventory inventory, int xOffset, int yOffset) {
         super(type, id, inventory, xOffset, yOffset);
         // Set the Entity associated with the container.
         this.entity = Objects.requireNonNull(entity, "The Entity associated with an Entity Container may not be null!");
@@ -28,7 +28,7 @@ public class ContainerEntityBase<E extends Entity> extends ContainerBase {
     }
 
     @Override
-    public boolean canInteractWith(PlayerEntity player) {
+    public boolean canInteractWith(Player player) {
         return this.getEntity().isAlive();
     }
 }

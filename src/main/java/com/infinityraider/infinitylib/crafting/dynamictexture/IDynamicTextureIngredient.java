@@ -1,9 +1,9 @@
 package com.infinityraider.infinitylib.crafting.dynamictexture;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.registries.tags.ITag;
 
 public interface IDynamicTextureIngredient {
     ResourceLocation getTagId();

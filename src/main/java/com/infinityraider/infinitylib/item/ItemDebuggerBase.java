@@ -3,17 +3,20 @@ package com.infinityraider.infinitylib.item;
 import com.infinityraider.infinitylib.reference.Names;
 import com.infinityraider.infinitylib.utility.debug.DebugMode;
 import com.infinityraider.infinitylib.utility.debug.DebugModeFeedback;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.*;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.Util;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -44,51 +47,51 @@ public abstract class ItemDebuggerBase extends ItemBase {
 
     @Nonnull
     @Override
-    public ActionResult<ItemStack> onItemRightClick(@Nonnull World world, PlayerEntity player, @Nonnull Hand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        if (player.isSneaking()) {
-            if (!world.isRemote) {
+    public InteractionResultHolder<ItemStack> use(@Nonnull Level world, Player player, @Nonnull InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (player.isDiscrete()) {
+            if (!world.isClientSide()) {
                 DebugMode mode = this.changeDebugMode(stack);
-                player.sendMessage(new StringTextComponent("Set debug mode to " + mode.debugName()), Util.DUMMY_UUID);
+                player.sendMessage(new TextComponent("Set debug mode to " + mode.debugName()), Util.NIL_UUID);
             }
         } else {
             this.getDebugMode(stack).debugActionClicked(stack, world, player, hand);
         }
-        return new ActionResult<>(ActionResultType.PASS, stack);
+        return new InteractionResultHolder<>(InteractionResult.PASS, stack);
     }
 
     @Nonnull
     @Override
-    public ActionResultType onItemUse(ItemUseContext context) {
-        if(context.getPlayer() != null && !context.getPlayer().isSneaking()) {
-            ItemStack stack = context.getItem();
+    public InteractionResult useOn(UseOnContext context) {
+        if(context.getPlayer() != null && !context.getPlayer().isDiscrete()) {
+            ItemStack stack = context.getItemInHand();
             this.getDebugMode(stack).debugActionBlockClicked(stack, context);
         }
-        return ActionResultType.PASS;
+        return InteractionResult.PASS;
     }
 
     @Nonnull
     @Override
-    public ActionResultType itemInteractionForEntity(@Nonnull ItemStack stack, PlayerEntity player, @Nonnull LivingEntity target, @Nonnull Hand hand) {
-        if(!player.isSneaking()) {
+    public InteractionResult interactLivingEntity(@Nonnull ItemStack stack, Player player, @Nonnull LivingEntity target, @Nonnull InteractionHand hand) {
+        if(!player.isDiscrete()) {
             this.getDebugMode(stack).debugActionEntityClicked(stack, player, target, hand);
         }
-        return ActionResultType.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void addInformation(@Nonnull ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, @Nonnull ITooltipFlag flag) {
+    public void appendHoverText(@Nonnull ItemStack stack, @Nullable Level world, List<Component> tooltip, @Nonnull TooltipFlag flag) {
         DebugMode mode = getDebugMode(stack);
-        tooltip.add(new StringTextComponent("Right Click to use the debugger in its current mode"));
-        tooltip.add(new StringTextComponent("Shift + Right Click to cycle debug modes"));
-        tooltip.add(new StringTextComponent("Current debug mode: "  + (mode == null ? "null" : mode.debugName())));
+        tooltip.add(new TextComponent("Right Click to use the debugger in its current mode"));
+        tooltip.add(new TextComponent("Shift + Right Click to cycle debug modes"));
+        tooltip.add(new TextComponent("Current debug mode: "  + (mode == null ? "null" : mode.debugName())));
     }
 
     public DebugMode getDebugMode(ItemStack stack) {
-        CompoundNBT tag;
+        CompoundTag tag;
         if(!stack.hasTag() || stack.getTag() == null) {
-            tag = new CompoundNBT();
+            tag = new CompoundTag();
             stack.setTag(tag);
         } else {
             tag = stack.getTag();
@@ -100,9 +103,9 @@ public abstract class ItemDebuggerBase extends ItemBase {
     }
 
     public DebugMode changeDebugMode(ItemStack stack) {
-        CompoundNBT tag;
+        CompoundTag tag;
         if(!stack.hasTag() || stack.getTag() == null) {
-            tag = new CompoundNBT();
+            tag = new CompoundTag();
             stack.setTag(tag);
         } else {
             tag = stack.getTag();

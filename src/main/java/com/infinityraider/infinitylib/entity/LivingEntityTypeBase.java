@@ -2,29 +2,28 @@ package com.infinityraider.infinitylib.entity;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import net.minecraft.block.Block;
-import net.minecraft.entity.*;
-import net.minecraft.entity.ai.attributes.AttributeModifierMap;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.client.registry.IRenderFactory;
-import net.minecraftforge.fml.network.FMLPlayMessages;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.network.PlayMessages;
 
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public class LivingEntityTypeBase<T extends LivingEntity> extends EntityTypeBase<T> implements IMobEntityType {
-    private final Supplier<AttributeModifierMap> attributeSupplier;
+    private final Supplier<AttributeSupplier> attributeSupplier;
     private final Optional<SpawnEggData> spawnEggData;
     private final Set<SpawnRule> spawnRules;
 
     protected LivingEntityTypeBase(String name, Class<T> entityClass,
-                                   EntityType.IFactory<T> factory, EntityClassification classification,
+                                   EntityType.EntityFactory<T> factory, MobCategory classification,
                                    boolean p_i231489_3_, boolean summonable, boolean immuneToFire, boolean p_i231489_6_,
-                                   ImmutableSet<Block> blocks, EntitySize size, int trackingRange, int updateInterval, boolean velocityUpdates,
-                                   final BiFunction<FMLPlayMessages.SpawnEntity, World, T> customClientFactory,
-                                   Set<Class<? extends MobEntity>> aggressors, IRenderFactory<T> renderFactory,
-                                   Supplier<AttributeModifierMap> attributeSupplier, SpawnEggData spawnEggData,
+                                   ImmutableSet<Block> blocks, EntityDimensions size, int trackingRange, int updateInterval, boolean velocityUpdates,
+                                   final BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory,
+                                   Set<Class<? extends Mob>> aggressors, IEntityRenderSupplier<T> renderFactory,
+                                   Supplier<AttributeSupplier> attributeSupplier, SpawnEggData spawnEggData,
                                    Set<SpawnRule> spawnRules) {
 
         super(name, entityClass, factory, classification, p_i231489_3_, summonable, immuneToFire, p_i231489_6_, blocks,
@@ -35,7 +34,7 @@ public class LivingEntityTypeBase<T extends LivingEntity> extends EntityTypeBase
     }
 
     @Override
-    public AttributeModifierMap createCustomAttributes() {
+    public AttributeSupplier createCustomAttributes() {
         return this.attributeSupplier.get();
     }
 
@@ -50,32 +49,32 @@ public class LivingEntityTypeBase<T extends LivingEntity> extends EntityTypeBase
     }
 
     public static <T extends LivingEntity> Builder<T> livingEntityTypeBuilder(
-            String name, Class<T> entityClass, EntityType.IFactory<T> factory,
-            EntityClassification classification, EntitySize size) {
+            String name, Class<T> entityClass, EntityType.EntityFactory<T> factory,
+            MobCategory classification, EntityDimensions size) {
 
         return new Builder<>(name, entityClass, factory, classification, size);
     }
 
     public static <T extends LivingEntity> EntityTypeBase.Builder<T> livingEntityTypeBuilder(
-            String name, Class<T> entityClass, BiFunction<FMLPlayMessages.SpawnEntity, World, T>  clientFactory,
-            EntityClassification classification, EntitySize size) {
+            String name, Class<T> entityClass, BiFunction<PlayMessages.SpawnEntity, Level, T>  clientFactory,
+            MobCategory classification, EntityDimensions size) {
 
         return new Builder<>(name, entityClass, clientFactory, classification, size);
     }
 
     public static class Builder<T extends LivingEntity> extends EntityTypeBase.Builder<T> {
-        private Supplier<AttributeModifierMap> attributeSupplier;
+        private Supplier<AttributeSupplier> attributeSupplier;
         private SpawnEggData spawnEggData;
         private final Set<SpawnRule> spawnRules;
 
-        protected Builder(String name, Class<T> entityClass, EntityType.IFactory<T> factory,
-                          EntityClassification classification, EntitySize size) {
+        protected Builder(String name, Class<T> entityClass, EntityType.EntityFactory<T> factory,
+                          MobCategory classification, EntityDimensions size) {
             super(name, entityClass, factory, classification, size);
             this.spawnRules = Sets.newIdentityHashSet();
         }
 
-        protected Builder(String name, Class<T> entityClass,  BiFunction<FMLPlayMessages.SpawnEntity, World, T> factory,
-                          EntityClassification classification, EntitySize size) {
+        protected Builder(String name, Class<T> entityClass,  BiFunction<PlayMessages.SpawnEntity, Level, T> factory,
+                          MobCategory classification, EntityDimensions size) {
             super(name, entityClass, factory, classification, size);
             this.spawnRules = Sets.newIdentityHashSet();
         }
@@ -88,7 +87,7 @@ public class LivingEntityTypeBase<T extends LivingEntity> extends EntityTypeBase
                     this.aggressors, this.renderFactory, this.attributeSupplier, this.spawnEggData, this.spawnRules);
         }
 
-        public Builder<T> setAttributeSupplier(Supplier<AttributeModifierMap> attributeSupplier) {
+        public Builder<T> setAttributeSupplier(Supplier<AttributeSupplier> attributeSupplier) {
             this.attributeSupplier = attributeSupplier;
             return this;
         }

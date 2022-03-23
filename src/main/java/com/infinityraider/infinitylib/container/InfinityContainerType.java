@@ -1,12 +1,12 @@
 package com.infinityraider.infinitylib.container;
 
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraftforge.fml.network.IContainerFactory;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraftforge.network.IContainerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class InfinityContainerType<T extends ContainerBase> extends ContainerType<T> implements IInfinityContainerType {
+public class InfinityContainerType<T extends ContainerBase> extends MenuType<T> implements IInfinityContainerType {
     private final String name;
     private final IGuiFactory<T> guiFactory;
 

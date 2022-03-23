@@ -5,17 +5,21 @@ import com.google.gson.*;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.reference.Constants;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.*;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Transformation;
+import com.mojang.math.Vector3f;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.Direction;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.TransformationMatrix;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.resources.model.*;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.*;
@@ -28,7 +32,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-import static net.minecraft.client.renderer.model.ItemTransformVec3f.Deserializer.*;
 
 /**
  * Composite model which allows transformations of the different sub-models
@@ -60,7 +63,7 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
     }
 
     @Override
-    public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
+    public void onResourceManagerReload(@Nonnull ResourceManager resourceManager) {
     }
 
     @Nonnull
@@ -78,10 +81,10 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
         ImmutableMap.Builder<String, Submodel> parts = ImmutableMap.builder();
         for (Map.Entry<String, JsonElement> part : modelContents.get("parts").getAsJsonObject().entrySet()) {
             // This is where we modify the Forge code to allow custom transformations
-            IModelTransform modelTransform = transformations
+            ModelState modelTransform = transformations
                     .filter(json -> json.has(part.getKey()))
                     .map(json -> readTransformation(json.getAsJsonObject(part.getKey())))
-                    .orElse(SimpleModelTransform.IDENTITY);
+                    .orElse(SimpleModelState.IDENTITY);
             parts.put(part.getKey(), new Submodel(
                     part.getKey(),
                     deserializationContext.deserialize(part.getValue(), BlockModel.class),
@@ -100,22 +103,22 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
         return new Geometry(parts.build(), particleParent);
     }
 
-    private static IModelTransform readTransformation(JsonObject json) {
+    private static ModelState readTransformation(JsonObject json) {
         // rotation
-        Vector3f rotation = parseVector(json, "rotation", ROTATION_DEFAULT);
-        Matrix4f matrix = new Matrix4f(new Quaternion(rotation.getX(), rotation.getY(), rotation.getZ(), true));
+        Vector3f rotation = parseVector(json, "rotation", ItemTransform.Deserializer.DEFAULT_ROTATION);
+        Matrix4f matrix = new Matrix4f(new Quaternion(rotation.x(), rotation.y(), rotation.z(), true));
         // translation
-        Vector3f translation = parseVector(json, "translation", TRANSLATION_DEFAULT);
+        Vector3f translation = parseVector(json, "translation", ItemTransform.Deserializer.DEFAULT_TRANSLATION);
         translation.mul(Constants.UNIT);
-        matrix.mul(Matrix4f.makeTranslate(translation.getX(), translation.getY(), translation.getZ()));
+        matrix.multiply(Matrix4f.createTranslateMatrix(translation.x(), translation.y(), translation.z()));
         // scale
-        Vector3f scale = parseVector(json, "scale", SCALE_DEFAULT);
-        matrix.mul(Matrix4f.makeScale(scale.getX(), scale.getY(), scale.getZ()));
-        TransformationMatrix transform = new TransformationMatrix(matrix);
-        return new IModelTransform() {
+        Vector3f scale = parseVector(json, "scale", ItemTransform.Deserializer.DEFAULT_SCALE);
+        matrix.multiply(Matrix4f.createScaleMatrix(scale.x(), scale.y(), scale.z()));
+        Transformation transform = new Transformation(matrix);
+        return new ModelState() {
             @Nonnull
             @Override
-            public TransformationMatrix getRotation() {
+            public Transformation getRotation() {
                 return transform;
             }
         };
@@ -125,13 +128,13 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
         if (!json.has(key)) {
             return fallback;
         } else {
-            JsonArray jsonarray = JSONUtils.getJsonArray(json, key);
+            JsonArray jsonarray = GsonHelper.getAsJsonArray(json, key);
             if (jsonarray.size() != 3) {
                 throw new JsonParseException("Expected 3 " + key + " values, found: " + jsonarray.size());
             } else {
                 float[] afloat = new float[3];
                 for (int i = 0; i < afloat.length; ++i) {
-                    afloat[i] = JSONUtils.getFloat(jsonarray.get(i), key + "[" + i + "]");
+                    afloat[i] = GsonHelper.convertToFloat(jsonarray.get(i), key + "[" + i + "]");
                 }
                 return new Vector3f(afloat[0], afloat[1], afloat[2]);
             }
@@ -159,13 +162,13 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
         }
 
         @Override
-        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter,
-                                IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation) {
+        public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter,
+                               ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
 
-            RenderMaterial particleLocation = owner.resolveTexture("particle");
+            Material particleLocation = owner.resolveTexture("particle");
             TextureAtlasSprite particle = spriteGetter.apply(particleLocation);
 
-            ImmutableMap.Builder<String, IBakedModel> bakedParts = ImmutableMap.builder();
+            ImmutableMap.Builder<String, BakedModel> bakedParts = ImmutableMap.builder();
             for (Map.Entry<String, Submodel> part : parts.entrySet()) {
                 Submodel submodel = part.getValue();
                 if (!owner.getPartVisibility(submodel)) {
@@ -174,15 +177,15 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
                 bakedParts.put(part.getKey(), submodel.bakeModel(bakery, spriteGetter, modelTransform, modelLocation));
             }
 
-            return new BakedModel(owner.isShadedInGui(), owner.isSideLit(), owner.useSmoothLighting(), particle,
+            return new BakedSubModel(owner.isShadedInGui(), owner.isSideLit(), owner.useSmoothLighting(), particle,
                     bakedParts.build(), owner.getCombinedTransform(), overrides, this.particlePart);
         }
 
         @Override
-        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter,
+        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter,
                                                       Set<Pair<String, String>> missingTextureErrors) {
 
-            Set<RenderMaterial> textures = new HashSet<>();
+            Set<Material> textures = new HashSet<>();
             for (Submodel part : parts.values()) {
                 textures.addAll(part.getTextures(owner, modelGetter, missingTextureErrors));
             }
@@ -191,13 +194,13 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
     }
 
     // Copied from Forge with a hack-y fix for extra data not being correctly loaded when embedded in a multipart model
-    private static class BakedModel extends CompositeModel {
-        private final ImmutableMap<String, IBakedModel> bakedParts;
+    private static class BakedSubModel extends CompositeModel {
+        private final ImmutableMap<String, BakedModel> bakedParts;
         private final String particleParent;
 
-        public BakedModel(boolean isGui3d, boolean isSideLit, boolean isAmbientOcclusion, TextureAtlasSprite particle,
-                          ImmutableMap<String, IBakedModel> bakedParts, IModelTransform combinedTransform,
-                          ItemOverrideList overrides, @Nullable String particleParent) {
+        public BakedSubModel(boolean isGui3d, boolean isSideLit, boolean isAmbientOcclusion, TextureAtlasSprite particle,
+                             ImmutableMap<String, BakedModel> bakedParts, ModelState combinedTransform,
+                             ItemOverrides overrides, @Nullable String particleParent) {
             super(isGui3d, isSideLit, isAmbientOcclusion, particle, bakedParts, combinedTransform, overrides);
             this.bakedParts = bakedParts;
             this.particleParent = particleParent;
@@ -210,7 +213,7 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
                 return super.getQuads(state, side, rand, extraData);
             } else {
                 List<BakedQuad> quads = new ArrayList<>();
-                for(Map.Entry<String, IBakedModel> entry : bakedParts.entrySet()) {
+                for(Map.Entry<String, BakedModel> entry : bakedParts.entrySet()) {
                     quads.addAll(entry.getValue().getQuads(state, side, rand, extraData));
                 }
                 return quads;
@@ -219,22 +222,21 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
 
         @Nonnull
         @Override
-        @Deprecated
         @SuppressWarnings("deprecation")
-        public TextureAtlasSprite getParticleTexture() {
+        public TextureAtlasSprite getParticleIcon() {
             if(this.particleParent == null) {
-                return super.getParticleTexture();
+                return super.getParticleIcon();
             }
-            return this.bakedParts.get(this.particleParent).getParticleTexture();
+            return this.bakedParts.get(this.particleParent).getParticleIcon();
         }
 
         @Nonnull
         @Override
-        public TextureAtlasSprite getParticleTexture(@Nonnull IModelData extraData) {
+        public TextureAtlasSprite getParticleIcon(@Nonnull IModelData extraData) {
             if(this.particleParent == null) {
-                return super.getParticleTexture(extraData);
+                return super.getParticleIcon(extraData);
             }
-            return this.bakedParts.get(this.particleParent).getParticleTexture(extraData);
+            return this.bakedParts.get(this.particleParent).getParticleIcon(extraData);
         }
     }
 
@@ -242,9 +244,9 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
     private static class Submodel implements IModelGeometryPart {
         private final String name;
         private final BlockModel model;
-        private final IModelTransform modelTransform;
+        private final ModelState modelTransform;
 
-        private Submodel(String name, BlockModel model, IModelTransform modelTransform) {
+        private Submodel(String name, BlockModel model, ModelState modelTransform) {
             this.name = name;
             this.model = model;
             this.modelTransform = modelTransform;
@@ -257,35 +259,34 @@ public class InfModelLoaderComposite implements InfModelLoader<InfModelLoaderCom
 
         @Override
         public void addQuads(IModelConfiguration owner, IModelBuilder<?> modelBuilder, ModelBakery bakery,
-                             Function<RenderMaterial, TextureAtlasSprite> spriteGetter,
-                             IModelTransform modelTransform, ResourceLocation modelLocation) {
+                             Function<Material, TextureAtlasSprite> spriteGetter,
+                             ModelState modelTransform, ResourceLocation modelLocation) {
 
             throw new UnsupportedOperationException("Attempted to call adQuads on a Submodel instance. Please don't.");
         }
 
-        public IBakedModel bakeModel(ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter,
-                                     IModelTransform modelTransform, ResourceLocation modelLocation) {
-            IBakedModel baked;
+        public BakedModel bakeModel(ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter,
+                                     ModelState modelTransform, ResourceLocation modelLocation) {
+            BakedModel baked;
             //Discern between Forge and Vanilla models, Forge handles the transformation fine, however, Vanilla does not
             if (this.model.customData.getCustomGeometry() == null) {
                 //Vanilla: use the identity transformation, but intercept baked quads and transform them right after baking
                 TransformingFaceBakery.getInstance().pushQuadTransform(this.modelTransform.getRotation());
-                baked = model.bakeModel(bakery, spriteGetter, new ModelTransformComposition(SimpleModelTransform.IDENTITY, modelTransform,
-                        this.modelTransform.isUvLock() || modelTransform.isUvLock()), modelLocation);
+                baked = model.bake(bakery, model, spriteGetter, new CompositeModelState(SimpleModelState.IDENTITY, modelTransform,
+                        this.modelTransform.isUvLocked() || modelTransform.isUvLocked()), modelLocation, true);
                 TransformingFaceBakery.getInstance().popQuadTransform();
             } else {
                 //Forge: carry on with the predefined transformation
-                baked = model.bakeModel(bakery, spriteGetter, new ModelTransformComposition(this.modelTransform, modelTransform,
-                        this.modelTransform.isUvLock() || modelTransform.isUvLock()), modelLocation);
+                baked = model.bake(bakery, model, spriteGetter, new CompositeModelState(this.modelTransform, modelTransform,
+                        this.modelTransform.isUvLocked() || modelTransform.isUvLocked()), modelLocation, true);
             }
             return baked;
         }
 
         @Override
-        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter,
+        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter,
                                                       Set<Pair<String, String>> missingTextureErrors) {
-            return model.getTextures(modelGetter, missingTextureErrors);
+            return model.getMaterials(modelGetter, missingTextureErrors);
         }
     }
-
 }

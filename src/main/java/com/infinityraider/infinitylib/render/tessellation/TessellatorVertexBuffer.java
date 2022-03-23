@@ -1,16 +1,16 @@
 package com.infinityraider.infinitylib.render.tessellation;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.mojang.math.Vector4f;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.core.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -19,12 +19,12 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 @SuppressWarnings("unused")
 public class TessellatorVertexBuffer extends TessellatorAbstractBase {
-    private final IRenderTypeBuffer.Impl buffer;
+    private final MultiBufferSource.BufferSource buffer;
     private final RenderType renderType;
 
-    private IVertexBuilder builder;
+    private VertexConsumer builder;
 
-    public TessellatorVertexBuffer(IRenderTypeBuffer.Impl buffer, RenderType renderType) {
+    public TessellatorVertexBuffer(MultiBufferSource.BufferSource buffer, RenderType renderType) {
         this.buffer = buffer;
         this.renderType = renderType;
     }
@@ -32,7 +32,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     /**
      * @return IRenderTypeBuffer.Impl object which this is currently tessellating vertices for
      */
-    public IRenderTypeBuffer.Impl getVertexBuffer() {
+    public MultiBufferSource getVertexBuffer() {
         return this.buffer;
     }
 
@@ -64,7 +64,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
 
     @Override
     public VertexFormat getVertexFormat() {
-        return this.getRenderType().getVertexFormat();
+        return this.getRenderType().format();
     }
 
     /**
@@ -74,7 +74,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     @Override
     protected void onDrawCall() {
         if (this.builder != null) {
-            this.getVertexBuffer().finish(this.getRenderType());
+            this.getVertexBuffer().getBuffer(this.getRenderType()).endVertex();
             this.builder = null;
         }
     }
@@ -86,7 +86,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
      */
     @Override
     public TessellatorVertexBuffer addQuads(List<BakedQuad> quads) {
-        quads.forEach(quad -> this.builder.addQuad(
+        quads.forEach(quad -> this.builder.putBulkData(
                 this.getMatrixStackEntry(), quad, this.getRed(), this.getBlue(), this.getGreen(), this.getBrightness(), OverlayTexture.NO_OVERLAY));
         return this;
     }
@@ -106,23 +106,23 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         this.transform(pos);
         List<VertexFormatElement> elements = this.getVertexFormat().getElements();
         // Note: the order this vertex data is defined is important
-        if(elements.contains(DefaultVertexFormats.POSITION_3F)) {
-            builder.pos(pos.getX(), pos.getY(), pos.getZ());
+        if(elements.contains(DefaultVertexFormat.ELEMENT_POSITION)) {
+            builder.vertex(pos.x(), pos.y(), pos.z());
         }
-        if(elements.contains(DefaultVertexFormats.COLOR_4UB)) {
+        if(elements.contains(DefaultVertexFormat.ELEMENT_COLOR)) {
             builder.color((int) (this.getRed() * 255), (int) (this.getGreen() * 255), (int) (this.getBlue() * 255), (int) (this.getAlpha() * 255));
         }
-        if(elements.contains(DefaultVertexFormats.TEX_2F)) {
-            builder.tex(u, v);
+        if(elements.contains(DefaultVertexFormat.ELEMENT_UV0)) {
+            builder.uv(u, v);
         }
-        if(elements.contains(DefaultVertexFormats.TEX_2S)) {
-            builder.overlay(this.getOverlay());
+        if(elements.contains(DefaultVertexFormat.ELEMENT_UV1)) {
+            builder.uv2(this.getOverlay());
         }
-        if(elements.contains(DefaultVertexFormats.TEX_2SB)) {
-            builder.lightmap(this.getBrightness());
+        if(elements.contains(DefaultVertexFormat.ELEMENT_UV2)) {
+            builder.uv2(this.getBrightness());
         }
-        if(elements.contains(DefaultVertexFormats.NORMAL_3B)) {
-            builder.normal(this.getNormal().getX(), this.getNormal().getY(), this.getNormal().getZ());
+        if(elements.contains(DefaultVertexFormat.ELEMENT_NORMAL)) {
+            builder.normal(this.getNormal().x(), this.getNormal().y(), this.getNormal().z());
         }
         builder.endVertex();
         return this;

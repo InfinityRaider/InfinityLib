@@ -2,11 +2,14 @@ package com.infinityraider.infinitylib.entity;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -45,6 +48,8 @@ public final class EntityHandler {
         return this;
     }
 
+    // TODO: bring this back once Forge reimplements it
+    /*
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onPotentialSpawnEvent(PotentialSpawns event) {
@@ -55,7 +60,7 @@ public final class EntityHandler {
         final BlockState state = event.getWorld().getBlockState(event.getPos().down());
         final IMobEntityType.SpawnRule.Context context = new IMobEntityType.SpawnRule.Context() {
             @Override
-            public IWorld world() {
+            public Level world() {
                 return event.getWorld();
             }
 
@@ -79,13 +84,14 @@ public final class EntityHandler {
                 .map(SpawnData::getSpawnInfo)
                 .forEach(info -> event.getList().add(info));
     }
+     */
 
     private static final class SpawnData {
-        private final MobSpawnInfo.Spawners spawnInfo;
+        private final MobSpawnSettings.SpawnerData spawnInfo;
         private final Predicate<IMobEntityType.SpawnRule.Context> rule;
 
         private SpawnData(EntityType<?> type, IMobEntityType.SpawnRule rule) {
-            this.spawnInfo = new MobSpawnInfo.Spawners(type, rule.weight(), rule.min(), rule.max());
+            this.spawnInfo = new MobSpawnSettings.SpawnerData(type, rule.weight(), rule.min(), rule.max());
             this.rule = rule.spawnRule();
         }
 
@@ -93,7 +99,7 @@ public final class EntityHandler {
             return this.rule.test(context);
         }
 
-        private MobSpawnInfo.Spawners getSpawnInfo() {
+        private MobSpawnSettings.SpawnerData getSpawnInfo() {
             return this.spawnInfo;
         }
     }

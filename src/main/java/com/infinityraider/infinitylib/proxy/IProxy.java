@@ -42,6 +42,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.client.IItemRenderProperties;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
@@ -89,6 +90,8 @@ public interface IProxy extends IProxyBase<Config> {
     }
 
     default void forceClientRenderUpdate(BlockPos pos) {}
+
+    default void initItemRenderer(Consumer<IItemRenderProperties> consumer) {}
 
     /**
      * -------------------

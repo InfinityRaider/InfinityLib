@@ -5,17 +5,16 @@ import com.google.gson.JsonObject;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
-import net.minecraft.block.Block;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.item.crafting.ShapedRecipe;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistryEntry;
+import net.minecraftforge.registries.tags.ITag;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,7 +22,7 @@ import java.util.List;
 
 public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     public static final String ID = "crafting_shaped_dynamic_texture";
-    public static final IRecipeSerializer<ShapedDynamicTextureRecipe> SERIALIZER = new Serializer();
+    public static final RecipeSerializer<ShapedDynamicTextureRecipe> SERIALIZER = new Serializer();
 
     private List<Block> materials;
 
@@ -47,7 +46,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
 
     @Override
     @Nonnull
-    public IRecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<?> getSerializer() {
         return SERIALIZER;
     }
 
@@ -79,7 +78,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     }
 
     @Override
-    public boolean matches(@Nonnull CraftingInventory inv, @Nonnull World world) {
+    public boolean matches(@Nonnull CraftingInventory inv, @Nonnull Level world) {
         // Copied from vanilla, check if any pattern matches, but for all possible offsets
         return this.checkMaterial(inv) != null;
     }
@@ -155,8 +154,8 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
         return material;
     }
 
-    public static class Serializer extends ForgeRegistryEntry<IRecipeSerializer<?>>
-            implements IRecipeSerializer<ShapedDynamicTextureRecipe>, IInfRecipeSerializer {
+    public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>>
+            implements RecipeSerializer<ShapedDynamicTextureRecipe>, IInfRecipeSerializer {
 
         private Serializer() {}
 
@@ -173,14 +172,14 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
 
         @Nonnull
         @Override
-        public ShapedDynamicTextureRecipe read(@Nonnull ResourceLocation recipeId, @Nonnull JsonObject json) {
-            return this.convert(IRecipeSerializer.CRAFTING_SHAPED.read(recipeId, json));
+        public ShapedDynamicTextureRecipe fromJson(@Nonnull ResourceLocation recipeId, @Nonnull JsonObject json) {
+            return this.convert(RecipeSerializer.SHAPED_RECIPE.fromJson(recipeId, json));
         }
 
         @Nullable
         @Override
-        public ShapedDynamicTextureRecipe read(@Nonnull ResourceLocation recipeId, @Nonnull PacketBuffer buffer) {
-            return this.convert(IRecipeSerializer.CRAFTING_SHAPED.read(recipeId, buffer));
+        public ShapedDynamicTextureRecipe fromNetwork(@Nonnull ResourceLocation recipeId, @Nonnull FriendlyByteBuf buffer) {
+            return this.convert(RecipeSerializer.SHAPED_RECIPE.fromNetwork(recipeId, buffer));
         }
 
         protected ShapedDynamicTextureRecipe convert(@Nullable ShapedRecipe recipe) {
@@ -188,8 +187,8 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
         }
 
         @Override
-        public void write(@Nonnull PacketBuffer buffer, @Nonnull ShapedDynamicTextureRecipe recipe) {
-            IRecipeSerializer.CRAFTING_SHAPED.write(buffer, recipe);
+        public void toNetwork(@Nonnull FriendlyByteBuf buffer, @Nonnull ShapedDynamicTextureRecipe recipe) {
+            RecipeSerializer.SHAPED_RECIPE.toNetwork(buffer, recipe);
         }
 
         @Override
