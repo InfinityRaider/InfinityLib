@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.world;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 import java.util.Set;
 
@@ -26,5 +27,5 @@ public interface IInfStructure {
     /**
      * @return the placement behaviour of this structure
      */
-    JigsawPattern.PlacementBehaviour placement();
+    StructureTemplatePool.Projection placement();
 }

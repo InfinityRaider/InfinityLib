@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.modules.synchronizedeffects;
-
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.potion.EffectInstance;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -21,16 +20,17 @@ public class EffectHandler {
     @SuppressWarnings("unused")
     public void onLivingUpdate(LivingEvent.LivingUpdateEvent event) {
         LivingEntity entity = event.getEntityLiving();
-        if(entity.getEntityWorld().isRemote) {
+        if(entity.getLevel().isClientSide()) {
             return;
         }
         EffectTracker tracker = CapabilityEffectTracker.getEffectTracker(entity);
         if(tracker == null) {
             return;
         }
-        Collection<EffectInstance> potions = entity.getActivePotionEffects();
+        Collection<MobEffectInstance> potions = entity.getActiveEffects();
         tracker.updatePotionEffects(potions.stream()
-                .filter(p -> p.getPotion() instanceof ISynchronizedEffect)
-                .map(EffectInstance::getPotion).collect(Collectors.toList()));
+                .filter(p -> p.getEffect() instanceof ISynchronizedEffect)
+                .map(MobEffectInstance::getEffect)
+                .collect(Collectors.toList()));
     }
 }

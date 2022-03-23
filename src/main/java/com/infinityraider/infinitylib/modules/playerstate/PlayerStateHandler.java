@@ -1,11 +1,11 @@
 package com.infinityraider.infinitylib.modules.playerstate;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderPlayerEvent;
@@ -26,26 +26,26 @@ public class PlayerStateHandler {
         return INSTANCE;
     }
 
-    private final HashMap<UUID, State> states;
+    private final ThreadLocal<HashMap<UUID, PlayerState>> states;
 
     private PlayerStateHandler() {
-        this.states = new HashMap<>();
+        this.states = ThreadLocal.withInitial(HashMap::new);
     }
 
-    State getState(PlayerEntity player) {
-        if(!states.containsKey(player.getUniqueID())) {
-            states.put(player.getUniqueID(), new State(player));
+    PlayerState getState(Player player) {
+        if(!states.get().containsKey(player.getUUID())) {
+            states.get().put(player.getUUID(), PlayerState.createState(player));
         }
-        return states.get(player.getUniqueID());
+        return states.get().get(player.getUUID());
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     @SuppressWarnings("unused")
     public void onProjectileImpactEvent(ProjectileImpactEvent event) {
-        if(event.getRayTraceResult().getType() == RayTraceResult.Type.ENTITY) {
-            Entity hit = ((EntityRayTraceResult) event.getRayTraceResult()).getEntity();
-            if(hit instanceof PlayerEntity) {
-                PlayerEntity player = (PlayerEntity) hit;
+        if(event.getRayTraceResult().getType() == HitResult.Type.ENTITY) {
+            Entity hit = ((EntityHitResult) event.getRayTraceResult()).getEntity();
+            if(hit instanceof Player) {
+                Player player = (Player) hit;
                 if (getState(player).isEthereal()) {
                     event.setCanceled(true);
                     event.setResult(Event.Result.DENY);
@@ -57,8 +57,8 @@ public class PlayerStateHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     @SuppressWarnings("unused")
     public void onEntityHurtEvent(LivingHurtEvent event) {
-        if(event.getEntityLiving() instanceof PlayerEntity) {
-            PlayerEntity player = (PlayerEntity) event.getEntityLiving();
+        if(event.getEntityLiving() instanceof Player) {
+            Player player = (Player) event.getEntityLiving();
             if(getState(player).isInvulnerable()) {
                 event.setCanceled(true);
                 event.setResult(Event.Result.DENY);
@@ -95,16 +95,16 @@ public class PlayerStateHandler {
     public void onEntityTargetingEvent(LivingSetAttackTargetEvent event) {
         LivingEntity target = event.getTarget();
         LivingEntity attacker = event.getEntityLiving();
-        if(target == null || attacker == null || !(target instanceof PlayerEntity) || !(attacker instanceof LivingEntity)) {
+        if(target == null || attacker == null || !(target instanceof Player) || !(attacker instanceof LivingEntity)) {
             return;
         }
-        if(getState((PlayerEntity) target).isUndetectable()) {
-            if (attacker instanceof MobEntity) {
-                MobEntity mob = (MobEntity) attacker;
-                mob.setAggroed(false);
-                mob.setAttackTarget(null);
+        if(getState((Player) target).isUndetectable()) {
+            if (attacker instanceof Mob) {
+                Mob mob = (Mob) attacker;
+                mob.setAggressive(false);
+                mob.setTarget(null);
             }
-            attacker.setRevengeTarget(null);
+            attacker.setLastHurtMob(null);
         }
     }
 

@@ -1,26 +1,32 @@
 package com.infinityraider.infinitylib.modules.playerstate;
 
+import com.google.common.collect.Maps;
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.stream.Collectors;
 
 public class MessageSyncState extends MessageBase {
-    private PlayerEntity player;
-    private byte state;
+    private Player player;
+    private EnumMap<StatusEffect, Boolean> state;
 
     public MessageSyncState() {
         super();
     }
 
-    public MessageSyncState(PlayerEntity player, State state) {
+    public MessageSyncState(Player player, PlayerState state) {
         this();
         this.player = player;
-        this.state =
-                (byte) ((state.isInvisible() ? 1 : 0)
-                        | ((state.isInvulnerable() ? 1 : 0) << 1)
-                        | ((state.isEthereal() ? 1 : 0) << 2)
-                        | ((state.isUndetectable() ? 1 : 0) << 3));
+        this.state = Arrays.stream(StatusEffect.values()).collect(Collectors.toMap(
+                effect -> effect,
+                state::isActive,
+                (a, b) -> a == b ? a : true,
+                () -> Maps.newEnumMap(StatusEffect.class)
+        ));
     }
 
     @Override

@@ -1,15 +1,15 @@
 package com.infinityraider.infinitylib.modules.synchronizedeffects;
 
 import com.infinityraider.infinitylib.network.MessageBase;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageSyncEffects extends MessageBase {
     private Entity entity;
-    private CompoundNBT nbt;
+    private CompoundTag nbt;
 
     public MessageSyncEffects() {
         super();
@@ -18,7 +18,7 @@ public class MessageSyncEffects extends MessageBase {
     public MessageSyncEffects(EffectTracker tracker) {
         this();
         this.entity = tracker.getEntity();
-        this.nbt = tracker.writeToNBT();
+        this.nbt = tracker.serializeNBT();
     }
 
     @Override
@@ -31,7 +31,7 @@ public class MessageSyncEffects extends MessageBase {
         if(this.entity instanceof LivingEntity && this.nbt != null) {
             EffectTracker tracker = CapabilityEffectTracker.getEffectTracker((LivingEntity) this.entity);
             if(tracker != null) {
-                tracker.readFromNBT(this.nbt);
+                tracker.deserializeNBT(this.nbt);
             }
         }
     }

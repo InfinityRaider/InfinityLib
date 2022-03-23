@@ -71,5 +71,6 @@ public final class MessageSerializerStore {
         registerMessageSerializer(MessageSerializerSubClass.ITEM);
         registerMessageSerializer(MessageSerializerSubClass.TEXT);
         registerMessageSerializer(MessageSerializerArray.INSTANCE);
+        registerMessageSerializer(MessageSerializerMap.INSTANCE);
     }
 }
