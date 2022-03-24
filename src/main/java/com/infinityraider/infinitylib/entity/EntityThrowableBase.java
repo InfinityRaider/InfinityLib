@@ -5,15 +5,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 
-public abstract class EntityProjectileBase extends Projectile implements IBaseEntityImplementation<EntityProjectileBase> {
-    protected EntityProjectileBase(EntityType<? extends Projectile> type, Level world) {
+public abstract class EntityThrowableBase extends ThrowableProjectile implements IBaseEntityImplementation<EntityThrowableBase> {
+    protected EntityThrowableBase(EntityType<? extends ThrowableProjectile> type, Level world) {
         super(type, world);
     }
 
-    protected EntityProjectileBase(EntityType<? extends Projectile> type, Entity thrower) {
+    protected EntityThrowableBase(EntityType<? extends ThrowableProjectile> type, Entity thrower) {
         this(type, thrower.getLevel());
         this.setOwner(thrower);
     }

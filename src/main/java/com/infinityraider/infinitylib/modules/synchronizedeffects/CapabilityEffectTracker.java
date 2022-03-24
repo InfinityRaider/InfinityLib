@@ -19,7 +19,7 @@ public class CapabilityEffectTracker implements IInfSerializableCapabilityImplem
 
     public static ResourceLocation KEY = new ResourceLocation(Reference.MOD_ID.toLowerCase(), "potion_tracker");
 
-    public static Capability<EffectTracker> CAPABILITY_POTION_TRACKER = CapabilityManager.get(new CapabilityToken<>(){});;
+    public static Capability<EffectTracker> CAPABILITY_POTION_TRACKER = CapabilityManager.get(new CapabilityToken<>(){});
 
     private CapabilityEffectTracker() {}
 
