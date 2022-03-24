@@ -23,6 +23,7 @@ import net.minecraftforge.client.IItemRenderProperties;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @OnlyIn(Dist.CLIENT)
 public class InfItemRendererRegistry {
@@ -33,11 +34,11 @@ public class InfItemRendererRegistry {
     }
 
     private final Map<Item, InfItemRenderer> registry;
-    private final InfItemRenderer defaultRenderer;
+    private final Supplier<InfItemRenderer> defaultRenderer;
 
     private InfItemRendererRegistry() {
         this.registry = Maps.newIdentityHashMap();
-        this.defaultRenderer = Minecraft.getInstance().getItemRenderer().getBlockEntityRenderer()::renderByItem;
+        this.defaultRenderer = () -> Minecraft.getInstance().getItemRenderer().getBlockEntityRenderer()::renderByItem;
     }
 
     public InfItemRendererRegistry register(IInfinityItem item) {
@@ -52,8 +53,8 @@ public class InfItemRendererRegistry {
         return this;
     }
 
-    private InfItemRenderer getRenderer(ItemStack stack) {
-        return this.registry.getOrDefault(stack.getItem(), this.defaultRenderer);
+    private Supplier<InfItemRenderer> getRenderer(ItemStack stack) {
+        return () -> this.registry.getOrDefault(stack.getItem(), this.defaultRenderer.get());
     }
 
     public IItemRenderProperties getItemRenderer() {
@@ -99,7 +100,7 @@ public class InfItemRendererRegistry {
 
         private InfItemRenderer getRenderer(ItemStack stack) {
             if(this.renderer == null) {
-                this.renderer = this.registry.getRenderer(stack);
+                this.renderer = this.registry.getRenderer(stack).get();
             }
             return this.renderer;
         }

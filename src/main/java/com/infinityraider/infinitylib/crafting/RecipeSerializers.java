@@ -11,33 +11,21 @@ import net.minecraftforge.common.crafting.CraftingHelper;
 import java.util.Map;
 
 public class RecipeSerializers {
-    private static final RecipeSerializers INSTANCE = new RecipeSerializers();
+    // all serializers
+    private static final Map<ResourceLocation, IInfIngredientSerializer<?>> ingredientSerializers = Maps.newConcurrentMap();
 
-    public static RecipeSerializers getInstance() {
-        return INSTANCE;
+    // ingredients
+    public static final IInfIngredientSerializer<FallbackIngredient> fallbackIngredient = FallbackIngredient.SERIALIZER;
+
+    // recipes
+    public static final RecipeSerializer<ShapedDynamicTextureRecipe> shapedDynamicTextureRecipe = ShapedDynamicTextureRecipe.SERIALIZER;
+    public static final RecipeSerializer<ShapelessDynamicTextureRecipe> shapelessDynamicTextureRecipe = ShapelessDynamicTextureRecipe.SERIALIZER;
+
+    public static void registerSerializer(IInfIngredientSerializer<?> serializer) {
+       ingredientSerializers.putIfAbsent(serializer.getId(), serializer);
     }
 
-    private final Map<ResourceLocation, IInfIngredientSerializer<?>> ingredientSerializers;
-
-    public final IInfIngredientSerializer<FallbackIngredient> fallbackIngredient;
-
-    public final RecipeSerializer<ShapedDynamicTextureRecipe> shapedDynamicTextureRecipe;
-    public final RecipeSerializer<ShapelessDynamicTextureRecipe> shapelessDynamicTextureRecipe;
-
-    private RecipeSerializers() {
-        // ingredients
-        this.ingredientSerializers = Maps.newConcurrentMap();
-        this.fallbackIngredient = FallbackIngredient.SERIALIZER;
-        // recipes
-        this.shapedDynamicTextureRecipe = ShapedDynamicTextureRecipe.SERIALIZER;
-        this.shapelessDynamicTextureRecipe = ShapelessDynamicTextureRecipe.SERIALIZER;
-    }
-
-    public void registerSerializer(IInfIngredientSerializer<?> serializer) {
-       this.ingredientSerializers.putIfAbsent(serializer.getId(), serializer);
-    }
-
-    public void registerSerializers() {
-        this.ingredientSerializers.values().forEach(serializer -> CraftingHelper.register(serializer.getId(), serializer));
+    public static void registerSerializers() {
+        ingredientSerializers.values().forEach(serializer -> CraftingHelper.register(serializer.getId(), serializer));
     }
 }

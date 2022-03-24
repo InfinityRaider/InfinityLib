@@ -30,6 +30,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
@@ -45,6 +46,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.client.IItemRenderProperties;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -81,7 +83,7 @@ public interface IProxy extends IProxyBase<Config> {
     @Override
     default void onCommonSetupEvent(FMLCommonSetupEvent event) {
         Module.getActiveModules().forEach(Module::init);
-        RecipeSerializers.getInstance().registerSerializers();
+        RecipeSerializers.registerSerializers();
     }
 
     @Override
@@ -117,27 +119,27 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerBlocks(InfinityMod<?,?> mod) {
         // Register blocks
-        this.registerObjects(mod, mod.getModBlockRegistry(), Classes.BLOCK, ForgeRegistries.BLOCKS);
+        this.registerObjects(mod, mod.getModBlockRegistry(), Classes.BLOCK, ForgeRegistries.BLOCKS, "Block");
     }
 
     default void registerTiles(InfinityMod<?,?> mod) {
         // Register tiles
-        this.registerObjects(mod, mod.getModTileRegistry(), Classes.TILE_ENTITY_TYPE, ForgeRegistries.BLOCK_ENTITIES);
+        this.registerObjects(mod, mod.getModTileRegistry(), Classes.TILE_ENTITY_TYPE, ForgeRegistries.BLOCK_ENTITIES, "Tile Entity Type");
     }
 
     default void registerItems(InfinityMod<?,?> mod) {
         // Register items
-        this.registerObjects(mod, mod.getModItemRegistry(), Classes.ITEM, ForgeRegistries.ITEMS);
+        this.registerObjects(mod, mod.getModItemRegistry(), Classes.ITEM, ForgeRegistries.ITEMS, "Item");
     }
 
     default void registerFluids(InfinityMod<?,?> mod) {
         // Register fluids
-        this.registerObjects(mod, mod.getModFluidRegistry(), Classes.FLUID, ForgeRegistries.FLUIDS);
+        this.registerObjects(mod, mod.getModFluidRegistry(), Classes.FLUID, ForgeRegistries.FLUIDS, "Fluid");
     }
 
     default void registerEnchantments(InfinityMod<?,?> mod) {
         // Register enchantments
-        this.registerObjects(mod, mod.getModEnchantmentRegistry(), Classes.ENCHANTMENT, ForgeRegistries.ENCHANTMENTS, enchant -> {
+        this.registerObjects(mod, mod.getModEnchantmentRegistry(), Classes.ENCHANTMENT, ForgeRegistries.ENCHANTMENTS, "Enchantment", enchant -> {
             if(enchant instanceof EnchantmentBase) {
                 ((EnchantmentBase) enchant).setDisplayName("enchantment." + mod.getModId() + "." + enchant.getInternalName());
             }
@@ -149,7 +151,7 @@ public interface IProxy extends IProxyBase<Config> {
         // Create a deferred item register for the spawn eggs
         DeferredRegister<Item> itemRegister = DeferredRegister.create(ForgeRegistries.ITEMS, mod.getModId());
         // Register entities
-        this.registerObjects(mod, mod.getModEntityRegistry(), Classes.ENTITY_TYPE, ForgeRegistries.ENTITIES, entityType -> {
+        this.registerObjects(mod, mod.getModEntityRegistry(), Classes.ENTITY_TYPE, ForgeRegistries.ENTITIES, "Entity Type", entityType -> {
             // Tasks for living entities registration:
             if (entityType instanceof IMobEntityType) {
                 IMobEntityType livingEntityType = (IMobEntityType) entityType;
@@ -178,12 +180,12 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerSounds(InfinityMod<?,?> mod) {
         // Register enchantments
-        this.registerObjects(mod, mod.getModSoundRegistry(), Classes.SOUND_EVENT, ForgeRegistries.SOUND_EVENTS);
+        this.registerObjects(mod, mod.getModSoundRegistry(), Classes.SOUND_EVENT, ForgeRegistries.SOUND_EVENTS, "Sound Event");
     }
 
     default void registerParticles(InfinityMod<?,?> mod) {
         // Register particles
-        this.registerObjects(mod, mod.getModParticleRegistry(), Classes.PARTICLE_TYPE, ForgeRegistries.PARTICLE_TYPES,
+        this.registerObjects(mod, mod.getModParticleRegistry(), Classes.PARTICLE_TYPE, ForgeRegistries.PARTICLE_TYPES, "Particle Type",
                 type -> this.onParticleRegistration((IInfinityParticleType<?>) type));
     }
 
@@ -191,12 +193,12 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerEffects(InfinityMod<?,?> mod) {
         // Register effects
-        this.registerObjects(mod, mod.getModEffectRegistry(), Classes.POTION_EFFECT, ForgeRegistries.MOB_EFFECTS);
+        this.registerObjects(mod, mod.getModEffectRegistry(), Classes.POTION_EFFECT, ForgeRegistries.MOB_EFFECTS, "Potion Effect Type");
     }
 
     default void registerContainers(InfinityMod<?,?> mod) {
         // Register containers
-        this.registerObjects(mod, mod.getModContainerRegistry(), Classes.CONTAINER_MENU_TYPE, ForgeRegistries.CONTAINERS, containerType -> {
+        this.registerObjects(mod, mod.getModContainerRegistry(), Classes.CONTAINER_MENU_TYPE, ForgeRegistries.CONTAINERS, "Container Menu Type", containerType -> {
             if(containerType instanceof IInfinityContainerMenuType) {
                 this.registerGuiContainer((IInfinityContainerMenuType) containerType);
             }
@@ -205,23 +207,20 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerRecipeSerializers(InfinityMod<?,?> mod) {
         // Register recipe serializers
-        this.registerObjects(mod, mod.getModRecipeSerializerRegistry(), Classes.RECIPE_SERIALIZER, ForgeRegistries.RECIPE_SERIALIZERS, recipe -> {
+        this.registerObjects(mod, mod.getModRecipeSerializerRegistry(), Classes.RECIPE_SERIALIZER, ForgeRegistries.RECIPE_SERIALIZERS, "Recipe Type", recipe -> {
             if (recipe instanceof IInfRecipeSerializer) {
                 // Also register the recipe's ingredient serializers
-                ((IInfRecipeSerializer) recipe).getIngredientSerializers().forEach(serializer ->
-                        RecipeSerializers.getInstance().registerSerializer(serializer));
+                ((IInfRecipeSerializer) recipe).getIngredientSerializers().forEach(RecipeSerializers::registerSerializer);
             }
         });
         // Register ingredient serializers
         if(mod.getModRecipeSerializerRegistry() != null) {
-            ReflectionHelper.forEachValueIn(mod.getModRecipeSerializerRegistry(), IInfIngredientSerializer.class, serializer ->
-                    RecipeSerializers.getInstance().registerSerializer(serializer)
-            );
+            ReflectionHelper.forEachValueIn(mod.getModRecipeSerializerRegistry(), IInfIngredientSerializer.class, RecipeSerializers::registerSerializer);
         }
     }
 
     default void registerLootModifiers(InfinityMod<?,?> mod) {
-        this.registerObjects(mod, mod.getModLootModifierSerializerRegistry(), Classes.LOOT_MODIFIER, ForgeRegistries.LOOT_MODIFIER_SERIALIZERS.get());
+        this.registerObjects(mod, mod.getModLootModifierSerializerRegistry(), Classes.LOOT_MODIFIER, ForgeRegistries.LOOT_MODIFIER_SERIALIZERS.get(), "Loot Modifier");
     }
 
     default void registerStructures(InfinityMod<?,?> mod) {
@@ -237,32 +236,37 @@ public interface IProxy extends IProxyBase<Config> {
 
     default void registerGuiContainer(IInfinityContainerMenuType containerType) {}
 
-    default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Object modRegistry,
+    default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Class<?> modRegistry,
                                                                     Class<? extends IInfinityRegistrable<T>> clazz,
-                                                                    IForgeRegistry<T> targetRegistry) {
-        this.registerObjects(mod, modRegistry, clazz, targetRegistry, (obj) -> {});
+                                                                    IForgeRegistry<T> targetRegistry,
+                                                                    String type) {
+        this.registerObjects(mod, modRegistry, clazz, targetRegistry, type, (obj) -> {});
     }
 
-    default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Object modRegistry,
+    default <T extends IForgeRegistryEntry<T>> void registerObjects(InfinityMod<?,?> mod, Class<?> modRegistry,
                                                                     Class<? extends IInfinityRegistrable<T>> clazz,
-                                                                    IForgeRegistry<T> registry,
+                                                                    IForgeRegistry<T> registry, String type,
                                                                     Consumer<IInfinityRegistrable<T>> tasks) {
         // If the mod registry is missing, skip
         if (modRegistry != null) {
-            // Register the objects
-            DeferredRegister<T> register = DeferredRegister.create(registry, mod.getModId());
-            ReflectionHelper.forEachValueIn(modRegistry, clazz, object ->
-                    this.registerObject(mod, object, register, tasks));
-            register.register(FMLJavaModLoadingContext.get().getModEventBus());
+            // Register an event handler to register the objects
+            FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(
+                    registry.getRegistrySuperType(),
+                    (RegistryEvent.Register<T> event) -> ReflectionHelper.forEachValueIn(
+                            modRegistry,
+                            clazz,
+                            object -> this.registerObject(mod, object, event.getRegistry(), type, tasks))
+            );
         }
     }
 
     default <T extends IForgeRegistryEntry<T>> void registerObject(InfinityMod<?,?> mod, IInfinityRegistrable<T> object,
-                                                                   DeferredRegister<T> register,
+                                                                   IForgeRegistry<T> register, String type,
                                                                    Consumer<IInfinityRegistrable<T>> tasks) {
         if(object.isEnabled()) {
-            mod.getLogger().debug(" - Registering: " + object.getInternalName());
-            register.register(object.getInternalName(), object::cast);
+            mod.getLogger().debug(" - Registering " + type + ": " + mod.getModId() + ":" + object.getInternalName());
+            object.cast().setRegistryName(new ResourceLocation(mod.getModId(), object.getInternalName()));
+            register.register(object.cast());
             tasks.accept(object);
         }
     }

@@ -62,8 +62,8 @@ public class InfinityLib extends InfinityMod<IProxy, Config> {
     }
 
     @Override
-    public RecipeSerializers getModRecipeSerializerRegistry() {
-        return RecipeSerializers.getInstance();
+    public Class<?> getModRecipeSerializerRegistry() {
+        return RecipeSerializers.class;
     }
 
     @Override

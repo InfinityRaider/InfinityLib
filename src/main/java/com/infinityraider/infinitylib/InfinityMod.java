@@ -151,7 +151,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Block registry object or class
      */
-    public Object getModBlockRegistry() {
+    public Class<?> getModBlockRegistry() {
         return null;
     }
 
@@ -163,7 +163,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return TileEntity registry object or class
      */
-    public Object getModTileRegistry() {
+    public Class<?> getModTileRegistry() {
         return null;
     }
 
@@ -175,7 +175,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Item registry object or class
      */
-    public Object getModItemRegistry() {
+    public Class<?> getModItemRegistry() {
         return null;
     }
 
@@ -187,7 +187,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Fluid registry object or class
      */
-    public Object getModFluidRegistry() {
+    public Class<?> getModFluidRegistry() {
         return null;
     }
 
@@ -199,7 +199,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Biome registry object or class
      */
-    public Object getModBiomeRegistry() {
+    public Class<?> getModBiomeRegistry() {
         return null;
     }
 
@@ -211,7 +211,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Enchantment registry object or class
      */
-    public  Object getModEnchantmentRegistry() {
+    public  Class<?> getModEnchantmentRegistry() {
         return null;
     }
 
@@ -223,7 +223,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Entity registry object or class
      */
-    public  Object getModEntityRegistry() {
+    public  Class<?> getModEntityRegistry() {
         return null;
     }
 
@@ -235,7 +235,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Potion registry object or class
      */
-    public Object getModEffectRegistry() {
+    public Class<?> getModEffectRegistry() {
         return null;
     }
 
@@ -247,7 +247,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return PotionType registry object or class
      */
-    public Object getModPotionTypeRegistry() {
+    public Class<?> getModPotionTypeRegistry() {
         return null;
     }
 
@@ -259,7 +259,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return SoundEvent registry object or class
      */
-    public Object getModSoundRegistry() {
+    public Class<?> getModSoundRegistry() {
         return null;
     }
 
@@ -271,7 +271,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return ParticleType registry object or class
      */
-    public Object getModParticleRegistry() {
+    public Class<?> getModParticleRegistry() {
         return null;
     }
 
@@ -283,7 +283,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return ContainerType registry object or class
      */
-    public Object getModContainerRegistry() {
+    public Class<?> getModContainerRegistry() {
         return null;
     }
 
@@ -296,7 +296,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return IRecipeSerializer registry object or class
      */
-    public Object getModRecipeSerializerRegistry() {
+    public Class<?> getModRecipeSerializerRegistry() {
         return null;
     }
 
@@ -308,7 +308,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return IRecipeSerializer registry object or class
      */
-    public Object getModLootModifierSerializerRegistry() {
+    public Class<?> getModLootModifierSerializerRegistry() {
         return null;
     }
 
@@ -318,7 +318,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Structure registry object
      */
-    public Object getStructureRegistry() {
+    public Class<?> getStructureRegistry() {
         return null;
     }
 
@@ -330,7 +330,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return VillagerProfession registry object or class
      */
-    public Object getModVillagerProfessionRegistry() {
+    public Class<?> getModVillagerProfessionRegistry() {
         return null;
     }
 
