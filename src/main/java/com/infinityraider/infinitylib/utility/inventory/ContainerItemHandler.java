@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.utility.inventory;
-
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
@@ -63,18 +62,18 @@ public class ContainerItemHandler implements IContainerItemHandler {
 
     /**
      * ------------------
-     * IInventory methods
+     * Container methods
      * ------------------
      */
 
     @Override
-    public int getSizeInventory() {
+    public int getContainerSize() {
         return this.getSlots();
     }
 
     @Override
     @Nonnull
-    public ItemStack decrStackSize(int index, int count) {
+    public ItemStack removeItem(int index, int count) {
         ItemStack stack = this.getStackInSlot(index);
         if(!stack.isEmpty()) {
             stack = this.extractItem(index, count, false);
@@ -84,7 +83,7 @@ public class ContainerItemHandler implements IContainerItemHandler {
 
     @Override
     @Nonnull
-    public ItemStack removeStackFromSlot(int index) {
+    public ItemStack removeItemNoUpdate(int index) {
         ItemStack stack = this.getStackInSlot(index);
         if(!stack.isEmpty()) {
             stack = this.extractItem(index, stack.getCount(), false);
@@ -93,7 +92,7 @@ public class ContainerItemHandler implements IContainerItemHandler {
     }
 
     @Override
-    public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
+    public void setItem(int index, @Nonnull ItemStack stack) {
         ItemStack inSlot = this.getStackInSlot(index);
         if(!inSlot.isEmpty()) {
             this.extractItem(index, inSlot.getCount(), false);
@@ -102,34 +101,34 @@ public class ContainerItemHandler implements IContainerItemHandler {
     }
 
     @Override
-    public int getInventoryStackLimit() {
+    public int getMaxStackSize() {
         return 64;
     }
 
     @Override
-    public void markDirty() {}
+    public void setChanged() {}
 
     @Override
-    public boolean isUsableByPlayer(@Nonnull PlayerEntity player) {
+    public boolean stillValid(@Nonnull Player player) {
         return true;
     }
 
     @Override
-    public void openInventory(@Nonnull PlayerEntity player) {}
+    public void startOpen(@Nonnull Player player) {}
 
     @Override
-    public void closeInventory(@Nonnull PlayerEntity player) {}
+    public void stopOpen(@Nonnull Player player) {}
 
     @Override
-    public boolean isItemValidForSlot(int index, @Nonnull ItemStack stack) {
+    public boolean canPlaceItem(int index, @Nonnull ItemStack stack) {
         ItemStack simulated = this.insertItem(index, stack, true);
         return simulated.getCount() != stack.getCount();
     }
 
     @Override
-    public void clear() {
-        for(int i = 0; i < this.getSizeInventory(); i++) {
-            this.setInventorySlotContents(i, ItemStack.EMPTY);
+    public void clearContent() {
+        for(int i = 0; i < this.getContainerSize(); i++) {
+            this.setItem(i, ItemStack.EMPTY);
         }
     }
 }

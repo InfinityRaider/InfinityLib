@@ -1,8 +1,8 @@
 package com.infinityraider.infinitylib.utility.inventory;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 
@@ -11,86 +11,86 @@ import javax.annotation.Nonnull;
  */
 @SuppressWarnings("unused")
 public class ItemHandlerContainer implements IContainerItemHandler {
-    private final IInventory inventory;
+    private final Container inventory;
 
-    public ItemHandlerContainer(IInventory inventory) {
+    public ItemHandlerContainer(Container inventory) {
         this.inventory = inventory;
     }
 
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory;
     }
 
     @Override
-    public int getSizeInventory() {
-        return this.getInventory().getSizeInventory();
+    public int getContainerSize() {
+        return this.getInventory().getContainerSize();
     }
 
     @Override
     @Nonnull
     public ItemStack getStackInInvSlot(int index) {
-        return  this.getInventory().getStackInSlot(index);
+        return  this.getInventory().getItem(index);
     }
 
     @Override
     public int getSlotLimit(int slot) {
-        return this.getInventory().getInventoryStackLimit();
+        return this.getInventory().getMaxStackSize();
     }
 
     @Override
     public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-        return this.getInventory().isItemValidForSlot(slot, stack);
+        return this.getInventory().canPlaceItem(slot, stack);
     }
 
     @Override
     @Nonnull
-    public ItemStack decrStackSize(int index, int count) {
-        return  this.getInventory().decrStackSize(index, count);
+    public ItemStack removeItem(int index, int count) {
+        return  this.getInventory().removeItem(index, count);
     }
 
     @Override
     @Nonnull
-    public ItemStack removeStackFromSlot(int index) {
-        return  this.getInventory().removeStackFromSlot(index);
+    public ItemStack removeItemNoUpdate(int index) {
+        return  this.getInventory().removeItemNoUpdate(index);
     }
 
     @Override
-    public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
-        this.getInventory().setInventorySlotContents(index, stack);
+    public void setItem(int index, @Nonnull ItemStack stack) {
+        this.getInventory().setItem(index, stack);
     }
 
     @Override
-    public int getInventoryStackLimit() {
-        return this.getInventory().getInventoryStackLimit();
+    public int getMaxStackSize() {
+        return this.getInventory().getMaxStackSize();
     }
 
     @Override
-    public void markDirty() {
-        this.getInventory().markDirty();
+    public void setChanged() {
+        this.getInventory().setChanged();
     }
 
     @Override
-    public boolean isUsableByPlayer(@Nonnull PlayerEntity player) {
-        return this.getInventory().isUsableByPlayer(player);
+    public boolean stillValid(@Nonnull Player player) {
+        return this.getInventory().stillValid(player);
     }
 
     @Override
-    public void openInventory(@Nonnull PlayerEntity player) {
-        this.getInventory().openInventory(player);
+    public void startOpen(@Nonnull Player player) {
+        this.getInventory().startOpen(player);
     }
 
     @Override
-    public void closeInventory(@Nonnull PlayerEntity player) {
-        this.getInventory().closeInventory(player);
+    public void stopOpen(@Nonnull Player player) {
+        this.getInventory().stopOpen(player);
     }
 
     @Override
-    public boolean isItemValidForSlot(int index, @Nonnull ItemStack stack) {
-        return this.getInventory().isItemValidForSlot(index, stack);
+    public boolean canPlaceItem(int index, @Nonnull ItemStack stack) {
+        return this.getInventory().canPlaceItem(index, stack);
     }
 
     @Override
-    public void clear() {
-        this.getInventory().clear();
+    public void clearContent() {
+        this.getInventory().clearContent();
     }
 }
