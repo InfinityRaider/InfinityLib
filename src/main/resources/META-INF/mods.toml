@@ -1,11 +1,11 @@
 modLoader="javafml"
-loaderVersion="[36,)"
+loaderVersion="[40,)"
 license="license.txt"
 issueTrackerURL="https://github.com/InfinityRaider/InfinityLib/issues/"
 
 [[mods]]
 modId="infinitylib"
-version="1.16.5-2.0.8"
+version="1.18.2-2.1.0"
 displayName="InfinityLib"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/infinitylib"
 logoFile="logo.png"
@@ -17,6 +17,6 @@ Library Mod.
 [[dependencies.infinitylib]]
     modId="forge"
     mandatory=true
-    versionRange="[35,)"
+    versionRange="[40,)"
     ordering="AFTER"
     side="BOTH"
