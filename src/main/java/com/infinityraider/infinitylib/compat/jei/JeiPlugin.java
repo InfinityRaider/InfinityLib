@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.compat.jei;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.crafting.dynamictexture.IDynamicTextureIngredient;
@@ -8,11 +7,11 @@ import com.infinityraider.infinitylib.crafting.dynamictexture.ShapedDynamicTextu
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.gui.IRecipeLayout;
-import mezz.jei.api.ingredients.IIngredients;
+import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.ingredient.ICraftingGridHelper;
+import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.extensions.IExtendableRecipeCategory;
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICraftingCategoryExtension;
-import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICustomCraftingCategoryExtension;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -21,7 +20,6 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Size2i;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
@@ -58,7 +56,7 @@ public class JeiPlugin implements IModPlugin {
         }));
     }
 
-    private static final class DynamicTextureRecipeExtension implements ICustomCraftingCategoryExtension {
+    private static final class DynamicTextureRecipeExtension implements ICraftingCategoryExtension {
         private final ShapedDynamicTextureRecipe recipe;
 
         public DynamicTextureRecipeExtension(ShapedDynamicTextureRecipe recipe) {
@@ -66,11 +64,12 @@ public class JeiPlugin implements IModPlugin {
         }
 
         @Override
-        public void setIngredients(IIngredients ingredients) {
+        public void setRecipe(IRecipeLayoutBuilder builder, ICraftingGridHelper craftingGridHelper, IFocusGroup focuses) {
             // Fetch materials
             List<Block> materials = this.recipe.getSuitableMaterials();
             // Set inputs
-            ingredients.setInputLists(
+            craftingGridHelper.setInputs(
+                    builder,
                     VanillaTypes.ITEM,
                     recipe.getIngredients().stream().map(ingredient -> {
                         if (ingredient instanceof IDynamicTextureIngredient) {
@@ -78,12 +77,15 @@ public class JeiPlugin implements IModPlugin {
                                     .collect(Collectors.toList());
                         }
                         return Lists.newArrayList(ingredient.getItems());
-                    }).collect(Collectors.toList())
+                    }).collect(Collectors.toList()),
+                    this.recipe.getRecipeWidth(),
+                    this.recipe.getRecipeHeight()
             );
             // Set outputs
-            ingredients.setOutputLists(
+            craftingGridHelper.setOutputs(
+                    builder,
                     VanillaTypes.ITEM,
-                    ImmutableList.of(materials.stream().map(this.recipe::getResultWithMaterial).collect(Collectors.toList()))
+                    materials.stream().map(this.recipe::getResultWithMaterial).collect(Collectors.toList())
             );
         }
 
@@ -93,16 +95,13 @@ public class JeiPlugin implements IModPlugin {
         }
 
         @Override
-        public Size2i getSize() {
-            return new Size2i(this.recipe.getRecipeWidth(), this.recipe.getRecipeHeight());
+        public int getWidth() {
+            return this.recipe.getRecipeWidth();
         }
 
         @Override
-        public void setRecipe(IRecipeLayout layout, IIngredients ingredients) {
-            // As the focused slot will not cycle, we need to set the focus to null
-            layout.getIngredientsGroup(VanillaTypes.ITEM).setOverrideDisplayFocus(null);
-            // Set ingredients
-            layout.getItemStacks().set(ingredients);
+        public int getHeight() {
+            return this.recipe.getRecipeHeight();
         }
     }
 }

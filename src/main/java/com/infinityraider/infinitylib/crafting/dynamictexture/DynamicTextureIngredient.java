@@ -7,12 +7,12 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.tags.ITag;
 
 import javax.annotation.Nonnull;
@@ -53,7 +53,7 @@ public class DynamicTextureIngredient extends Ingredient implements IDynamicText
 
     @Override
     public boolean test(@Nullable ItemStack stack) {
-        return stack != null && !stack.isEmpty() && this.getTag().getAllElements().stream()
+        return stack != null && !stack.isEmpty() && this.getTag().stream()
                 .map(Block::asItem)
                 .anyMatch(item -> stack.getItem().equals(item));
     }
@@ -88,7 +88,7 @@ public class DynamicTextureIngredient extends Ingredient implements IDynamicText
         }
     }
 
-    public static final class BlockTagList implements Ingredient.IItemList {
+    public static final class BlockTagList implements Ingredient.Value {
         private final ResourceLocation tagId;
 
         private ITag<Block> tag;
@@ -104,20 +104,20 @@ public class DynamicTextureIngredient extends Ingredient implements IDynamicText
 
         public ITag<Block> getTag() {
             if(this.tag == null) {
-                this.tag = BlockTags.getCollection().get(this.getTagId());
+                this.tag = ForgeRegistries.BLOCKS.tags().getTag(ForgeRegistries.BLOCKS.tags().createTagKey(this.getTagId()));
             }
             return this.tag;
         }
 
         @Nonnull
         @Override
-        public Collection<ItemStack> getStacks() {
+        public Collection<ItemStack> getItems() {
             if(this.stacks == null) {
                 ITag<Block> tag = this.getTag();
                 if(tag == null) {
                     return ImmutableList.of();
                 }
-                this.stacks = tag.getAllElements().stream()
+                this.stacks = tag.stream()
                         .map(Block::asItem)
                         .map(ItemStack::new)
                         .collect(Collectors.toList());

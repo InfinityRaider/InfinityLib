@@ -8,6 +8,7 @@ import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -91,10 +92,10 @@ public class DynamicTextureParentIngredient extends Ingredient implements IDynam
             if(!json.has("material")) {
                 throw new JsonParseException("com.infinityraider.infinitylib.crafting.DynamicTextureParentIngredient requires a material element");
             }
-            ResourceLocation rl = new ResourceLocation(JSONUtils.getString(json, "parent"));
+            ResourceLocation rl = new ResourceLocation(GsonHelper.getAsString(json, "parent"));
             Item parent = Optional.ofNullable(ForgeRegistries.ITEMS.getValue(rl)).orElseThrow(() ->
                     new JsonSyntaxException("Unknown item '" + rl + "'"));
-            return new DynamicTextureParentIngredient(new ItemStack(parent), new ResourceLocation(JSONUtils.getString(json, "material")));
+            return new DynamicTextureParentIngredient(new ItemStack(parent), new ResourceLocation(GsonHelper.getAsString(json, "material")));
         }
 
         @Override

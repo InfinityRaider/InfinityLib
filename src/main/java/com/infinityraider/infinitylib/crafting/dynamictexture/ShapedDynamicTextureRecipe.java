@@ -7,6 +7,7 @@ import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
 import com.infinityraider.infinitylib.item.BlockItemDynamicTexture;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -19,6 +20,8 @@ import net.minecraftforge.registries.tags.ITag;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     public static final String ID = "crafting_shaped_dynamic_texture";
@@ -27,7 +30,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     private List<Block> materials;
 
     public ShapedDynamicTextureRecipe(ShapedRecipe parent) {
-        super(parent.getId(), parent.getGroup(), parent.getRecipeWidth(), parent.getRecipeHeight(), parent.getIngredients(), parent.getRecipeOutput());
+        super(parent.getId(), parent.getGroup(), parent.getRecipeWidth(), parent.getRecipeHeight(), parent.getIngredients(), parent.getResultItem());
     }
 
     public List<Block> getSuitableMaterials() {
@@ -37,9 +40,9 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                     .findFirst()
                     .map(ingredient -> (IDynamicTextureIngredient) ingredient)
                     .map(IDynamicTextureIngredient::getTag)
-                    .map(ITag::getAllElements)
-                    .map(ImmutableList::copyOf)
-                    .orElse(ImmutableList.of());
+                    .map(ITag::stream)
+                    .orElse(Stream.empty())
+                    .collect(Collectors.toList());
         }
         return this.materials;
     }
@@ -52,12 +55,12 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
 
     @Override
     @Nonnull
-    public ItemStack getRecipeOutput() {
+    public ItemStack getResultItem() {
         return ItemStack.EMPTY;
     }
 
     public ItemStack getResultWithoutMaterial() {
-        return super.getRecipeOutput().copy();
+        return super.getResultItem().copy();
     }
 
     public ItemStack getResultWithMaterial(Block block) {
@@ -73,24 +76,24 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     }
 
     @Override
-    public boolean isDynamic() {
+    public boolean isSpecial() {
         return true;
     }
 
     @Override
-    public boolean matches(@Nonnull CraftingInventory inv, @Nonnull Level world) {
+    public boolean matches(@Nonnull CraftingContainer inv, @Nonnull Level world) {
         // Copied from vanilla, check if any pattern matches, but for all possible offsets
         return this.checkMaterial(inv) != null;
     }
 
     @Override
     @Nonnull
-    public ItemStack getCraftingResult(@Nonnull CraftingInventory inv) {
+    public ItemStack assemble(@Nonnull CraftingContainer inv) {
         return this.getResultWithMaterial(this.checkMaterial(inv));
     }
 
     @Nullable
-    protected ItemStack checkMaterial(@Nonnull CraftingInventory inv) {
+    protected ItemStack checkMaterial(@Nonnull CraftingContainer inv) {
         // Mostly copied with vanilla, with an additional check if all dynamic texture ingredients are equivalent
         ItemStack material;
         for(int i = 0; i <= inv.getWidth() - this.getRecipeWidth(); ++i) {
@@ -109,7 +112,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     }
 
     @Nullable
-    protected ItemStack checkMaterialWithOffset(CraftingInventory craftingInventory, int width, int height, boolean flag) {
+    protected ItemStack checkMaterialWithOffset(CraftingContainer craftingInventory, int width, int height, boolean flag) {
         // Also mostly copied with vanilla, with an additional check if all dynamic texture ingredients are equivalent
         ItemStack material = null;
         for(int i = 0; i < craftingInventory.getWidth(); ++i) {
@@ -124,7 +127,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                         ingredient = this.getIngredients().get(k + l * this.getRecipeWidth());
                     }
                 }
-                ItemStack stackInSlot = craftingInventory.getStackInSlot(i + j * craftingInventory.getWidth());
+                ItemStack stackInSlot = craftingInventory.getItem(i + j * craftingInventory.getWidth());
                 if (!ingredient.test(stackInSlot)) {
                     return null;
                 }
@@ -134,7 +137,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                         material = stackInSlot.copy();
                         material.setCount(1);
                     } else {
-                        if(!ItemStack.areItemsEqual(material, stackInSlot)) {
+                        if(!ItemStack.matches(material, stackInSlot)) {
                             return null;
                         }
                     }
@@ -144,7 +147,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                         material = materialStack.copy();
                         material.setCount(1);
                     } else {
-                        if(!ItemStack.areItemsEqual(material, materialStack)) {
+                        if(!ItemStack.matches(material, materialStack)) {
                             return null;
                         }
                     }

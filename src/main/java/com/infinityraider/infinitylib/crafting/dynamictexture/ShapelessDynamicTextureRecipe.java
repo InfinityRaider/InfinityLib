@@ -6,9 +6,11 @@ import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
@@ -19,7 +21,7 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
     public static final RecipeSerializer<ShapelessDynamicTextureRecipe> SERIALIZER = new Serializer();
 
     public ShapelessDynamicTextureRecipe(ShapelessRecipe parent) {
-        super(parent.getId(), parent.getGroup(), parent.getRecipeOutput(), parent.getIngredients());
+        super(parent.getId(), parent.getGroup(), parent.getResultItem(), parent.getIngredients());
     }
 
     @Override
@@ -30,26 +32,26 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
 
     @Override
     @Nonnull
-    public ItemStack getRecipeOutput() {
+    public ItemStack getResultItem() {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public boolean isDynamic() {
+    public boolean isSpecial() {
         return true;
     }
 
     @Override
-    public boolean matches(@Nonnull CraftingInventory inv, @Nonnull World world) {
+    public boolean matches(@Nonnull CraftingContainer inv, @Nonnull Level world) {
         // TODO
         return super.matches(inv, world);
     }
 
     @Override
     @Nonnull
-    public ItemStack getCraftingResult(@Nonnull CraftingInventory inv) {
+    public ItemStack assemble(@Nonnull CraftingContainer inv) {
         // TODO
-        return super.getCraftingResult(inv);
+        return super.assemble(inv);
     }
 
     public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>>

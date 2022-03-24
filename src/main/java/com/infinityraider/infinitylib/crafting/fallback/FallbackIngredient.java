@@ -8,12 +8,13 @@ import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.tags.ITag;
 
 import javax.annotation.Nullable;
@@ -44,9 +45,9 @@ public class FallbackIngredient extends Ingredient {
 
     private Ingredient getActualIngredient() {
         if(this.ingredient == null) {
-            if(this.getTag() != null && this.getTag().getAllElements().size() > 0) {
-                this.ingredient = Ingredient.fromTag(this.getTag());
-            } else if (this.getFallback().hasNoMatchingItems()) {
+            if(this.getTag() != null && this.getTag().size() > 0) {
+                this.ingredient = Ingredient.of(this.getTag().getKey());
+            } else if (this.getFallback().isEmpty()) {
                 return EMPTY;
             } else {
                 this.ingredient = getFallback();
@@ -56,8 +57,8 @@ public class FallbackIngredient extends Ingredient {
     }
 
     @Override
-    public ItemStack[] getMatchingStacks() {
-        return this.getActualIngredient().getMatchingStacks();
+    public ItemStack[] getItems() {
+        return this.getActualIngredient().getItems();
     }
 
     @Override
@@ -66,25 +67,25 @@ public class FallbackIngredient extends Ingredient {
     }
 
     @Override
-    public IntList getValidItemStacksPacked() {
-        return this.getActualIngredient().getValidItemStacksPacked();
+    public IntList getStackingIds() {
+        return this.getActualIngredient().getStackingIds();
     }
 
     @Override
-    public JsonElement serialize() {
+    public JsonElement toJson() {
         JsonObject rootJson = new JsonObject();
         JsonObject ingredientJson = new JsonObject();
-        ResourceLocation rl = ItemTags.getCollection().getDirectIdFromTag(this.getTag());
+        ResourceLocation rl = this.getTag().getKey().location();
         ingredientJson.addProperty("tag", rl.toString());
-        ingredientJson.add("fallback", this.getFallback().serialize());
+        ingredientJson.add("fallback", this.getFallback().toJson());
         rootJson.add("ingredient", ingredientJson);
         rootJson.addProperty("type", InfinityLib.instance.getModId() + ":fallback");
         return rootJson;
     }
 
     @Override
-    public boolean hasNoMatchingItems() {
-        return this.getActualIngredient().hasNoMatchingItems();
+    public boolean isEmpty() {
+        return this.getActualIngredient().isEmpty();
     }
 
     @Override
@@ -117,9 +118,9 @@ public class FallbackIngredient extends Ingredient {
             ITag<Item> tag = null;
             if(flag) {
                 ResourceLocation rl = buffer.readResourceLocation();
-                tag = ItemTags.getCollection().getTagByID(rl);
+                tag = ForgeRegistries.ITEMS.tags().getTag(ForgeRegistries.ITEMS.tags().createTagKey(rl));
             }
-            Ingredient fallback = Ingredient.read(buffer);
+            Ingredient fallback = Ingredient.fromNetwork(buffer);
             return new FallbackIngredient(tag, fallback);
         }
 
@@ -139,21 +140,21 @@ public class FallbackIngredient extends Ingredient {
             if(!ingredientJson.has("fallback")) {
                 throw new JsonParseException("com.infinityraider.infinitylib.crafting.FallBackIngredient requires a fallback element");
             }
-            ResourceLocation rl = new ResourceLocation(JSONUtils.getString(ingredientJson, "tag"));
-            ITag<Item> tag = ItemTags.getCollection().getTagByID(rl);
+            ResourceLocation rl = new ResourceLocation(GsonHelper.getAsString(ingredientJson, "tag"));
+            ITag<Item> tag = ForgeRegistries.ITEMS.tags().getTag(ForgeRegistries.ITEMS.tags().createTagKey(rl));
             Ingredient fallback = CraftingHelper.getIngredient(ingredientJson.get("fallback"));
             return new FallbackIngredient(tag, fallback);
         }
 
         @Override
         public void write(FriendlyByteBuf buffer, FallbackIngredient ingredient) {
-            ResourceLocation rl = ItemTags.getCollection().getDirectIdFromTag(ingredient.getTag());
+            ResourceLocation rl = ingredient.getTag().getKey().location();
             boolean flag = rl != null;
             buffer.writeBoolean(flag);
             if(flag) {
                 buffer.writeResourceLocation(rl);
             }
-            ingredient.getFallback().write(buffer);
+            ingredient.getFallback().toNetwork(buffer);
         }
     }
 }
