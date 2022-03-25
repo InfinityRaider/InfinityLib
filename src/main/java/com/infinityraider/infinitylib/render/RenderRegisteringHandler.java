@@ -1,21 +1,22 @@
 package com.infinityraider.infinitylib.render;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.infinityraider.infinitylib.entity.IEntityRenderSupplier;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.util.Tuple;
+import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
+import com.infinityraider.infinitylib.entity.EmptyEntityRenderSupplier;
+import com.infinityraider.infinitylib.entity.IInfinityEntityType;
+import com.infinityraider.infinitylib.render.tile.ITileRenderer;
+import com.infinityraider.infinitylib.render.tile.TileEntityRendererWrapper;
+import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.Map;
+import javax.annotation.Nullable;
+import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public class RenderRegisteringHandler {
@@ -25,39 +26,51 @@ public class RenderRegisteringHandler {
         return INSTANCE;
     }
 
-    private final Map<BlockEntityType<? extends BlockEntity>, BlockEntityRendererProvider<? extends BlockEntity>> tileRenderers;
-    private final Map<EntityType<? extends Entity>, EntityRendererProvider<? extends Entity>> entityRenderers;
+    private final Set<Class<?>> tileRegistries;
+    private final Set<Class<?>> entityRegistries;
 
     private RenderRegisteringHandler() {
         // Concurrent due to parallel mod loading
-        this.tileRenderers = Maps.newConcurrentMap();
-        this.entityRenderers = Maps.newConcurrentMap();
+        this.tileRegistries = Sets.newConcurrentHashSet();
+        this.entityRegistries = Sets.newConcurrentHashSet();
     }
 
-    public <T extends BlockEntity> void register(BlockEntityType<T> type, BlockEntityRendererProvider<T> renderer) {
-        tileRenderers.put(type, renderer);
+    public void registerTileRegistry(@Nullable Class<?> tileRegistry) {
+        if(tileRegistry != null) {
+            this.tileRegistries.add(tileRegistry);
+        }
     }
 
-    public <T extends Entity> void register(EntityType<T> type, IEntityRenderSupplier<T> renderer) {
-        entityRenderers.put(type, renderer.supplyRenderer().get());
+    public void registerEntityRegistry(@Nullable Class<?> entityRegistry) {
+        if(entityRegistry != null) {
+            this.entityRegistries.add(entityRegistry);
+        }
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public void onRendererRegistration(EntityRenderersEvent.RegisterRenderers event) {
-        this.tileRenderers.entrySet().forEach(entry -> registerTile(event, entry));
-        this.entityRenderers.entrySet().forEach(entry -> registerEntity(event, entry));
+    public void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        this.tileRegistries.forEach(registry -> ReflectionHelper.forEachValueIn(registry, IInfinityTileEntityType.class, type -> registerTileRenderer(event, type)));
+        this.entityRegistries.forEach(registry -> ReflectionHelper.forEachValueIn(registry, IInfinityEntityType.class, type -> registerEntityRenderer(event, type)));
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends BlockEntity> void registerTile(EntityRenderersEvent.RegisterRenderers event, Map.Entry<BlockEntityType<?>, BlockEntityRendererProvider<?>> entry) {
-        event.registerBlockEntityRenderer((BlockEntityType<T>) entry.getKey(), (BlockEntityRendererProvider<T>) entry.getValue());
+    private static <T extends BlockEntity> void registerTileRenderer(EntityRenderersEvent.RegisterRenderers event, IInfinityTileEntityType type) {
+        // Create Renderer
+        ITileRenderer<? extends BlockEntity> renderer = type.getRenderer();
+        if (renderer != null) {
+            // Register TileEntityRendererWrapper
+            event.registerBlockEntityRenderer(type.cast(), ((dispatcher) -> TileEntityRendererWrapper.createWrapper(renderer)));
+        }
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Entity> void registerEntity(EntityRenderersEvent.RegisterRenderers event, Map.Entry<EntityType<?>, EntityRendererProvider<?>> entry) {
-        event.registerEntityRenderer((EntityType<T>) entry.getKey(), (EntityRendererProvider<T>) entry.getValue());
+    private static <T extends Entity> void registerEntityRenderer(EntityRenderersEvent.RegisterRenderers event, IInfinityEntityType type) {
+        if (type.getRenderSupplier() == null) {
+            InfinityLib.instance.getLogger().info("", "No entity rendering factory was found for entity " + type.getInternalName());
+            event.registerEntityRenderer(type.cast(), EmptyEntityRenderSupplier.getInstance().supplyRenderer().get());
+        } else {
+            event.registerEntityRenderer(type.cast(), type.getRenderSupplier().supplyRenderer().get());
+        }
     }
-
-
 }
