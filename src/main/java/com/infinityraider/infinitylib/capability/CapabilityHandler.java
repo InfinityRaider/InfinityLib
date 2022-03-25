@@ -31,7 +31,12 @@ public class CapabilityHandler {
 
     @SubscribeEvent
     @SuppressWarnings({"unchecked","unused"})
-    public <T extends ICapabilityProvider> void addCapabilitiesRaw(AttachCapabilitiesEvent<T> event) {
+    // We must not define a generic type, or this method will not pass the AMSEventHandler generics filter test
+    public void addCapabilitiesRaw(AttachCapabilitiesEvent event) {
+        this.addCapabilitiesParametric(event);
+    }
+
+    private <T extends ICapabilityProvider> void addCapabilitiesParametric(AttachCapabilitiesEvent<T> event) {
         T carrier = event.getObject();
         Class<T> clazz = (Class<T>) carrier.getClass();
         this.capabilityImplementations.stream()

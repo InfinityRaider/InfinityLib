@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.proxy;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.tile.IInfinityTileEntityType;
+import com.infinityraider.infinitylib.capability.CapabilityHandler;
 import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.container.IInfinityContainerMenuType;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
@@ -48,6 +49,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -64,6 +66,11 @@ public interface IProxy extends IProxyBase<Config> {
     @Override
     default  Function<ForgeConfigSpec.Builder, Config> getConfigConstructor() {
         return Config.Common::new;
+    }
+
+    @Override
+    default void registerModBusEventHandlers(IEventBus bus) {
+        bus.addListener(CapabilityHandler.getInstance()::registerCapabilities);
     }
 
     @Override

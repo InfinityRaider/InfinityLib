@@ -58,8 +58,8 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     }
 
     @Override
-    public void registerFMLEventHandlers(IEventBus bus) {
-        IProxy.super.registerFMLEventHandlers(bus);
+    public void registerModBusEventHandlers(IEventBus bus) {
+        IProxy.super.registerModBusEventHandlers(bus);
         bus.addListener(ModelLoaderRegistrar.getInstance()::registerModelLoaders);
         bus.addListener(ParticleHelper.getInstance()::onFactoryRegistration);
         bus.addListener(RenderRegisteringHandler.getInstance()::registerRenderers);

@@ -12,12 +12,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.LogicalSidedProvider;
 import net.minecraftforge.event.server.*;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.LogicalSide;
@@ -54,7 +52,7 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
      * Called to register event handlers for FML IModBusEvent events
      * @param bus the bus for the mod
      */
-    default void registerFMLEventHandlers(IEventBus bus) {}
+    default void registerModBusEventHandlers(IEventBus bus) {}
 
     /** Registers an event handler */
     default void registerEventHandler(Object handler) {

@@ -58,12 +58,14 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         bus.addListener(this::onInterModEnqueueEvent);
         bus.addListener(this::onInterModProcessEvent);
         bus.addListener(this::onModLoadCompleteEvent);
-        this.proxy().registerFMLEventHandlers(bus);
+        this.proxy().registerModBusEventHandlers(bus);
         MinecraftForge.EVENT_BUS.register(this);
         //Activate required modules
         this.proxy().activateRequiredModules();
         // Call for deferred, automatic registration of IInfinityRegistrable objects
         InfinityLib.instance.proxy().registerRegistrables(this);
+        // Register capabilities
+        this.proxy().registerCapabilities();
         // Initialize the API
         this.initializeAPI();
     }
@@ -83,8 +85,6 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
     private void init() {
         // Register event handlers
         this.proxy().registerEventHandlers();
-        // Register capabilities
-        this.proxy().registerCapabilities();
         // Register messages
         this.networkWrapper.init();
     }
