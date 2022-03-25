@@ -15,6 +15,7 @@ public abstract class EntityThrowableBase extends ThrowableProjectile implements
 
     protected EntityThrowableBase(EntityType<? extends ThrowableProjectile> type, Entity thrower) {
         this(type, thrower.getLevel());
+        this.setPos(thrower.getX(), thrower.getEyeY() - (double)0.1F, thrower.getZ());
         this.setOwner(thrower);
     }
 
