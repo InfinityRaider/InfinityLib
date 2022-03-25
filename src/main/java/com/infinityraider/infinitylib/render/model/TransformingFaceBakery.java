@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.render.model;
 
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.utility.UnsafeUtil;
 import com.mojang.math.Transformation;
 import com.mojang.math.Vector3f;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -15,8 +16,6 @@ import net.minecraftforge.client.model.QuadTransformer;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 /**
@@ -134,35 +133,36 @@ public class TransformingFaceBakery extends FaceBakery {
         }
     }
 
-    // TODO: Fix reflection which will not work
     // Method to inject ourselves into Vanilla's FaceBakery, returns a dummy in case injection fails
     @Nullable
     private static TransformingFaceBakery hijackVanillaFaceBakery() {
-        InfinityLib.instance.getLogger().info("Trying to hijack Vanilla Face Bakery");
-        return Arrays.stream(BlockModel.class.getDeclaredFields())
+        InfinityLib.instance.getLogger().info("Trying to hijack Vanilla Face Bakery");return Arrays.stream(BlockModel.class.getDeclaredFields())
                 .filter(field -> field.getType().isAssignableFrom(FaceBakery.class))
                 .findAny()
                 .map(field -> {
+                    // Set field
                     try {
                         // Set accessible
                         field.setAccessible(true);
-                        // Remove final modifier
-                        Field modifiers = Field.class.getDeclaredField("modifiers");
-                        modifiers.setAccessible(true);
-                        modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
                         // Fetch previous value
                         FaceBakery captain = (FaceBakery) field.get(null);
-                        // Set field
+                        // Create new value
                         TransformingFaceBakery lookAtMeImTheCaptainNow = new TransformingFaceBakery(captain);
-                        field.set(null, lookAtMeImTheCaptainNow);
-                        InfinityLib.instance.getLogger().info("Hijacking successful, new destination: Blockhamas");
-                        return lookAtMeImTheCaptainNow;
+                        // Set new value
+                        boolean success = UnsafeUtil.getInstance().replaceStaticField(field, lookAtMeImTheCaptainNow);
+                        // Return
+                        if(success) {
+                            InfinityLib.instance.getLogger().info("Hijacking successful, new destination: Blockhamas");
+                            return lookAtMeImTheCaptainNow;
+                        } else {
+                            InfinityLib.instance.getLogger().info("Hijacking failed, one ticket to prison obtained");
+                        }
                     } catch(Exception e) {
                         // this might happen
                         InfinityLib.instance.getLogger().info("Hijacking failed, one ticket to prison obtained");
                         e.printStackTrace();
-                        return DUMMY;
                     }
+                    return DUMMY;
                 })
                 .orElseGet(() -> {
                     // this should never happen but still has to be here to make the code compile

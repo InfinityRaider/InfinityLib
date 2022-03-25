@@ -25,6 +25,7 @@ public class CapabilityHandler {
         InfinityLib.instance.registerEventHandler(this);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends ICapabilityProvider, C> void registerCapability(ICapabilityImplementation<T, C> implementation) {
         this.capabilityImplementations.add((ICapabilityImplementation<ICapabilityProvider, ?>) implementation);
     }
@@ -36,6 +37,7 @@ public class CapabilityHandler {
         this.addCapabilitiesParametric(event);
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends ICapabilityProvider> void addCapabilitiesParametric(AttachCapabilitiesEvent<T> event) {
         T carrier = event.getObject();
         Class<T> clazz = (Class<T>) carrier.getClass();
