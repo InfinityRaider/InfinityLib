@@ -115,11 +115,7 @@ public class MessageSerializerMap<K, V> implements IMessageSerializer<Map<K, V>>
         }
 
         public static boolean accepts(Class<? extends Map<?,?>> clazz) {
-            return Arrays.stream(values())
-                    .sorted()
-                    .map(type -> type.matches(clazz))
-                    .findFirst()
-                    .isPresent();
+            return Arrays.stream(values()).anyMatch(type -> type.matches(clazz));
         }
 
         public static <K,V> void identifyMap(Class<? extends Map<K,V>> clazz, FriendlyByteBuf buf, Map<K,V> map) {
