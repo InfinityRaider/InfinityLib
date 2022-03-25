@@ -8,6 +8,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 
+import javax.annotation.Nonnull;
+
 public abstract class EntityThrowableBase extends ThrowableProjectile implements IBaseEntityImplementation<EntityThrowableBase> {
     protected EntityThrowableBase(EntityType<? extends ThrowableProjectile> type, Level world) {
         super(type, world);
@@ -19,9 +21,10 @@ public abstract class EntityThrowableBase extends ThrowableProjectile implements
         this.setOwner(thrower);
     }
 
+    @Nonnull
     @Override
-    public final Packet<?> createSpawnPacket() {
-        return IBaseEntityImplementation.super.createSpawnPacket();
+    public final Packet<?> getAddEntityPacket() {
+        return IBaseEntityImplementation.super.getAddEntityPacket();
     }
 
     @Override

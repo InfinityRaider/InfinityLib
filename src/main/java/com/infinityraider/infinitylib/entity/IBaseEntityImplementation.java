@@ -8,13 +8,16 @@ import net.minecraft.world.entity.Entity;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
 
+import javax.annotation.Nonnull;
+
 public interface IBaseEntityImplementation<E extends Entity> extends IEntityAdditionalSpawnData {
     @SuppressWarnings("Unchecked")
     default E castToEntity() {
         return (E) this;
     }
 
-    default Packet<?> createSpawnPacket() {
+    @Nonnull
+    default Packet<?> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this.castToEntity());
     }
 

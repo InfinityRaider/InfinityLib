@@ -14,8 +14,8 @@ public abstract class EntityLivingBase extends LivingEntity implements IBaseEnti
     }
 
     @Override
-    public final Packet<?> createSpawnPacket() {
-        return IBaseEntityImplementation.super.createSpawnPacket();
+    public final Packet<?> getAddEntityPacket() {
+        return IBaseEntityImplementation.super.getAddEntityPacket();
     }
 
     @Override
