@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.network.serialization;
 
 import com.google.common.collect.Sets;
-import com.mojang.math.Vector3d;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -11,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 import java.util.Set;
@@ -61,7 +61,7 @@ public final class MessageSerializerStore {
         registerMessageSerializer(Item.class, PacketBufferUtil::writeItem, PacketBufferUtil::readItem);
         registerMessageSerializer(ItemStack.class, PacketBufferUtil::writeItemStack, PacketBufferUtil::readItemStack);
         registerMessageSerializer(CompoundTag.class, PacketBufferUtil::writeNBT, PacketBufferUtil::readNBT);
-        registerMessageSerializer(Vector3d.class, PacketBufferUtil::writeVec3d, PacketBufferUtil::readVec3d);
+        registerMessageSerializer(Vec3.class, PacketBufferUtil::writeVec3d, PacketBufferUtil::readVec3d);
         registerMessageSerializer(Component.class, PacketBufferUtil::writeTextComponent, PacketBufferUtil::readTextComponent);
         registerMessageSerializer(ResourceKey.class, PacketBufferUtil::writeRegistryKey, PacketBufferUtil::readRegistryKey);
         registerMessageSerializer(MessageSerializerEnum.INSTANCE);

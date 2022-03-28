@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.network.serialization;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import com.mojang.math.Vector3d;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -14,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 public class PacketBufferUtil {
@@ -204,15 +204,15 @@ public class PacketBufferUtil {
         return buf.readNbt();
     }
 
-    public static FriendlyByteBuf writeVec3d(FriendlyByteBuf buf, Vector3d data) {
-        buf.writeDouble(data.x);
-        buf.writeDouble(data.y);
-        buf.writeDouble(data.z);
+    public static FriendlyByteBuf writeVec3d(FriendlyByteBuf buf, Vec3 data) {
+        buf.writeDouble(data.x());
+        buf.writeDouble(data.y());
+        buf.writeDouble(data.z());
         return buf;
     }
 
-    public static Vector3d readVec3d(FriendlyByteBuf buf) {
-        return new Vector3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+    public static Vec3 readVec3d(FriendlyByteBuf buf) {
+        return new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
     }
 
     public static FriendlyByteBuf writeTextComponent(FriendlyByteBuf buf, Component component) {
