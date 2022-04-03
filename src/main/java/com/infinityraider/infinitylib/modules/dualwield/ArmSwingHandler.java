@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.modules.dualwield;
 
-import com.infinityraider.infinitylib.modules.playeranimations.PlayerAnimationManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -69,7 +68,6 @@ public class ArmSwingHandler {
     public void onPlayerRenderCall(RenderPlayerEvent.Pre event) {
         float left = this.getSwingProgress(event.getPlayer(), InteractionHand.OFF_HAND, event.getPartialTick());
         float right = this.getSwingProgress(event.getPlayer(), InteractionHand.MAIN_HAND, event.getPartialTick());
-        PlayerAnimationManager.setSwingProgress(event.getRenderer(), left, right);
     }
 
     private static class SwingProgress {

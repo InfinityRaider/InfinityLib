@@ -2,7 +2,6 @@ package com.infinityraider.infinitylib.modules.dualwield;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.modules.Module;
-import com.infinityraider.infinitylib.modules.playeranimations.ModulePlayerAnimations;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -60,11 +59,6 @@ public class ModuleDualWield extends Module {
         return ImmutableList.of(
                 MouseClickHandler.getInstance(),
                 ArmSwingHandler.getInstance());
-    }
-
-    @Override
-    public List<Module> requiredModules() {
-        return ImmutableList.of(ModulePlayerAnimations.getInstance());
     }
 
     /**
