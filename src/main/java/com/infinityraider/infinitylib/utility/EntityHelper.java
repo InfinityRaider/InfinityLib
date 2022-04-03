@@ -9,7 +9,6 @@ import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Set;
 
 public class EntityHelper {
@@ -37,14 +36,14 @@ public class EntityHelper {
         try {
             Set<WrappedGoal> goals = (Set<WrappedGoal>) goalsField.get(selector);
             return goals.stream().filter(goal -> goal.getPriority() >= priority).allMatch(goal -> {
+                boolean success = false;
                 try {
-                    priorityField.set(goal, ((int) priorityField.get(goal)) + 1);
-                    return true;
+                    success = UnsafeUtil.getInstance().replaceField(priorityField, goal, ((int) priorityField.get(goal)) + 1);
                 } catch(Exception e) {
                     InfinityLib.instance.getLogger().error("Failed to increment priority");
                     InfinityLib.instance.getLogger().printStackTrace(e);
-                    return false;
                 }
+                return success;
             });
         } catch (Exception e) {
             InfinityLib.instance.getLogger().error("Encountered error while getting the goals from the GoalSelector");
@@ -69,15 +68,12 @@ public class EntityHelper {
         }
     }
 
-    //TODO: fix this if reflection does not work
     private static Field initPriorityField() {
         try {
             // Retrieve field
             Field field = ObfuscationReflectionHelper.findField(WrappedGoal.class, "field_220775_b");
-            // Remove final modifier
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            // Set accessible
+            field.setAccessible(true);
             // Return the field
             return field;
         } catch (Exception e) {
