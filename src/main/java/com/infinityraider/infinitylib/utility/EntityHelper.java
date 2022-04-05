@@ -60,7 +60,7 @@ public class EntityHelper {
     @Nullable
     private static Field initGoalsField() {
         try {
-            return ObfuscationReflectionHelper.findField(GoalSelector.class, "field_220892_d");
+            return ObfuscationReflectionHelper.findField(GoalSelector.class, "field_6461");
         } catch (Exception e) {
             InfinityLib.instance.getLogger().error("Could not retrieve Goals field from GoalSelector.class");
             InfinityLib.instance.getLogger().printStackTrace(e);
@@ -71,7 +71,7 @@ public class EntityHelper {
     private static Field initPriorityField() {
         try {
             // Retrieve field
-            Field field = ObfuscationReflectionHelper.findField(WrappedGoal.class, "field_220775_b");
+            Field field = ObfuscationReflectionHelper.findField(WrappedGoal.class, "field_18417");
             // Set accessible
             field.setAccessible(true);
             // Return the field
