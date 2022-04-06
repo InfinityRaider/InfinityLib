@@ -52,6 +52,11 @@ public interface IFluidLoggable extends BucketPickup, LiquidBlockContainer {
     }
 
     @Override
+    default Optional<SoundEvent> getPickupSound() {
+        return Optional.empty();
+    }
+
+    @Override
     default Optional<SoundEvent> getPickupSound(BlockState state) {
         InfProperty.FluidLogged fluid = InfProperty.Defaults.fluidlogged().fetch(state);
         if(fluid.isEmpty()) {

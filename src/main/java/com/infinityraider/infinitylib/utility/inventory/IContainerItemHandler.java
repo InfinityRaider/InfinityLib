@@ -93,7 +93,6 @@ public interface IContainerItemHandler extends IContainerWrapped, IItemHandlerWr
     }
 
 
-
     @Override
     default boolean isItemValid(int slot, @Nonnull ItemStack stack) {
         return this.canPlaceItem(slot, stack);
