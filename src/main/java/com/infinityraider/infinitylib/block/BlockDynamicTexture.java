@@ -42,7 +42,7 @@ public abstract class BlockDynamicTexture<T extends TileEntityDynamicTexture> ex
                 dynTile.setMaterial(((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack));
             }
         }
-        this.onBlockPlacedBy(world, pos, state, placer, stack, tile);
+        this.setPlacedBy(world, pos, state, placer, stack, tile);
     }
 
     @Nonnull
@@ -76,5 +76,5 @@ public abstract class BlockDynamicTexture<T extends TileEntityDynamicTexture> ex
 
     public abstract void addDrops(Consumer<ItemStack> dropAcceptor, BlockState state, T tile, LootContext.Builder context);
 
-    public abstract void onBlockPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack, @Nullable BlockEntity tile);
+    public abstract void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack, @Nullable BlockEntity tile);
 }
