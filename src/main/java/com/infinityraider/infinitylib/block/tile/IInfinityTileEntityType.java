@@ -13,4 +13,6 @@ public interface IInfinityTileEntityType extends IInfinityRegistrable<BlockEntit
     @Nullable
     @OnlyIn(Dist.CLIENT)
     ITileRenderer<? extends BlockEntity> getRenderer();
+
+    boolean isTicking();
 }

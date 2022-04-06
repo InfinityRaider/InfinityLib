@@ -17,13 +17,15 @@ import java.util.Set;
 public class InfinityTileEntityType<T extends BlockEntity> extends BlockEntityType<T> implements IInfinityTileEntityType {
     private final String name;
     private final IRenderFactory<T> renderFactory;
+    private final boolean ticking;
 
     @OnlyIn(Dist.CLIENT)
     private ITileRenderer<T> renderer;
 
-    private InfinityTileEntityType(String name, BlockEntityType.BlockEntitySupplier<? extends T> factory, Set<Block> validBlocks, IRenderFactory<T> renderFactory) {
+    private InfinityTileEntityType(String name, BlockEntityType.BlockEntitySupplier<? extends T> factory, Set<Block> validBlocks, boolean ticking, IRenderFactory<T> renderFactory) {
         super(factory, validBlocks, null);
         this.name = name;
+        this.ticking = ticking;
         this.renderFactory = renderFactory;
     }
 
@@ -36,6 +38,11 @@ public class InfinityTileEntityType<T extends BlockEntity> extends BlockEntityTy
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public boolean isTicking() {
+        return this.ticking;
     }
 
     @Override
@@ -57,12 +64,14 @@ public class InfinityTileEntityType<T extends BlockEntity> extends BlockEntityTy
         private final BlockEntityType.BlockEntitySupplier<? extends T> factory;
         private final Set<Block> blocks;
 
+        private boolean ticking;
         private IRenderFactory<T> renderFactory;
 
         private Builder(String name, BlockEntityType.BlockEntitySupplier<? extends T> factory) {
             this.name = name;
             this.factory = factory;
             this.blocks = Sets.newIdentityHashSet();
+            this.ticking = false;
             this.renderFactory = noRenderer();
         }
 
@@ -81,13 +90,18 @@ public class InfinityTileEntityType<T extends BlockEntity> extends BlockEntityTy
             return this;
         }
 
+        public Builder<T> setTicking() {
+            this.ticking = true;
+            return this;
+        }
+
         public Builder<T> setRenderFactory(IRenderFactory<T> factory) {
             this.renderFactory = factory;
             return this;
         }
 
         public InfinityTileEntityType<T> build() {
-            return new InfinityTileEntityType<T>(this.name, this.factory, this.blocks, this.renderFactory);
+            return new InfinityTileEntityType<T>(this.name, this.factory, this.blocks, this.ticking, this.renderFactory);
         }
     }
 

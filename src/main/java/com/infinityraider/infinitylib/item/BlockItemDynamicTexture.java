@@ -74,12 +74,12 @@ public abstract class BlockItemDynamicTexture extends BlockItemBase {
         } else {
             tooltips.add(tooltip.append(material.getDisplayName()));
         }
-        this.addInformation(stack, world, tooltips::add, advanced);
+        this.appendHoverText(stack, world, tooltips::add, advanced);
     }
 
     @SuppressWarnings("unused")
     @OnlyIn(Dist.CLIENT)
-    protected void addInformation (@Nonnull ItemStack stack, @Nullable Level world, @Nonnull Consumer<Component> tooltip, @Nonnull TooltipFlag advanced) {
+    protected void appendHoverText(@Nonnull ItemStack stack, @Nullable Level world, @Nonnull Consumer<Component> tooltip, @Nonnull TooltipFlag advanced) {
         // NOOP (for sub classes)
     }
 }

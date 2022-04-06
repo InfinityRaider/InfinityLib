@@ -26,7 +26,7 @@ import java.util.Random;
 import java.util.function.*;
 
 @SuppressWarnings("unused")
-public abstract class TileEntityBase extends BlockEntity {
+public abstract class TileEntityBase extends BlockEntity implements IInfinityTileEntity {
     private static final Random RANDOM = new Random();
 
     private final Map<Integer, AutoSyncedField<?>> syncedFields;
