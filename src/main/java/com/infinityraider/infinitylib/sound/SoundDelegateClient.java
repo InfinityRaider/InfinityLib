@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.sound;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import com.mojang.math.Vector3d;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -12,6 +11,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.TickEvent;
@@ -40,7 +40,7 @@ public class SoundDelegateClient extends SidedSoundDelegate implements SoundEven
     public void onPlaySound(SoundInstance sound, WeighedSoundEvents accessor) { }
 
     @Override
-    public SoundTask playSoundAtPositionOnce(Vector3d position, SoundEvent sound, SoundSource category, float volume, float pitch) {
+    public SoundTask playSoundAtPositionOnce(Vec3 position, SoundEvent sound, SoundSource category, float volume, float pitch) {
         SoundTaskClient soundTask = new SoundTaskClient(Mth.createInsecureUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(false);
         ModSoundAtPosition soundImpl = new ModSoundAtPosition(this, position, soundTask);
         this.handleSoundPlay(soundTask, soundImpl);
@@ -56,7 +56,7 @@ public class SoundDelegateClient extends SidedSoundDelegate implements SoundEven
     }
 
     @Override
-    public SoundTask playSoundAtPositionContinuous(Vector3d position, SoundEvent sound, SoundSource category, float volume, float pitch) {
+    public SoundTask playSoundAtPositionContinuous(Vec3 position, SoundEvent sound, SoundSource category, float volume, float pitch) {
         SoundTaskClient soundTask = new SoundTaskClient(Mth.createInsecureUUID(ThreadLocalRandom.current()).toString(), sound, category, volume, pitch).setRepeat(true).setRepeatDelay(0);
         ModSoundAtPosition soundImpl = new ModSoundAtPosition(this, position, soundTask);
         this.handleSoundPlay(soundTask, soundImpl);

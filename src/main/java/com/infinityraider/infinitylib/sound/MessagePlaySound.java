@@ -6,11 +6,11 @@ import com.infinityraider.infinitylib.network.serialization.IMessageReader;
 import com.infinityraider.infinitylib.network.serialization.IMessageWriter;
 import com.infinityraider.infinitylib.network.serialization.PacketBufferUtil;
 import com.infinityraider.infinitylib.network.serialization.IMessageSerializer;
-import com.mojang.math.Vector3d;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkDirection;
@@ -22,7 +22,7 @@ import java.util.List;
 public class MessagePlaySound extends MessageBase {
     private Type type;
     private Entity entity;
-    private Vector3d position;
+    private Vec3 position;
     private String uuid;
     private SoundEvent sound;
     private SoundSource category;
@@ -48,7 +48,7 @@ public class MessagePlaySound extends MessageBase {
         this.repeatDelay = task.repeatDelay();
     }
 
-    public MessagePlaySound(Vector3d position, SoundTaskServer task) {
+    public MessagePlaySound(Vec3 position, SoundTaskServer task) {
         this();
         this.type = Type.POSITION;
         this.position = position;
@@ -93,7 +93,7 @@ public class MessagePlaySound extends MessageBase {
         return this.entity;
     }
 
-    public Vector3d getPosition() {
+    public Vec3 getPosition() {
         return this.position;
     }
 

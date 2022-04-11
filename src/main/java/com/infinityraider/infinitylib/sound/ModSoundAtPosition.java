@@ -1,14 +1,15 @@
 package com.infinityraider.infinitylib.sound;
 
-import com.mojang.math.Vector3d;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class ModSoundAtPosition extends ModSound {
-    private final Vector3d position;
+    private final Vec3 position;
 
-    protected ModSoundAtPosition(SoundDelegateClient delegate, Vector3d position, SoundTaskClient task) {
+    protected ModSoundAtPosition(SoundDelegateClient delegate, Vec3 position, SoundTaskClient task) {
+
         super(delegate, task);
         this.position = position;
     }
