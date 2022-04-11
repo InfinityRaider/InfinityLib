@@ -34,9 +34,9 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
     public ClientProxy() {}
 
     @Override
-    public void registerRegistrables(InfinityMod<?,?> mod) {
+    public void registerRegistrables(InfinityMod<?,?> mod, IEventBus bus) {
         // Forward to common proxy
-        IProxy.super.registerRegistrables(mod);
+        IProxy.super.registerRegistrables(mod, bus);
         // Register client side stuff
         mod.getModModelLoaders().forEach(loader -> ModelLoaderRegistrar.getInstance().registerModelLoader(loader));
         RenderRegisteringHandler.getInstance().registerTileRegistry(mod.getModTileRegistry());

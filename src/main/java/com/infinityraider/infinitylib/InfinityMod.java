@@ -63,7 +63,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         //Activate required modules
         this.proxy().activateRequiredModules();
         // Call for deferred, automatic registration of IInfinityRegistrable objects
-        InfinityLib.instance.proxy().registerRegistrables(this);
+        InfinityLib.instance.proxy().registerRegistrables(this, bus);
         // Register capabilities
         this.proxy().registerCapabilities();
         // Initialize the API
