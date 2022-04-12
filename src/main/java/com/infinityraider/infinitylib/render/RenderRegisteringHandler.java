@@ -8,6 +8,7 @@ import com.infinityraider.infinitylib.entity.IInfinityEntityType;
 import com.infinityraider.infinitylib.render.tile.ITileRenderer;
 import com.infinityraider.infinitylib.render.tile.TileEntityRendererWrapper;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
+import com.infinityraider.infinitylib.utility.registration.ModContentRegistry;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
@@ -26,8 +27,8 @@ public class RenderRegisteringHandler {
         return INSTANCE;
     }
 
-    private final Set<Class<?>> tileRegistries;
-    private final Set<Class<?>> entityRegistries;
+    private final Set<ModContentRegistry> tileRegistries;
+    private final Set<ModContentRegistry> entityRegistries;
 
     private RenderRegisteringHandler() {
         // Concurrent due to parallel mod loading
@@ -35,13 +36,13 @@ public class RenderRegisteringHandler {
         this.entityRegistries = Sets.newConcurrentHashSet();
     }
 
-    public void registerTileRegistry(@Nullable Class<?> tileRegistry) {
+    public void registerTileRegistry(@Nullable ModContentRegistry tileRegistry) {
         if(tileRegistry != null) {
             this.tileRegistries.add(tileRegistry);
         }
     }
 
-    public void registerEntityRegistry(@Nullable Class<?> entityRegistry) {
+    public void registerEntityRegistry(@Nullable ModContentRegistry entityRegistry) {
         if(entityRegistry != null) {
             this.entityRegistries.add(entityRegistry);
         }
@@ -50,6 +51,7 @@ public class RenderRegisteringHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        // TODO: fix reflection for registration
         this.tileRegistries.forEach(registry -> ReflectionHelper.forEachValueIn(registry, IInfinityTileEntityType.class, type -> registerTileRenderer(event, type)));
         this.entityRegistries.forEach(registry -> ReflectionHelper.forEachValueIn(registry, IInfinityEntityType.class, type -> registerEntityRenderer(event, type)));
     }

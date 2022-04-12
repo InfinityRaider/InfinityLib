@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 
 public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
     public static final String ID = "crafting_shapeless_dynamic_texture";
-    public static final RecipeSerializer<ShapelessDynamicTextureRecipe> SERIALIZER = new Serializer();
+    public static final IInfRecipeSerializer<ShapelessDynamicTextureRecipe> SERIALIZER = new Serializer();
 
     public ShapelessDynamicTextureRecipe(ShapelessRecipe parent) {
         super(parent.getId(), parent.getGroup(), parent.getResultItem(), parent.getIngredients());
@@ -54,9 +54,7 @@ public class ShapelessDynamicTextureRecipe extends ShapelessRecipe {
         return super.assemble(inv);
     }
 
-    public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>>
-            implements RecipeSerializer<ShapelessDynamicTextureRecipe>, IInfRecipeSerializer {
-
+    public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements IInfRecipeSerializer<ShapelessDynamicTextureRecipe> {
         private Serializer() {}
 
         @Nonnull

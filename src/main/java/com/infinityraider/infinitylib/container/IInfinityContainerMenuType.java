@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.container;
 
-import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
+import com.infinityraider.infinitylib.utility.registration.IInfinityRegistrable;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;

@@ -10,7 +10,6 @@ import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.particle.IInfinityParticleType;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
-import com.infinityraider.infinitylib.utility.RegistrationHandler;
 import com.infinityraider.infinitylib.world.IInfStructure;
 import com.infinityraider.infinitylib.world.StructureRegistry;
 import net.minecraft.core.BlockPos;
@@ -53,7 +52,7 @@ public interface IProxy extends IProxyBase<Config> {
     @Override
     default void onCommonSetupEvent(FMLCommonSetupEvent event) {
         Module.getActiveModules().forEach(Module::init);
-        RecipeSerializers.registerSerializers();
+        RecipeSerializers.getInstance().registerSerializers();
     }
 
     @Override
@@ -71,8 +70,7 @@ public interface IProxy extends IProxyBase<Config> {
      * -------------------
      */
 
-    default void registerRegistrables(InfinityMod<?,?> mod, IEventBus bus) {
-        bus.register(new RegistrationHandler(mod));
+    default void registerRegistrables(InfinityMod<?,?> mod) {
         this.registerStructures(mod);
     }
 

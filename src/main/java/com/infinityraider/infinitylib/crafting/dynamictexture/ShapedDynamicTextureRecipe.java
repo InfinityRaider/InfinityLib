@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 public class ShapedDynamicTextureRecipe extends ShapedRecipe {
     public static final String ID = "crafting_shaped_dynamic_texture";
-    public static final RecipeSerializer<ShapedDynamicTextureRecipe> SERIALIZER = new Serializer();
+    public static final IInfRecipeSerializer<ShapedDynamicTextureRecipe> SERIALIZER = new Serializer();
 
     private List<Block> materials;
 
@@ -49,7 +49,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
 
     @Override
     @Nonnull
-    public RecipeSerializer<?> getSerializer() {
+    public IInfRecipeSerializer<?> getSerializer() {
         return SERIALIZER;
     }
 
@@ -157,8 +157,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
         return material;
     }
 
-    public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>>
-            implements RecipeSerializer<ShapedDynamicTextureRecipe>, IInfRecipeSerializer {
+    public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements IInfRecipeSerializer<ShapedDynamicTextureRecipe> {
 
         private Serializer() {}
 

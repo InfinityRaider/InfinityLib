@@ -1,6 +1,7 @@
-package com.infinityraider.infinitylib.utility;
+package com.infinityraider.infinitylib.utility.registration;
 
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.utility.IToggleable;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;

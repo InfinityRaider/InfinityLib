@@ -1,6 +1,6 @@
 package com.infinityraider.infinitylib.particle;
 
-import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
+import com.infinityraider.infinitylib.utility.registration.IInfinityRegistrable;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.client.particle.ParticleProvider;

@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.block;
 
 import com.infinityraider.infinitylib.item.IInfinityItem;
-import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
+import com.infinityraider.infinitylib.utility.registration.IInfinityRegistrable;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;

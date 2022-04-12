@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.entity;
 
 import com.infinityraider.infinitylib.modules.entitytargeting.ModuleEntityTargeting;
-import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
+import com.infinityraider.infinitylib.utility.registration.IInfinityRegistrable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;

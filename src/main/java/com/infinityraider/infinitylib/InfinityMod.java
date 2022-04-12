@@ -7,6 +7,8 @@ import com.infinityraider.infinitylib.network.NetworkWrapper;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.render.model.InfModelLoader;
 import com.infinityraider.infinitylib.utility.InfinityLogger;
+import com.infinityraider.infinitylib.utility.registration.ModContentRegistry;
+import com.infinityraider.infinitylib.utility.registration.RegistrationHandler;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -62,8 +64,10 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         MinecraftForge.EVENT_BUS.register(this);
         //Activate required modules
         this.proxy().activateRequiredModules();
-        // Call for deferred, automatic registration of IInfinityRegistrable objects
-        InfinityLib.instance.proxy().registerRegistrables(this, bus);
+        // Call for automatic registration of IInfinityRegistrables
+        bus.register(new RegistrationHandler(this));
+        // Call for automatic registration of renderers and other
+        InfinityLib.instance.proxy().registerRegistrables(this);
         // Register capabilities
         this.proxy().registerCapabilities();
         // Initialize the API
@@ -151,7 +155,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Block registry object or class
      */
-    public Class<?> getModBlockRegistry() {
+    public ModContentRegistry getModBlockRegistry() {
         return null;
     }
 
@@ -163,7 +167,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return TileEntity registry object or class
      */
-    public Class<?> getModTileRegistry() {
+    public ModContentRegistry getModTileRegistry() {
         return null;
     }
 
@@ -175,7 +179,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Item registry object or class
      */
-    public Class<?> getModItemRegistry() {
+    public ModContentRegistry getModItemRegistry() {
         return null;
     }
 
@@ -187,7 +191,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Fluid registry object or class
      */
-    public Class<?> getModFluidRegistry() {
+    public ModContentRegistry getModFluidRegistry() {
         return null;
     }
 
@@ -199,7 +203,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Biome registry object or class
      */
-    public Class<?> getModBiomeRegistry() {
+    public ModContentRegistry getModBiomeRegistry() {
         return null;
     }
 
@@ -211,7 +215,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Enchantment registry object or class
      */
-    public  Class<?> getModEnchantmentRegistry() {
+    public  ModContentRegistry getModEnchantmentRegistry() {
         return null;
     }
 
@@ -223,7 +227,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Entity registry object or class
      */
-    public  Class<?> getModEntityRegistry() {
+    public ModContentRegistry getModEntityRegistry() {
         return null;
     }
 
@@ -235,7 +239,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Potion registry object or class
      */
-    public Class<?> getModEffectRegistry() {
+    public ModContentRegistry getModEffectRegistry() {
         return null;
     }
 
@@ -247,7 +251,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return PotionType registry object or class
      */
-    public Class<?> getModPotionTypeRegistry() {
+    public ModContentRegistry getModPotionTypeRegistry() {
         return null;
     }
 
@@ -259,7 +263,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return SoundEvent registry object or class
      */
-    public Class<?> getModSoundRegistry() {
+    public ModContentRegistry getModSoundRegistry() {
         return null;
     }
 
@@ -271,7 +275,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return ParticleType registry object or class
      */
-    public Class<?> getModParticleRegistry() {
+    public ModContentRegistry getModParticleRegistry() {
         return null;
     }
 
@@ -283,7 +287,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return ContainerType registry object or class
      */
-    public Class<?> getModContainerRegistry() {
+    public ModContentRegistry getModContainerRegistry() {
         return null;
     }
 
@@ -296,7 +300,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return IRecipeSerializer registry object or class
      */
-    public Class<?> getModRecipeSerializerRegistry() {
+    public ModContentRegistry getModRecipeSerializerRegistry() {
         return null;
     }
 
@@ -308,7 +312,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return IRecipeSerializer registry object or class
      */
-    public Class<?> getModLootModifierSerializerRegistry() {
+    public ModContentRegistry getModLootModifierSerializerRegistry() {
         return null;
     }
 
@@ -318,6 +322,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Structure registry object
      */
+    // TODO: rework
     public Class<?> getStructureRegistry() {
         return null;
     }
@@ -330,6 +335,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return VillagerProfession registry object or class
      */
+    // TODO: rework
     public Class<?> getModVillagerProfessionRegistry() {
         return null;
     }

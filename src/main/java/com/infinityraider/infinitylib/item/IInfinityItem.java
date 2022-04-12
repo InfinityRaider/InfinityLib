@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.item;
 
 import com.infinityraider.infinitylib.render.item.IClientItemProperties;
-import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
+import com.infinityraider.infinitylib.utility.registration.IInfinityRegistrable;
 import net.minecraft.world.item.Item;
 
 import java.util.function.Supplier;

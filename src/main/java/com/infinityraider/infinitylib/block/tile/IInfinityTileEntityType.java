@@ -1,7 +1,7 @@
 package com.infinityraider.infinitylib.block.tile;
 
 import com.infinityraider.infinitylib.render.tile.ITileRenderer;
-import com.infinityraider.infinitylib.utility.IInfinityRegistrable;
+import com.infinityraider.infinitylib.utility.registration.IInfinityRegistrable;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
