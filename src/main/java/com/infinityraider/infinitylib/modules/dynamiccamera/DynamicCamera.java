@@ -31,12 +31,6 @@ import java.util.function.Function;
  */
 @OnlyIn(Dist.CLIENT)
 public class DynamicCamera extends Entity implements IRenderUtilities {
-    private static final EntityType<DynamicCamera> TYPE =
-            EntityTypeBase.entityTypeBuilder(
-                    Names.Entities.CAMERA, DynamicCamera.class, SpawnFactory.getInstance(), MobCategory.MISC,
-                    EntityDimensions.fixed(Constants.UNIT, Constants.UNIT)
-            ).build();
-
     private static DynamicCamera INSTANCE;
 
     // Tick logic gets called before the world is initialized, therefore we must wait to instantiate the camera
@@ -144,7 +138,7 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
     private int counter;
 
     public DynamicCamera(Level world) {
-        this(TYPE, world);
+        this(ModuleDynamicCamera.getInstance().getCameraEntityType(), world);
     }
 
     public DynamicCamera(EntityType<DynamicCamera> type, Level world) {

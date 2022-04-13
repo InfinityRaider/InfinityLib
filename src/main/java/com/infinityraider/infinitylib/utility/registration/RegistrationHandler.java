@@ -5,7 +5,7 @@ import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.container.IInfinityContainerMenuType;
 import com.infinityraider.infinitylib.crafting.IInfIngredientSerializer;
 import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
-import com.infinityraider.infinitylib.crafting.RecipeSerializers;
+import com.infinityraider.infinitylib.crafting.IngredientSerializerRegistrar;
 import com.infinityraider.infinitylib.enchantment.EnchantmentBase;
 import com.infinityraider.infinitylib.entity.EntityHandler;
 import com.infinityraider.infinitylib.entity.IMobEntityType;
@@ -169,12 +169,12 @@ public class RegistrationHandler {
         this.registerObjects(RegistryInitializer.Type.RECIPE, event.getRegistry(), recipe -> {
             if (recipe instanceof IInfRecipeSerializer) {
                 // Also register the recipe's ingredient serializers
-                ((IInfRecipeSerializer<?>) recipe).getIngredientSerializers().forEach(ser -> RecipeSerializers.getInstance().registerSerializer(ser));
+                ((IInfRecipeSerializer<?>) recipe).getIngredientSerializers().forEach(ser -> IngredientSerializerRegistrar.getInstance().registerSerializer(ser));
             }
         });
         // Register ingredient serializers
         if (mod.getModRecipeSerializerRegistry() != null) {
-            ReflectionHelper.forEachValueIn(mod.getModRecipeSerializerRegistry(), IInfIngredientSerializer.class, ser -> RecipeSerializers.getInstance().registerSerializer(ser));
+            ReflectionHelper.forEachValueIn(mod.getModRecipeSerializerRegistry(), IInfIngredientSerializer.class, ser -> IngredientSerializerRegistrar.getInstance().registerSerializer(ser));
         }
     }
 

@@ -3,6 +3,7 @@ package com.infinityraider.infinitylib.modules;
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.capability.ICapabilityImplementation;
 import com.infinityraider.infinitylib.network.INetworkWrapper;
+import com.infinityraider.infinitylib.utility.registration.InfinityLibContentRegistry;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -28,6 +29,7 @@ public abstract class Module implements Comparable<Module> {
             this.active = true;
             activeModules.add(this);
             this.requiredModules().forEach(Module::activate);
+            this.initRegistrables(InfinityLibContentRegistry.getInstance());
         }
     }
 
@@ -51,6 +53,8 @@ public abstract class Module implements Comparable<Module> {
     }
 
     public void init() {}
+
+    public void initRegistrables(InfinityLibContentRegistry registry) {}
 
     @OnlyIn(Dist.CLIENT)
     public void initClient() {}

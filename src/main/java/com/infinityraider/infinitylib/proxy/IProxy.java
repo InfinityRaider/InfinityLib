@@ -4,7 +4,7 @@ import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.capability.CapabilityHandler;
 import com.infinityraider.infinitylib.config.Config;
 import com.infinityraider.infinitylib.container.IInfinityContainerMenuType;
-import com.infinityraider.infinitylib.crafting.RecipeSerializers;
+import com.infinityraider.infinitylib.crafting.IngredientSerializerRegistrar;
 import com.infinityraider.infinitylib.entity.EntityHandler;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.particle.IInfinityParticleType;
@@ -52,7 +52,7 @@ public interface IProxy extends IProxyBase<Config> {
     @Override
     default void onCommonSetupEvent(FMLCommonSetupEvent event) {
         Module.getActiveModules().forEach(Module::init);
-        RecipeSerializers.getInstance().registerSerializers();
+        IngredientSerializerRegistrar.getInstance().registerSerializers();
     }
 
     @Override

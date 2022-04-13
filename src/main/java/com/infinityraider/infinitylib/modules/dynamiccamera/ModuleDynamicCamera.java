@@ -2,7 +2,15 @@ package com.infinityraider.infinitylib.modules.dynamiccamera;
 
 import com.google.common.collect.ImmutableList;
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.entity.EntityTypeBase;
 import com.infinityraider.infinitylib.modules.Module;
+import com.infinityraider.infinitylib.reference.Constants;
+import com.infinityraider.infinitylib.reference.Names;
+import com.infinityraider.infinitylib.utility.registration.InfinityLibContentRegistry;
+import com.infinityraider.infinitylib.utility.registration.RegistryInitializer;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -30,7 +38,24 @@ public class ModuleDynamicCamera extends Module {
         return INSTANCE;
     }
 
-    private ModuleDynamicCamera() {}
+    private RegistryInitializer<EntityTypeBase<DynamicCamera>> cameraEntityType;
+
+    private ModuleDynamicCamera() {
+
+    }
+
+    public EntityType<DynamicCamera> getCameraEntityType() {
+        return this.cameraEntityType.get();
+    }
+
+    @Override
+    public void initRegistrables(InfinityLibContentRegistry registry) {
+        this.cameraEntityType = registry.registerEntity(() -> EntityTypeBase.entityTypeBuilder(
+                Names.Entities.CAMERA, DynamicCamera.class, DynamicCamera.SpawnFactory.getInstance(), MobCategory.MISC,
+                EntityDimensions.fixed(Constants.UNIT, Constants.UNIT))
+                .build()
+        );
+    }
 
     public List<Object> getClientEventHandlers() {
         return ImmutableList.of(this);

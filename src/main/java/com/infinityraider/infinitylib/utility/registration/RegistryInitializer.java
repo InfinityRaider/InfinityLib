@@ -49,7 +49,7 @@ public class RegistryInitializer<T extends IInfinityRegistrable<?>> implements S
     @SuppressWarnings("unchecked")
     protected void register(InfinityMod<?, ?> mod, IForgeRegistry<? super T>  registry, Consumer<? super T> tasks) {
         T object = this.constructor.get();
-        if(object.isEnabled()) {
+        if(object != null && object.isEnabled()) {
             mod.getLogger().debug(" - Registering " + this.getType().descr() + ": " + mod.getModId() + ":" + object.getInternalName());
             ResourceLocation id = new ResourceLocation(mod.getModId(), object.getInternalName());
             object.cast().setRegistryName(id);

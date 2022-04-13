@@ -64,7 +64,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
         MinecraftForge.EVENT_BUS.register(this);
         //Activate required modules
         this.proxy().activateRequiredModules();
-        // Call for automatic registration of IInfinityRegistrables
+        // Call for automatic registration of IInfinityRegistreables
         bus.register(new RegistrationHandler(this));
         // Call for automatic registration of renderers and other
         InfinityLib.instance.proxy().registerRegistrables(this);
