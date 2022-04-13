@@ -1,21 +1,20 @@
 package com.infinityraider.infinitylib.utility.registration;
 
 import com.infinityraider.infinitylib.InfinityMod;
-import net.minecraft.core.particles.ParticleType;
+import com.infinityraider.infinitylib.block.IInfinityBlock;
+import com.infinityraider.infinitylib.block.tile.InfinityTileEntityType;
+import com.infinityraider.infinitylib.container.IInfinityContainerMenuType;
+import com.infinityraider.infinitylib.crafting.IInfRecipeSerializer;
+import com.infinityraider.infinitylib.enchantment.IInfinityEnchantment;
+import com.infinityraider.infinitylib.entity.IInfinityEntityType;
+import com.infinityraider.infinitylib.fluid.IInfinityFluid;
+import com.infinityraider.infinitylib.item.IInfinityItem;
+import com.infinityraider.infinitylib.loot.IInfLootModifierSerializer;
+import com.infinityraider.infinitylib.particle.IInfinityParticleType;
+import com.infinityraider.infinitylib.potion.IInfinityPotionEffect;
+import com.infinityraider.infinitylib.sound.IInfinitySoundEvent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
@@ -23,7 +22,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class RegistryInitializer<T extends IForgeRegistryEntry<?> & IInfinityRegistrable<?>> implements Supplier<T> {
+public class RegistryInitializer<T extends IInfinityRegistrable<?>> implements Supplier<T> {
     private final Type type;
     private final Supplier<T> constructor;
 
@@ -49,58 +48,58 @@ public class RegistryInitializer<T extends IForgeRegistryEntry<?> & IInfinityReg
         if(object.isEnabled()) {
             mod.getLogger().debug(" - Registering " + this.getType().descr() + ": " + mod.getModId() + ":" + object.getInternalName());
             ResourceLocation id = new ResourceLocation(mod.getModId(), object.getInternalName());
-            object.setRegistryName(id);
+            object.cast().setRegistryName(id);
             registry.register(object);
             tasks.accept(object);
             this.access = (RegistryObject<T>) RegistryObject.create(id, registry);
         }
     }
 
-    protected static <T extends Block & IInfinityRegistrable<?>> RegistryInitializer<T> block(Supplier<T> supplier) {
+    protected static <T extends IInfinityBlock> RegistryInitializer<T> block(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.BLOCK, supplier);
     }
 
-    protected static <T extends BlockEntityType<?> & IInfinityRegistrable<?>> RegistryInitializer<T> blockEntity(Supplier<T> supplier) {
+    protected static <T extends InfinityTileEntityType<?>> RegistryInitializer<T> blockEntity(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.BLOCK_ENTITY, supplier);
     }
 
-    protected static <T extends Item & IInfinityRegistrable<?>> RegistryInitializer<T> item(Supplier<T> supplier) {
+    protected static <T extends IInfinityItem> RegistryInitializer<T> item(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.ITEM, supplier);
     }
 
-    protected static <T extends Fluid & IInfinityRegistrable<?>> RegistryInitializer<T> fluid(Supplier<T> supplier) {
+    protected static <T extends IInfinityFluid> RegistryInitializer<T> fluid(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.FLUID, supplier);
     }
 
-    protected static <T extends Enchantment & IInfinityRegistrable<?>> RegistryInitializer<T> enchantment(Supplier<T> supplier) {
+    protected static <T extends IInfinityEnchantment> RegistryInitializer<T> enchantment(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.ENCHANTMENT, supplier);
     }
 
-    protected static <T extends EntityType<?> & IInfinityRegistrable<?>> RegistryInitializer<T> entity(Supplier<T> supplier) {
+    protected static <T extends IInfinityEntityType> RegistryInitializer<T> entity(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.ENTITY, supplier);
     }
 
-    protected static <T extends SoundEvent & IInfinityRegistrable<?>> RegistryInitializer<T> sound(Supplier<T> supplier) {
+    protected static <T extends IInfinitySoundEvent> RegistryInitializer<T> sound(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.SOUND_EVENT, supplier);
     }
 
-    protected static <T extends ParticleType<?> & IInfinityRegistrable<?>> RegistryInitializer<T> particle(Supplier<T> supplier) {
+    protected static <T extends IInfinityParticleType<?>> RegistryInitializer<T> particle(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.PARTICLE_TYPE, supplier);
     }
 
-    protected static <T extends MobEffect & IInfinityRegistrable<?>> RegistryInitializer<T> mobEffect(Supplier<T> supplier) {
+    protected static <T extends IInfinityPotionEffect> RegistryInitializer<T> mobEffect(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.MOB_EFFECT, supplier);
     }
 
-    protected static <T extends MenuType<?> & IInfinityRegistrable<?>> RegistryInitializer<T> menuType(Supplier<T> supplier) {
+    protected static <T extends IInfinityContainerMenuType> RegistryInitializer<T> menuType(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.MENU_TYPE, supplier);
     }
 
-    protected static <T extends RecipeSerializer<?> & IInfinityRegistrable<?>> RegistryInitializer<T> recipe(Supplier<T> supplier) {
+    protected static <T extends IInfRecipeSerializer<?>> RegistryInitializer<T> recipe(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.RECIPE, supplier);
     }
 
-    protected static <T extends GlobalLootModifierSerializer<?> & IInfinityRegistrable<?>> RegistryInitializer<T> loot(Supplier<T> supplier) {
+    protected static <T extends IInfLootModifierSerializer> RegistryInitializer<T> loot(Supplier<T> supplier) {
         return new RegistryInitializer<>(Type.LOOT, supplier);
     }
 

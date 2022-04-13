@@ -6,7 +6,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 
-public interface IInfinityRegistrable<T extends IForgeRegistryEntry<T>> extends IToggleable {
+public interface IInfinityRegistrable<T extends IForgeRegistryEntry<T>> extends IForgeRegistryEntry<T>, IToggleable {
 
     /**
      * The name used internally as to represent this block, not including the modid qualifier.
