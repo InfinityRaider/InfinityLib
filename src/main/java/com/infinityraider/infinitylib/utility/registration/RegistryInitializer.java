@@ -17,7 +17,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryObject;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -37,9 +39,11 @@ public class RegistryInitializer<T extends IInfinityRegistrable<?>> implements S
         return this.type;
     }
 
+    @Nonnull
     @Override
     public final T get() {
-        return this.access == null ? null : this.access.get();
+        Objects.requireNonNull(this.access, () -> "Queried registry initializer entry too early");
+        return this.access.get();
     }
 
     @SuppressWarnings("unchecked")
