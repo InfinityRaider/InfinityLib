@@ -81,7 +81,7 @@ public class ModContentRegistry {
         return initializer;
     }
 
-    Stream<RegistryInitializer<?>> stream(RegistryInitializer.Type type) {
+    public Stream<RegistryInitializer<?>> stream(RegistryInitializer.Type type) {
         return this.initializers.containsKey(type) ? this.initializers.get(type).stream() : Stream.empty();
     }
 }

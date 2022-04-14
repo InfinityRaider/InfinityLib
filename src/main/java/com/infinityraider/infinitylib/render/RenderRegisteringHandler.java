@@ -9,6 +9,7 @@ import com.infinityraider.infinitylib.render.tile.ITileRenderer;
 import com.infinityraider.infinitylib.render.tile.TileEntityRendererWrapper;
 import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import com.infinityraider.infinitylib.utility.registration.ModContentRegistry;
+import com.infinityraider.infinitylib.utility.registration.RegistryInitializer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
@@ -51,9 +52,20 @@ public class RenderRegisteringHandler {
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        // TODO: fix reflection for registration
-        this.tileRegistries.forEach(registry -> ReflectionHelper.forEachValueIn(registry, IInfinityTileEntityType.class, type -> registerTileRenderer(event, type)));
-        this.entityRegistries.forEach(registry -> ReflectionHelper.forEachValueIn(registry, IInfinityEntityType.class, type -> registerEntityRenderer(event, type)));
+        this.tileRegistries.forEach(registry -> {
+            registry.stream(RegistryInitializer.Type.BLOCK_ENTITY)
+                    .map(RegistryInitializer::get)
+                    .filter(obj -> obj instanceof IInfinityTileEntityType)
+                    .map(obj -> (IInfinityTileEntityType) obj)
+                    .forEach(type -> registerTileRenderer(event, type));
+        });
+        this.entityRegistries.forEach(registry -> {
+            registry.stream(RegistryInitializer.Type.ENTITY)
+                    .map(RegistryInitializer::get)
+                    .filter(obj -> obj instanceof IInfinityEntityType)
+                    .map(obj -> (IInfinityEntityType) obj)
+                    .forEach(type -> registerEntityRenderer(event, type));
+        });
     }
 
     @SuppressWarnings("unchecked")

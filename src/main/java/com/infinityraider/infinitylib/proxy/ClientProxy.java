@@ -14,8 +14,8 @@ import com.infinityraider.infinitylib.render.fluid.InfFluidRenderer;
 import com.infinityraider.infinitylib.render.item.InfItemRendererRegistry;
 import com.infinityraider.infinitylib.render.model.TransformingFaceBakery;
 import com.infinityraider.infinitylib.render.model.ModelLoaderRegistrar;
-import com.infinityraider.infinitylib.utility.ReflectionHelper;
 import com.infinityraider.infinitylib.utility.registration.ModContentRegistry;
+import com.infinityraider.infinitylib.utility.registration.RegistryInitializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -100,24 +100,30 @@ public class ClientProxy implements IProxy, IClientProxyBase<Config> {
         if (blockRegistry == null) {
             return;
         }
-        // TODO: fix reflection for registration
-        ReflectionHelper.forEachValueIn(blockRegistry, IInfinityBlock.class, object -> {
-            // Set render type
-            ItemBlockRenderTypes.setRenderLayer(object.cast(), object.getRenderType());
-            // Register block color
-            BlockColor color = object.getColor();
-            if(color != null) {
-                Minecraft.getInstance().getBlockColors().register(color, object.cast());
-            }
-        });
+        blockRegistry.stream(RegistryInitializer.Type.BLOCK)
+                .map(RegistryInitializer::get)
+                .filter(obj -> obj instanceof IInfinityBlock)
+                .map(obj -> (IInfinityBlock) obj)
+                .forEach(block -> {
+                    // Set render type
+                    ItemBlockRenderTypes.setRenderLayer(block.cast(), block.getRenderType());
+                    // Register block color
+                    BlockColor color = block.getColor();
+                    if (color != null) {
+                        Minecraft.getInstance().getBlockColors().register(color, block.cast());
+                    }
+                });
     }
 
     private void registerItemRenderers(ModContentRegistry itemRegistry) {
         if (itemRegistry == null) {
             return;
         }
-        // TODO: fix reflection for registration
-        ReflectionHelper.forEachValueIn(itemRegistry, IInfinityItem.class, object -> InfItemRendererRegistry.getInstance().register(object));
+        itemRegistry.stream(RegistryInitializer.Type.ITEM)
+                .map(RegistryInitializer::get)
+                .filter(obj -> obj instanceof IInfinityItem)
+                .map(obj -> (IInfinityItem) obj)
+                .forEach(item -> InfItemRendererRegistry.getInstance().register(item));
     }
 
     @Override
