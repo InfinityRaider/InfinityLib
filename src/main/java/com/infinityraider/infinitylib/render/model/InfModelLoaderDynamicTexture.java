@@ -73,14 +73,14 @@ public class InfModelLoaderDynamicTexture implements InfModelLoader<InfModelLoad
         // Fetch model parts
         List<BlockElement> parts = Lists.newArrayList();
         if(modelContents.has("elements")) {
-            for(JsonElement jsonelement : GsonHelper.convertToJsonArray(modelContents, "elements")) {
+            for(JsonElement jsonelement : GsonHelper.getAsJsonArray(modelContents, "elements")) {
                 parts.add(context.deserialize(jsonelement, BlockElement.class));
             }
         }
         // Fetch Item Model transforms
         ItemTransforms itemCameraTransforms = ItemTransforms.NO_TRANSFORMS;
         if (modelContents.has("display")) {
-            JsonObject transforms = GsonHelper.convertToJsonObject(modelContents, "display");
+            JsonObject transforms = GsonHelper.getAsJsonObject(modelContents, "display");
             itemCameraTransforms = context.deserialize(transforms, ItemTransforms.class);
         }
         // Return geometry
