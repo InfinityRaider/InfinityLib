@@ -5,10 +5,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Set;
 
 public class EntityHelper {
@@ -59,27 +59,25 @@ public class EntityHelper {
 
     @Nullable
     private static Field initGoalsField() {
-        try {
-            return ObfuscationReflectionHelper.findField(GoalSelector.class, "field_6461");
-        } catch (Exception e) {
-            InfinityLib.instance.getLogger().error("Could not retrieve Goals field from GoalSelector.class");
-            InfinityLib.instance.getLogger().printStackTrace(e);
-            return null;
-        }
+        return Arrays.stream(GoalSelector.class.getDeclaredFields())
+                .peek(field -> field.setAccessible(true))
+                .filter(field -> field.getType() == Set.class)
+                .findFirst()
+                .orElseGet(() -> {
+                    InfinityLib.instance.getLogger().error("Could not retrieve Goals field from GoalSelector.class");
+                    return null;
+                });
     }
 
+    @Nullable
     private static Field initPriorityField() {
-        try {
-            // Retrieve field
-            Field field = ObfuscationReflectionHelper.findField(WrappedGoal.class, "field_18417");
-            // Set accessible
-            field.setAccessible(true);
-            // Return the field
-            return field;
-        } catch (Exception e) {
-            InfinityLib.instance.getLogger().error("Could not retrieve Priority field from PrioritizedGoal.class");
-            InfinityLib.instance.getLogger().printStackTrace(e);
-            return null;
-        }
+        return Arrays.stream(WrappedGoal.class.getDeclaredFields())
+                .peek(field -> field.setAccessible(true))
+                .filter(field -> field.getType() == int.class)
+                .findFirst()
+                .orElseGet(() -> {
+                    InfinityLib.instance.getLogger().error("Could not retrieve Priority field from PrioritizedGoal.class");
+                    return null;
+                });
     }
 }
