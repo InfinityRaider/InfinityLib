@@ -4,6 +4,7 @@ import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.render.tessellation.ITessellator;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorBakedQuad;
 import com.infinityraider.infinitylib.render.tessellation.TessellatorVertexBuffer;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
@@ -168,7 +169,7 @@ public interface IRenderUtilities {
      * @param location the ResourceLocation for the texture
      */
     default void bindTexture(ResourceLocation location) {
-        this.getTextureManager().bindForSetup(location);
+        RenderSystem.setShaderTexture(0, location);
     }
 
     /**
