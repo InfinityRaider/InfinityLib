@@ -1,6 +1,5 @@
 package com.infinityraider.infinitylib.compat.jei;
 
-import com.google.common.collect.Lists;
 import com.infinityraider.infinitylib.InfinityLib;
 import com.infinityraider.infinitylib.crafting.dynamictexture.IDynamicTextureIngredient;
 import com.infinityraider.infinitylib.crafting.dynamictexture.ShapedDynamicTextureRecipe;
@@ -9,19 +8,23 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.ICraftingGridHelper;
+import mezz.jei.api.ingredients.ITypedIngredient;
+import mezz.jei.api.recipe.IFocus;
 import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.extensions.IExtendableRecipeCategory;
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICraftingCategoryExtension;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -66,18 +69,60 @@ public class JeiPlugin implements IModPlugin {
         @Override
         public void setRecipe(IRecipeLayoutBuilder builder, ICraftingGridHelper craftingGridHelper, IFocusGroup focuses) {
             // Fetch materials
-            List<Block> materials = this.recipe.getSuitableMaterials();
+            List<ItemStack> inputs = focuses.getFocuses(VanillaTypes.ITEM, RecipeIngredientRole.INPUT)
+                    .map(IFocus::getTypedValue)
+                    .map(ITypedIngredient::getIngredient)
+                    .map(stack -> {
+                        if(stack.getItem() instanceof BlockItemDynamicTexture) {
+                            return ((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack);
+                        } else {
+                            return stack;
+                        }
+                    })
+                    // make sure the stack is not empty
+                    .filter(stack -> !stack.isEmpty())
+                    // make sure the stack contains a valid item
+                    .filter(stack -> this.recipe.getSuitableMaterials().stream().anyMatch(block -> stack.getItem() == block.asItem()))
+                    .collect(Collectors.toList());
+            List<ItemStack> outputs = focuses.getFocuses(VanillaTypes.ITEM, RecipeIngredientRole.OUTPUT)
+                    .map(IFocus::getTypedValue)
+                    .map(ITypedIngredient::getIngredient)
+                    .filter(stack -> stack.getItem() instanceof BlockItemDynamicTexture)
+                    .map(stack -> ((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack))
+                    .collect(Collectors.toList());
+            // Set recipe based on inputs
+            if(inputs.size() > 0) {
+                this.setRecipeForMaterials(builder, craftingGridHelper, inputs);
+            } else if (outputs.size() > 0) {
+                this.setRecipeForMaterials(builder, craftingGridHelper, outputs);
+            } else {
+                List<ItemStack> materials = this.recipe.getSuitableMaterials().stream()
+                        .map(ItemStack::new)
+                        .collect(Collectors.toList());
+                this.setRecipeForMaterials(builder, craftingGridHelper, materials);
+            }
+        }
+
+        protected void setRecipeForMaterials(IRecipeLayoutBuilder builder, ICraftingGridHelper craftingGridHelper, List<ItemStack> materials) {
             // Set inputs
+            List<ItemStack> empty = Collections.emptyList();
+            List<List<ItemStack>> ingredients = this.recipe.getIngredients().stream().map(ingredient -> {
+                if (ingredient.isEmpty()) {
+                    // if the ingredient is empty, nothing should be put in the JEI recipe
+                    return empty;
+                } else if (ingredient instanceof IDynamicTextureIngredient) {
+                    // if the ingredient is a dynamic texture ingredient, set it to the correct material
+                    return materials.stream().map(((IDynamicTextureIngredient) ingredient)::asStackWithMaterial)
+                            .collect(Collectors.toList());
+                } else {
+                    // in any other case, the ingredient is the material itself
+                    return materials;
+                }
+            }).collect(Collectors.toList());
             craftingGridHelper.setInputs(
                     builder,
                     VanillaTypes.ITEM,
-                    recipe.getIngredients().stream().map(ingredient -> {
-                        if (ingredient instanceof IDynamicTextureIngredient) {
-                            return materials.stream().map(((IDynamicTextureIngredient) ingredient)::asStackWithMaterial)
-                                    .collect(Collectors.toList());
-                        }
-                        return Lists.newArrayList(ingredient.getItems());
-                    }).collect(Collectors.toList()),
+                    ingredients,
                     this.recipe.getRecipeWidth(),
                     this.recipe.getRecipeHeight()
             );
