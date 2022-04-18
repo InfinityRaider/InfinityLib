@@ -1,24 +1,19 @@
 package com.infinityraider.infinitylib.modules.dynamiccamera;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import com.infinityraider.infinitylib.entity.EntityTypeBase;
-import com.infinityraider.infinitylib.reference.Constants;
-import com.infinityraider.infinitylib.reference.Names;
-import com.infinityraider.infinitylib.render.IRenderUtilities;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,7 +25,7 @@ import java.util.function.Function;
  * We also only need only one instance of this entity per client
  */
 @OnlyIn(Dist.CLIENT)
-public class DynamicCamera extends Entity implements IRenderUtilities {
+public class DynamicCamera extends Entity {
     private static DynamicCamera INSTANCE;
 
     // Tick logic gets called before the world is initialized, therefore we must wait to instantiate the camera
@@ -120,7 +115,7 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
         if(isCameraActive()) {
             DynamicCamera camera = getInstance();
             if(camera != null) {
-                return player.getBoundingBoxForCulling().contains(camera.getPosition(partialTick));
+                return player.getBoundingBox().contains(camera.getPosition(partialTick));
             }
         }
         return false;
@@ -168,9 +163,19 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
         this.controller = controller;
         this.originalCamera = InfinityLib.instance.proxy().getRenderViewEntity();
         Entity prevCamera = this.getOriginalRenderViewEntity();
-        this.originalPosition = prevCamera.getEyePosition(this.getPartialTick());
-        this.originalOrientation = new Vec2(prevCamera.getViewXRot(this.getPartialTick()), prevCamera.getViewYRot(this.getPartialTick()));
-        this.setPositionAndRotation(this.originalPosition, this.originalOrientation);
+        this.originalPosition = prevCamera.getEyePosition(1);
+        this.setPosRaw(this.originalPosition.x(), this.originalPosition.y(), this.originalPosition.z());
+        this.xo = prevCamera.xo;
+        this.yo = prevCamera.yo + prevCamera.getEyeHeight();
+        this.zo = prevCamera.zo;
+        this.originalOrientation = new Vec2(prevCamera.getXRot(), prevCamera.getYRot());
+        this.setXRot(prevCamera.getXRot());
+        this.setYRot(prevCamera.getYRot());
+        this.xRotO = prevCamera.xRotO;
+        this.yRotO = prevCamera.yRotO;
+        this.setPositionAndRotation(
+                this.originalPosition,
+                this.originalOrientation.x, this.originalOrientation.y);
         this.status = Status.POSITIONING;
         this.originalPov = Minecraft.getInstance().options.getCameraType();
         Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
@@ -208,12 +213,12 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
     }
 
     public Vec3 getReturnPosition() {
-        return this.getOriginalRenderViewEntity().getEyePosition(this.getPartialTick());
+        return this.getOriginalRenderViewEntity().getEyePosition(1);
     }
 
     public Vec2 getReturnOrientation() {
         Entity original = this.getOriginalRenderViewEntity();
-        return new Vec2(original.getViewXRot(this.getPartialTick()), original.getViewYRot(this.getPartialTick()));
+        return new Vec2(original.getViewXRot(1), original.getViewYRot(1));
     }
 
     protected Entity getOriginalRenderViewEntity() {
@@ -225,13 +230,14 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
     }
 
     public void setPositionAndRotation(Vec3 position, float pitch, float yaw) {
-        this.xOld = this.getX();
-        this.yOld = this.getY();
-        this.zOld = this.getZ();
+        this.xo = this.getX();
+        this.yo = this.getY();
+        this.zo = this.getZ();
         this.setPosRaw(position.x(), position.y(), position.z());
         this.xRotO = this.getXRot();
         this.yRotO = this.getYRot();
-        this.setRot(yaw, pitch);
+        this.setXRot(pitch);
+        this.setYRot(yaw);
     }
 
     protected boolean moveIncrement(Vec3 startPos, Vec2 startOri, Vec3 endPos, Vec2 endOri) {
@@ -262,20 +268,6 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
         }
     }
 
-    @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {}
-
-    @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {}
-
-    @Override
-    protected void defineSynchedData() {}
-
-    @Override
-    public Packet<?> getAddEntityPacket() {
-        return null;
-    }
-
     protected int getTransitionDuration() {
         return this.controller.getTransitionDuration();
     }
@@ -283,12 +275,13 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
     // Holds the camera in place, preventing jerking back and forth
     protected void holdPositionAndOrientation(Vec3 position, Vec2 orientation) {
         this.setPosRaw(position.x(), position.y(), position.z());
-        this.xOld = this.getX();
-        this.yOld = this.getY();
-        this.zOld = this.getZ();
-        this.setRot(orientation.x, orientation.y);
-        this.xRotO = orientation.x;
-        this.yRotO = orientation.y;
+        this.xo = this.getX();
+        this.yo = this.getY();
+        this.zo = this.getZ();
+        this.setXRot(orientation.x);
+        this.xRotO = this.getXRot();
+        this.setYRot(orientation.y);
+        this.yRotO = this.getYRot();
     }
 
     @Override
@@ -320,6 +313,21 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
         this.originalPosition = null;
         this.originalOrientation = null;
         this.originalPov = null;
+    }
+
+    @Override
+    protected void defineSynchedData() {}
+
+    @Override
+    protected void readAdditionalSaveData(@Nonnull CompoundTag compound) {}
+
+    @Override
+    protected void addAdditionalSaveData(@Nonnull CompoundTag compound) {}
+
+    @Override
+    @Nonnull
+    public Packet<?> getAddEntityPacket() {
+        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     private static final Function<DynamicCamera, Status> IDLE_TICK = (camera) -> Status.IDLE;
@@ -415,6 +423,7 @@ public class DynamicCamera extends Entity implements IRenderUtilities {
         private SpawnFactory() {}
 
         @Override
+        @Nonnull
         public DynamicCamera create(@Nonnull EntityType<DynamicCamera> type, @Nonnull Level world) {
             return new DynamicCamera(type, world);
         }
