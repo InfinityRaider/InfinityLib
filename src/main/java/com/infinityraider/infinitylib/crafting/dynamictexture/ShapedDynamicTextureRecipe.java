@@ -137,7 +137,7 @@ public class ShapedDynamicTextureRecipe extends ShapedRecipe {
                         material = stackInSlot.copy();
                         material.setCount(1);
                     } else {
-                        if(!ItemStack.matches(material, stackInSlot)) {
+                        if(!ItemStack.isSame(material, stackInSlot)) {
                             return null;
                         }
                     }
