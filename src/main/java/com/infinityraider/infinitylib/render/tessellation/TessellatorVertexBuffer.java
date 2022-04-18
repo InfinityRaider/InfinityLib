@@ -32,7 +32,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     /**
      * @return IRenderTypeBuffer.Impl object which this is currently tessellating vertices for
      */
-    public MultiBufferSource getVertexBuffer() {
+    public MultiBufferSource.BufferSource getVertexBuffer() {
         return this.buffer;
     }
 
@@ -74,7 +74,7 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
     @Override
     protected void onDrawCall() {
         if (this.builder != null) {
-            this.getVertexBuffer().getBuffer(this.getRenderType()).endVertex();
+            this.getVertexBuffer().endBatch(this.getRenderType());
             this.builder = null;
         }
     }
@@ -106,23 +106,20 @@ public class TessellatorVertexBuffer extends TessellatorAbstractBase {
         this.transform(pos);
         List<VertexFormatElement> elements = this.getVertexFormat().getElements();
         // Note: the order this vertex data is defined is important
-        if(elements.contains(DefaultVertexFormat.ELEMENT_POSITION)) {
-            builder.vertex(pos.x(), pos.y(), pos.z());
-        }
-        if(elements.contains(DefaultVertexFormat.ELEMENT_COLOR)) {
-            builder.color((int) (this.getRed() * 255), (int) (this.getGreen() * 255), (int) (this.getBlue() * 255), (int) (this.getAlpha() * 255));
-        }
-        if(elements.contains(DefaultVertexFormat.ELEMENT_UV0)) {
-            builder.uv(u, v);
-        }
-        if(elements.contains(DefaultVertexFormat.ELEMENT_UV1)) {
-            builder.uv2(this.getOverlay());
-        }
-        if(elements.contains(DefaultVertexFormat.ELEMENT_UV2)) {
-            builder.uv2(this.getBrightness());
-        }
-        if(elements.contains(DefaultVertexFormat.ELEMENT_NORMAL)) {
-            builder.normal(this.getNormal().x(), this.getNormal().y(), this.getNormal().z());
+        for(VertexFormatElement element : elements) {
+            if( element == DefaultVertexFormat.ELEMENT_POSITION) {
+                builder.vertex(pos.x(), pos.y(), pos.z());
+            } else if (element == DefaultVertexFormat.ELEMENT_COLOR) {
+                builder.color((int) (this.getRed() * 255), (int) (this.getGreen() * 255), (int) (this.getBlue() * 255), (int) (this.getAlpha() * 255));
+            } else if (element == DefaultVertexFormat.ELEMENT_UV0) {
+                builder.uv(u, v);
+            } else if (element == DefaultVertexFormat.ELEMENT_UV1) {
+                builder.overlayCoords(this.getOverlay());
+            } else if (element == DefaultVertexFormat.ELEMENT_UV2) {
+                builder.uv2(this.getBrightness());
+            } else if (element == DefaultVertexFormat.ELEMENT_NORMAL) {
+                builder.normal(this.getNormal().x(), this.getNormal().y(), this.getNormal().z());
+            }
         }
         builder.endVertex();
         return this;
