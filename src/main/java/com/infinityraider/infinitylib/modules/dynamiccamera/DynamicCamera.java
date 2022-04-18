@@ -272,18 +272,6 @@ public class DynamicCamera extends Entity {
         return this.controller.getTransitionDuration();
     }
 
-    // Holds the camera in place, preventing jerking back and forth
-    protected void holdPositionAndOrientation(Vec3 position, Vec2 orientation) {
-        this.setPosRaw(position.x(), position.y(), position.z());
-        this.xo = this.getX();
-        this.yo = this.getY();
-        this.zo = this.getZ();
-        this.setXRot(orientation.x);
-        this.xRotO = this.getXRot();
-        this.setYRot(orientation.y);
-        this.yRotO = this.getYRot();
-    }
-
     @Override
     public void tick() {
         this.baseTick();
@@ -358,7 +346,7 @@ public class DynamicCamera extends Entity {
             if (camera.counter != 0) {
                 camera.counter = 0;
             }
-            camera.holdPositionAndOrientation(camera.getTargetPosition(), camera.getTargetOrientation());
+            camera.setPositionAndRotation(camera.getTargetPosition(), camera.getTargetOrientation());
             return Status.OBSERVING;
         } else {
             camera.controller.onObservationEnd();
