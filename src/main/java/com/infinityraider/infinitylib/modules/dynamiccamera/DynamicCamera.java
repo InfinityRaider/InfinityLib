@@ -240,6 +240,30 @@ public class DynamicCamera extends Entity {
         this.setYRot(yaw);
     }
 
+    // Correction for pitch
+    @Override
+    public void setXRot(float pitch) {
+        if(pitch < -180.0F) {
+            super.setXRot(pitch + 360.0F);
+        } else if(pitch >= 180.0F) {
+            super.setXRot(pitch - 360.0F);
+        } else {
+            super.setXRot(pitch);
+        }
+    }
+
+    // Correction for yaw
+    @Override
+    public void setYRot(float yaw) {
+        if(yaw < -180.0F) {
+            super.setYRot(yaw + 360.0F);
+        } else if(yaw >= 180.0F) {
+            super.setYRot(yaw - 360.0F);
+        } else {
+            super.setYRot(yaw);
+        }
+    }
+
     protected boolean moveIncrement(Vec3 startPos, Vec2 startOri, Vec3 endPos, Vec2 endOri) {
         int duration = this.getTransitionDuration();
         if (this.counter >= duration) {
