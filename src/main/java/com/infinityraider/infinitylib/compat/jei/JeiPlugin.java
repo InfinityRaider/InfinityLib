@@ -83,12 +83,24 @@ public class JeiPlugin implements IModPlugin {
                     .filter(stack -> !stack.isEmpty())
                     // make sure the stack contains a valid item
                     .filter(stack -> this.recipe.getSuitableMaterials().stream().anyMatch(block -> stack.getItem() == block.asItem()))
+                    // make a copy of the stack
+                    .map(ItemStack::copy)
+                    // set the stack count to 1
+                    .peek(stack -> stack.setCount(1))
                     .collect(Collectors.toList());
             List<ItemStack> outputs = focuses.getFocuses(VanillaTypes.ITEM, RecipeIngredientRole.OUTPUT)
+                    // fetch value from focus
                     .map(IFocus::getTypedValue)
+                    // fetch ingredient from the value
                     .map(ITypedIngredient::getIngredient)
+                    // make sure the output is a dynamic texture block
                     .filter(stack -> stack.getItem() instanceof BlockItemDynamicTexture)
+                    // set the material
                     .map(stack -> ((BlockItemDynamicTexture) stack.getItem()).getMaterial(stack))
+                    // make a copy of the stack
+                    .map(ItemStack::copy)
+                    // set the stack count to 1
+                    .peek(stack -> stack.setCount(1))
                     .collect(Collectors.toList());
             // Set recipe based on inputs
             if(inputs.size() > 0) {
