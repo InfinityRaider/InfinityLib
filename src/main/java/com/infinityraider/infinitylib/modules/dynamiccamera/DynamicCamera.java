@@ -114,6 +114,7 @@ public class DynamicCamera extends Entity {
     public static boolean isCameraInPlayer(Player player, float partialTick) {
         if(isCameraActive()) {
             DynamicCamera camera = getInstance();
+            // TODO: make this a state variable and toggle it instead
             if(camera != null) {
                 return player.getBoundingBox().contains(camera.getPosition(partialTick));
             }
