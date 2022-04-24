@@ -239,7 +239,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Potion registry object or class
      */
-    public ModContentRegistry getModEffectRegistry() {
+    public ModContentRegistry getModMobEffectRegistry() {
         return null;
     }
 
@@ -251,7 +251,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return PotionType registry object or class
      */
-    public ModContentRegistry getModPotionTypeRegistry() {
+    public ModContentRegistry getModPotionRegistry() {
         return null;
     }
 

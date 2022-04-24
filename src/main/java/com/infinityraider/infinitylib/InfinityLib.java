@@ -107,12 +107,7 @@ public class InfinityLib extends InfinityMod<IProxy, Config> {
     }
 
     @Override
-    public ModContentRegistry getModEffectRegistry() {
-        return InfinityLibContentRegistry.getInstance();
-    }
-
-    @Override
-    public ModContentRegistry getModPotionTypeRegistry() {
+    public ModContentRegistry getModPotionRegistry() {
         return InfinityLibContentRegistry.getInstance();
     }
 

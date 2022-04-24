@@ -116,7 +116,8 @@ public class RegistryInitializer<T extends IInfinityRegistrable<?>> implements S
         ENTITY("Entity", InfinityMod::getModEntityRegistry),
         SOUND_EVENT("Sound Event", InfinityMod::getModSoundRegistry),
         PARTICLE_TYPE("Particle Type", InfinityMod::getModParticleRegistry),
-        MOB_EFFECT("Mob Effect", InfinityMod::getModPotionTypeRegistry),
+        MOB_EFFECT("Mob Effect", InfinityMod::getModMobEffectRegistry),
+        POTION("Potion", InfinityMod::getModPotionRegistry),
         MENU_TYPE("Menu Type", InfinityMod::getModContainerRegistry),
         RECIPE("Recipe Serializer", InfinityMod::getModRecipeSerializerRegistry),
         LOOT("Global Loot Modifier Serializer", InfinityMod::getModLootModifierSerializerRegistry);

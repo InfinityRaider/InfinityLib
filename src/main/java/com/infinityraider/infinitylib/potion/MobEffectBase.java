@@ -10,10 +10,10 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
-public class PotionEffectBase extends MobEffect implements IInfinityPotionEffect {
+public class MobEffectBase extends MobEffect implements IInfinityPotionEffect {
     private final String name;
 
-    protected PotionEffectBase(String name, MobEffectCategory type, int liquidColor) {
+    protected MobEffectBase(String name, MobEffectCategory type, int liquidColor) {
         super(type, liquidColor);
         this.name = name;
     }
