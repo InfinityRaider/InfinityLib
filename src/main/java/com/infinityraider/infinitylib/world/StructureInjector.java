@@ -1,20 +1,25 @@
 package com.infinityraider.infinitylib.world;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.infinityraider.infinitylib.InfinityLib;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Lifecycle;
+import net.minecraft.core.WritableRegistry;
+import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.pools.LegacySinglePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class StructureInjector {
+    private static final Map<ResourceLocation, LegacyPoolElement> ELEMENT_CACHE = Maps.newHashMap();
+
     private final Set<IInfStructure> structures;
     private final ResourceLocation target;
 
@@ -27,39 +32,54 @@ public class StructureInjector {
         this.structures.add(structure);
     }
 
-    @SuppressWarnings("unchecked")
-    protected void inject(RegistryAccess registries) {
-        // TODO: fix this
-        /*
-        StructureTemplatePool pool = registries.registryOrThrow(Registry.TEMPLATE_POOL_REGISTRY).getOptional(this.target).orElse(null);
-        if(pool == null) {
+    protected void inject() {
+        // Fetch the current pool
+        StructureTemplatePool pool = BuiltinRegistries.TEMPLATE_POOL.get(this.target);
+        if (pool == null) {
             InfinityLib.instance.getLogger().error("Could not inject structures into {0}, pool not found", this.target);
             return;
-        } try {
-            // fetch the field
-            Field field = ObfuscationReflectionHelper.findField(StructureTemplatePool.class, "field_214953_e");
-            // set accessible
-            field.setAccessible(true);
-            // remove final modifier
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            // make a copy of the field in a new list
-            List<StructureTemplatePool> pieces = Lists.newArrayList((List<StructureTemplatePool>) field.get(pool));
-            // inject new pieces
-            this.structures.forEach(structure -> {
-                InfinityLib.instance.getLogger().info("Injecting structure {0} into {1}", structure.id(), this.target);
-                LegacySingleJigsawPiece piece = StructureTemplatePool.func_242849_a(structure.id().toString()).apply(structure.placement());
-                for (int i = 0; i < structure.weight(); i++) {
-                    pieces.add(piece);
-                }
-            });
-            // set the field
-            field.set(pool, pieces);
-        } catch(Exception e) {
-            InfinityLib.instance.getLogger().error("Failed to inject structures into {0}, exception was thrown", this.target);
-            InfinityLib.instance.getLogger().printStackTrace(e);
         }
-        */
+
+        // Fetch the current list of templates
+        List<StructurePoolElement> shuffled = pool.getShuffledTemplates(new Random() {
+            // This makes sure the array is not shuffled
+            @Override
+            public int nextInt(int bound) {
+                return bound - 1;
+            }
+        });
+
+        // Compile into counts
+        List<Pair<StructurePoolElement, Integer>> rawTemplates = shuffled.stream()
+                .collect(Collectors.toMap(
+                        element -> element,
+                        element -> 1,
+                        Integer::sum
+                )).entrySet().stream()
+                .map(entry -> new Pair<>(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+
+        // Add the new structures
+        this.structures.forEach(structure -> rawTemplates.add(new Pair<>(getOrCreatePoolElement(structure), structure.weight())));
+
+        // Register registry override
+        int id = BuiltinRegistries.TEMPLATE_POOL.getId(pool);
+        ResourceLocation name = pool.getName();
+        ((WritableRegistry<StructureTemplatePool>)BuiltinRegistries.TEMPLATE_POOL).registerOrOverride(
+                OptionalInt.of(id),
+                ResourceKey.create(BuiltinRegistries.TEMPLATE_POOL.key(), pool.getName()),
+                new StructureTemplatePool(this.target, name, rawTemplates),
+                Lifecycle.stable()
+        );
+    }
+
+    private static LegacyPoolElement getOrCreatePoolElement(IInfStructure structure) {
+        return ELEMENT_CACHE.computeIfAbsent(structure.id(), id -> new LegacyPoolElement(structure));
+    }
+
+    private static class LegacyPoolElement extends LegacySinglePoolElement {
+        protected LegacyPoolElement(IInfStructure structure) {
+            super(Either.left(structure.id()), structure.processors(), structure.placement());
+        }
     }
 }

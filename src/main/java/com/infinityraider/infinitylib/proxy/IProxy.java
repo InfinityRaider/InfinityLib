@@ -53,12 +53,11 @@ public interface IProxy extends IProxyBase<Config> {
     default void onCommonSetupEvent(FMLCommonSetupEvent event) {
         Module.getActiveModules().forEach(Module::init);
         IngredientSerializerRegistrar.getInstance().registerSerializers();
+        StructureRegistry.getInstance().injectStructures();
     }
 
     @Override
-    default void onServerAboutToStartEvent(final ServerAboutToStartEvent event) {
-        StructureRegistry.getInstance().injectStructures(event.getServer().registryAccess());
-    }
+    default void onServerAboutToStartEvent(final ServerAboutToStartEvent event) {}
 
     default void forceClientRenderUpdate(BlockPos pos) {}
 
