@@ -80,7 +80,7 @@ public interface IProxy extends IProxyBase<Config> {
         if(registry != null) {
             ReflectionHelper.forEachValueIn(registry, IInfStructure.class, structure -> {
                 if(structure != null) {
-                    StructureRegistry.getInstance().registerStructure(structure);
+                    StructureRegistry.getInstance().registerStructure(mod, structure);
                 }
             });
         }

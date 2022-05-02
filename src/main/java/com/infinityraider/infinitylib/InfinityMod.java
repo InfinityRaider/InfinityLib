@@ -8,6 +8,7 @@ import com.infinityraider.infinitylib.proxy.base.IProxyBase;
 import com.infinityraider.infinitylib.render.model.InfModelLoader;
 import com.infinityraider.infinitylib.utility.InfinityLogger;
 import com.infinityraider.infinitylib.utility.registration.ModContentRegistry;
+import com.infinityraider.infinitylib.utility.registration.ModStructureRegistry;
 import com.infinityraider.infinitylib.utility.registration.RegistrationHandler;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
@@ -27,6 +28,7 @@ import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -155,6 +157,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Block registry object or class
      */
+    @Nullable
     public ModContentRegistry getModBlockRegistry() {
         return null;
     }
@@ -167,6 +170,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return TileEntity registry object or class
      */
+    @Nullable
     public ModContentRegistry getModTileRegistry() {
         return null;
     }
@@ -179,6 +183,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Item registry object or class
      */
+    @Nullable
     public ModContentRegistry getModItemRegistry() {
         return null;
     }
@@ -191,6 +196,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Fluid registry object or class
      */
+    @Nullable
     public ModContentRegistry getModFluidRegistry() {
         return null;
     }
@@ -203,6 +209,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Biome registry object or class
      */
+    @Nullable
     public ModContentRegistry getModBiomeRegistry() {
         return null;
     }
@@ -215,6 +222,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Enchantment registry object or class
      */
+    @Nullable
     public  ModContentRegistry getModEnchantmentRegistry() {
         return null;
     }
@@ -227,6 +235,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Entity registry object or class
      */
+    @Nullable
     public ModContentRegistry getModEntityRegistry() {
         return null;
     }
@@ -239,6 +248,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Potion registry object or class
      */
+    @Nullable
     public ModContentRegistry getModMobEffectRegistry() {
         return null;
     }
@@ -251,6 +261,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return PotionType registry object or class
      */
+    @Nullable
     public ModContentRegistry getModPotionRegistry() {
         return null;
     }
@@ -263,6 +274,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return SoundEvent registry object or class
      */
+    @Nullable
     public ModContentRegistry getModSoundRegistry() {
         return null;
     }
@@ -275,6 +287,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return ParticleType registry object or class
      */
+    @Nullable
     public ModContentRegistry getModParticleRegistry() {
         return null;
     }
@@ -287,6 +300,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return ContainerType registry object or class
      */
+    @Nullable
     public ModContentRegistry getModContainerRegistry() {
         return null;
     }
@@ -300,6 +314,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return IRecipeSerializer registry object or class
      */
+    @Nullable
     public ModContentRegistry getModRecipeSerializerRegistry() {
         return null;
     }
@@ -312,6 +327,7 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return IRecipeSerializer registry object or class
      */
+    @Nullable
     public ModContentRegistry getModLootModifierSerializerRegistry() {
         return null;
     }
@@ -322,8 +338,8 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      *
      * @return Structure registry object
      */
-    // TODO: rework
-    public Class<?> getStructureRegistry() {
+    @Nullable
+    public ModStructureRegistry getStructureRegistry() {
         return null;
     }
 

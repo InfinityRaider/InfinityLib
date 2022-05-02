@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.world;
 
 import com.google.common.collect.Maps;
+import com.infinityraider.infinitylib.InfinityMod;
 import net.minecraft.data.worldgen.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
@@ -20,7 +21,8 @@ public class StructureRegistry {
         this.injectors = Maps.newHashMap();
     }
 
-    public void registerStructure(IInfStructure structure) {
+    public void registerStructure(InfinityMod<?,?> mod, IInfStructure structure) {
+        // add the structure and processors to the registration pool
         structure.targetPools().forEach(target -> this.injectors.computeIfAbsent(target, StructureInjector::new).addStructure(structure));
     }
 
