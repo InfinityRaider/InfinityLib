@@ -9,8 +9,6 @@ import com.infinityraider.infinitylib.entity.EntityHandler;
 import com.infinityraider.infinitylib.modules.Module;
 import com.infinityraider.infinitylib.particle.IInfinityParticleType;
 import com.infinityraider.infinitylib.proxy.base.IProxyBase;
-import com.infinityraider.infinitylib.utility.ReflectionHelper;
-import com.infinityraider.infinitylib.world.IInfStructure;
 import com.infinityraider.infinitylib.world.StructureRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
@@ -76,14 +74,7 @@ public interface IProxy extends IProxyBase<Config> {
     default <T extends ParticleOptions> void onParticleRegistration(IInfinityParticleType<T> particleType) {}
 
     default void registerStructures(InfinityMod<?,?> mod) {
-        Object registry = mod.getStructureRegistry();
-        if(registry != null) {
-            ReflectionHelper.forEachValueIn(registry, IInfStructure.class, structure -> {
-                if(structure != null) {
-                    StructureRegistry.getInstance().registerStructure(mod, structure);
-                }
-            });
-        }
+        mod.getStructureRegistry();
     }
 
     default void registerGuiContainer(IInfinityContainerMenuType containerType) {}
