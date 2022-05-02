@@ -1,21 +1,20 @@
 package com.infinityraider.infinitylib.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public interface IMobEntityType extends IInfinityEntityType {
     /**
@@ -67,25 +66,20 @@ public interface IMobEntityType extends IInfinityEntityType {
     }
 
     interface SpawnRule {
+        boolean biomeCheck(@Nullable ResourceLocation biomeId, Biome.ClimateSettings climate, Biome.BiomeCategory category, BiomeSpecialEffects effects);
 
         MobCategory classification();
 
-        Predicate<Context> spawnRule();
+        SpawnPlacements.Type spawnType();
+
+        Heightmap.Types heightType();
+
+        boolean canSpawn(ServerLevelAccessor world, MobSpawnType spawnType, BlockPos pos, Random random);
 
         int min();
 
         int max();
 
         int weight();
-
-        interface Context {
-            Level world();
-
-            BlockPos pos();
-
-            BlockState stateBelow();
-
-            Biome biome();
-        }
     }
 }

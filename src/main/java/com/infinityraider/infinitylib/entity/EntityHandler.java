@@ -2,22 +2,27 @@ package com.infinityraider.infinitylib.entity;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobCategory;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraftforge.event.world.BiomeLoadingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
-import java.util.function.Predicate;
 
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public final class EntityHandler {
     private static final EntityHandler INSTANCE = new EntityHandler();
 
@@ -33,7 +38,15 @@ public final class EntityHandler {
         this.attributeMap = Maps.newIdentityHashMap();
     }
 
-    public EntityHandler registerSpawnRule(EntityType<?> type, IMobEntityType.SpawnRule rule) {
+    public <E extends Mob> EntityHandler registerSpawnRule(EntityType<E> type, IMobEntityType.SpawnRule rule) {
+        // Register spawn placement rule
+        SpawnPlacements.register(type, rule.spawnType(), rule.heightType(), new SpawnPlacements.SpawnPredicate<E>() {
+            @Override
+            public boolean test(EntityType<E> entityType, ServerLevelAccessor world, MobSpawnType spawnType, BlockPos pos, Random random) {
+                return rule.canSpawn(world, spawnType, pos, random);
+            }
+        });
+        // Add to set of spawn rules to add to biome spawns
         Set<SpawnData> set = this.spawnMap.get(rule.classification());
         if(set == null) {
             set = Sets.newIdentityHashSet();
@@ -48,55 +61,25 @@ public final class EntityHandler {
         return this;
     }
 
-    // TODO: bring this back once Forge reimplements it
-    /*
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public void onPotentialSpawnEvent(PotentialSpawns event) {
-        if(!this.spawnMap.containsKey(event.getType())) {
-            return;
-        }
-        final Biome biome = event.getWorld().getBiome(event.getPos());
-        final BlockState state = event.getWorld().getBlockState(event.getPos().down());
-        final IMobEntityType.SpawnRule.Context context = new IMobEntityType.SpawnRule.Context() {
-            @Override
-            public Level world() {
-                return event.getWorld();
-            }
-
-            @Override
-            public BlockPos pos() {
-                return event.getPos();
-            }
-
-            @Override
-            public BlockState stateBelow() {
-                return state;
-            }
-
-            @Override
-            public Biome biome() {
-                return biome;
-            }
-        };
-        this.spawnMap.get(event.getType()).stream()
-                .filter(data -> data.canSpawnAt(context))
-                .map(SpawnData::getSpawnInfo)
-                .forEach(info -> event.getList().add(info));
+    public void onBiomeLoad(BiomeLoadingEvent event) {
+        this.spawnMap.forEach((type, value) -> value.stream()
+                .filter(data -> data.checkBiome(event.getName(), event.getClimate(), event.getCategory(), event.getEffects()))
+                .forEach(data -> event.getSpawns().addSpawn(type, data.getSpawnInfo())));
     }
-     */
 
     private static final class SpawnData {
         private final MobSpawnSettings.SpawnerData spawnInfo;
-        private final Predicate<IMobEntityType.SpawnRule.Context> rule;
+        private final IMobEntityType.SpawnRule rule;
 
         private SpawnData(EntityType<?> type, IMobEntityType.SpawnRule rule) {
             this.spawnInfo = new MobSpawnSettings.SpawnerData(type, rule.weight(), rule.min(), rule.max());
-            this.rule = rule.spawnRule();
+            this.rule = rule;
         }
 
-        private boolean canSpawnAt(IMobEntityType.SpawnRule.Context context) {
-            return this.rule.test(context);
+        private boolean checkBiome(@Nullable ResourceLocation biomeId, Biome.ClimateSettings climate, Biome.BiomeCategory category, BiomeSpecialEffects effects) {
+            return this.rule.biomeCheck(biomeId, climate, category, effects);
         }
 
         private MobSpawnSettings.SpawnerData getSpawnInfo() {
@@ -105,6 +88,7 @@ public final class EntityHandler {
     }
 
     @SubscribeEvent
+    @SuppressWarnings("unused")
     public void onRegisterEntityAttributes(EntityAttributeCreationEvent event) {
         this.attributeMap.forEach(event::put);
     }
