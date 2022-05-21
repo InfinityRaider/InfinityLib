@@ -25,12 +25,7 @@ public class ModuleKeyboard extends Module {
 
     @OnlyIn(Dist.CLIENT)
     public boolean isKeyPressed(KeyMapping key) {
-        return this.isKeyPressed(key.getKey().getNumericKeyValue());
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public boolean isKeyPressed(OptionalInt key) {
-        return key.isPresent() && this.isKeyPressed(key.getAsInt());
+        return this.isKeyPressed(key.getKey().getValue());
     }
 
     @OnlyIn(Dist.CLIENT)
