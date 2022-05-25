@@ -50,6 +50,8 @@ public abstract class UnsafeUtil {
 
     public abstract boolean replaceStaticField(Field field, char value);
 
+    public abstract <T> T instantiateObject(Class<T> clazz) throws InstantiationException;
+
     private static UnsafeUtil init() {
         try {
             Field f = Unsafe.class.getDeclaredField("theUnsafe");
@@ -174,6 +176,12 @@ public abstract class UnsafeUtil {
         public boolean replaceStaticField(Field field, char value) {
             return false;
         }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T instantiateObject(Class<T> clazz) throws InstantiationException {
+            return (T) this.unsafe.allocateInstance(clazz);
+        }
     }
 
     private static class Dummy extends UnsafeUtil {
@@ -270,6 +278,12 @@ public abstract class UnsafeUtil {
         @Override
         public boolean replaceStaticField(Field field, char value) {
             return this.logError(field);
+        }
+
+        @Override
+        public <T> T instantiateObject(Class<T> clazz) throws InstantiationException {
+            InfinityLib.instance.getLogger().error("Failed to initialize UnsafeUtil, can not instantiate object for " + clazz.getName());
+            throw new InstantiationException();
         }
     }
 
