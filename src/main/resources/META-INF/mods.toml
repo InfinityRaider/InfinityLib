@@ -5,9 +5,10 @@ issueTrackerURL="https://github.com/InfinityRaider/InfinityLib/issues/"
 
 [[mods]]
 modId="infinitylib"
-version="1.18.2-2.1.0"
+version="1.18.2-2.1.1"
 displayName="InfinityLib"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/infinitylib"
+updateJSONURL = "https://raw.githubusercontent.com/InfinityRaider/InfinityLib/master/version.json"
 logoFile="logo.png"
 authors="InfinityRaider"
 description='''
