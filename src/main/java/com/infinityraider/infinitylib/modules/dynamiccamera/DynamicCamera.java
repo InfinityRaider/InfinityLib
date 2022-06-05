@@ -1,12 +1,12 @@
 package com.infinityraider.infinitylib.modules.dynamiccamera;
 
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.utility.UnsafeUtil;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
@@ -32,7 +32,14 @@ public class DynamicCamera extends Entity {
     @Nullable
     private static DynamicCamera getInstance() {
         if (INSTANCE == null && InfinityLib.instance.getClientWorld() != null) {
-            INSTANCE = new DynamicCamera(InfinityLib.instance.getClientWorld());
+                INSTANCE = UnsafeUtil.getInstance().instantiateEntity(
+                        DynamicCamera.class,
+                        ModuleDynamicCamera.getInstance().getCameraEntityType(),
+                        InfinityLib.instance.getClientWorld()
+                );
+                if(INSTANCE != null) {
+                    INSTANCE.setStatus(Status.IDLE);
+                }
         }
         return INSTANCE;
     }
@@ -133,13 +140,9 @@ public class DynamicCamera extends Entity {
 
     private int counter;
 
-    public DynamicCamera(Level world) {
-        this(ModuleDynamicCamera.getInstance().getCameraEntityType(), world);
-    }
-
-    public DynamicCamera(EntityType<DynamicCamera> type, Level world) {
-        super(type, world);
-        this.status = Status.IDLE;
+    private DynamicCamera(Level world) throws IllegalAccessException {
+        super(ModuleDynamicCamera.getInstance().getCameraEntityType(), world);
+        throw new IllegalAccessException("Not allowed to instantiate dynamic camera via constructor");
     }
 
     public Status getStatus() {
@@ -343,6 +346,20 @@ public class DynamicCamera extends Entity {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
+    // Overridden to prevent NPE on initialization
+    @Nonnull
+    @Override
+    public String toString() {
+        return "infinitylib:dynamic_camera";
+    }
+
+    // Overridden as this should always be the client world
+    @Nonnull
+    @Override
+    public Level getLevel() {
+        return InfinityLib.instance.getClientWorld();
+    }
+
     private static final Function<DynamicCamera, Status> IDLE_TICK = (camera) -> Status.IDLE;
 
     private static final Function<DynamicCamera, Status> POSITIONING_TICK = (camera) -> {
@@ -423,22 +440,6 @@ public class DynamicCamera extends Entity {
 
         private Status tick(DynamicCamera camera) {
             return this.tickLogic.apply(camera);
-        }
-    }
-
-    public static class SpawnFactory implements EntityType.EntityFactory<DynamicCamera> {
-        private static final SpawnFactory INSTANCE = new SpawnFactory();
-
-        public static SpawnFactory getInstance() {
-            return INSTANCE;
-        }
-
-        private SpawnFactory() {}
-
-        @Override
-        @Nonnull
-        public DynamicCamera create(@Nonnull EntityType<DynamicCamera> type, @Nonnull Level world) {
-            return new DynamicCamera(type, world);
         }
     }
 }

@@ -1,14 +1,24 @@
 package com.infinityraider.infinitylib.utility;
 
 import com.infinityraider.infinitylib.InfinityLib;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public class EntityHelper {
@@ -79,5 +89,39 @@ public class EntityHelper {
                     InfinityLib.instance.getLogger().error("Could not retrieve Priority field from PrioritizedGoal.class");
                     return null;
                 });
+    }
+
+    @SuppressWarnings("unchecked")
+    public static SynchedEntityData defineEntityData(Entity entity) {
+        SynchedEntityData entityData = new SynchedEntityData(entity);
+        Arrays.stream(Entity.class.getDeclaredFields())
+                .filter(field -> Modifier.isStatic(field.getModifiers()))
+                .filter(field -> field.getType() == EntityDataAccessor.class)
+                .peek(field ->field.setAccessible(true))
+                .map(field -> {
+                    try {
+                        return (EntityDataAccessor<?>) field.get(null);
+                    } catch (Exception e) {
+                        InfinityLib.instance.getLogger().error("Failed to fetch entity data accessor: " + field.getName());
+                        InfinityLib.instance.getLogger().printStackTrace(e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .forEach(accessor -> {
+                    EntityDataSerializer<?> serializer = accessor.getSerializer();
+                    if (serializer == EntityDataSerializers.BYTE) {
+                        entityData.define((EntityDataAccessor<Byte>) accessor, (byte) 0);
+                    } else if (serializer == EntityDataSerializers.INT) {
+                        entityData.define((EntityDataAccessor<Integer>) accessor, 0);
+                    } else if (serializer == EntityDataSerializers.OPTIONAL_COMPONENT) {
+                        entityData.define((EntityDataAccessor<Optional<Component>>) accessor, Optional.empty());
+                    } else if (serializer == EntityDataSerializers.BOOLEAN) {
+                        entityData.define((EntityDataAccessor<Boolean>) accessor, false);
+                    } else if (serializer == EntityDataSerializers.POSE) {
+                        entityData.define((EntityDataAccessor<Pose>) accessor, Pose.STANDING);
+                    }
+                });
+        return entityData;
     }
 }
