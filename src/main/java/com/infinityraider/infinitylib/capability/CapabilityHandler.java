@@ -34,6 +34,9 @@ public class CapabilityHandler {
     @SuppressWarnings({"unchecked","unused"})
     // We must not define a generic type, or this method will not pass the AMSEventHandler generics filter test
     public void addCapabilitiesRaw(AttachCapabilitiesEvent event) {
+        if(!(event.getObject() instanceof ICapabilityProvider)) {
+            return;
+        }
         this.addCapabilitiesParametric(event);
     }
 

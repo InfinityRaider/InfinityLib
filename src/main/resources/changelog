@@ -1,5 +1,8 @@
 Changelog
 ---------
+2.2.2
+ - FIXED: crash with Integrated Tunnels
+
 2.1.1
  - FIXED: crash involving dynamic camera and capability attachment event
 
