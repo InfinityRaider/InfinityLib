@@ -74,7 +74,9 @@ public class StructureInjector {
                 .collect(Collectors.toList());
 
         // Add the new structures
-        this.structures.forEach(structure -> rawTemplates.add(new Pair<>(getOrCreatePoolElement(structure), structure.weight())));
+        this.structures.stream()
+                .filter(structure -> structure.weight() > 0)
+                .forEach(structure -> rawTemplates.add(new Pair<>(getOrCreatePoolElement(structure), structure.weight())));
 
         // Register registry override
         int id = BuiltinRegistries.TEMPLATE_POOL.getId(pool);
