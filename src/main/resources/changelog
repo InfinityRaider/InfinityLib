@@ -1,6 +1,6 @@
 Changelog
 ---------
-2.2.2
+2.1.2
  - FIXED: crash with Integrated Tunnels
  - FIXED: structures generating even though weight is set to 0
 
