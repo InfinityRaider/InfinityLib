@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.utility.registration;
 
+import com.google.common.collect.Lists;
 import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.block.IInfinityBlock;
 import com.infinityraider.infinitylib.block.tile.InfinityTileEntityType;
@@ -19,6 +20,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,12 +29,14 @@ import java.util.function.Supplier;
 public class RegistryInitializer<T extends IInfinityRegistrable<?>> implements Supplier<T> {
     private final Type type;
     private final Supplier<T> constructor;
+    private final List<Consumer<T>> callbacks;
 
     private RegistryObject<T> access;
 
     private RegistryInitializer(Type type, Supplier<T> constructor) {
         this.type = type;
         this.constructor = constructor;
+        this.callbacks = Lists.newArrayList();
     }
 
     public Type getType() {
@@ -46,6 +50,11 @@ public class RegistryInitializer<T extends IInfinityRegistrable<?>> implements S
         return this.access.get();
     }
 
+    public RegistryInitializer<T> onRegistration(Consumer<T> consumer) {
+        this.callbacks.add(consumer);
+        return this;
+    }
+
     @SuppressWarnings("unchecked")
     protected void register(InfinityMod<?, ?> mod, IForgeRegistry<? super T>  registry, Consumer<? super T> tasks) {
         T object = this.constructor.get();
@@ -56,6 +65,7 @@ public class RegistryInitializer<T extends IInfinityRegistrable<?>> implements S
             registry.register(object);
             tasks.accept(object);
             this.access = (RegistryObject<T>) RegistryObject.create(id, registry);
+            this.callbacks.forEach(consumer -> consumer.accept(this.get()));
         }
     }
 
