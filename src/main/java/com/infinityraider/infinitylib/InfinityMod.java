@@ -10,6 +10,7 @@ import com.infinityraider.infinitylib.utility.InfinityLogger;
 import com.infinityraider.infinitylib.utility.registration.ModContentRegistry;
 import com.infinityraider.infinitylib.utility.registration.ModStructureRegistry;
 import com.infinityraider.infinitylib.utility.registration.RegistrationHandler;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -453,6 +454,13 @@ public abstract class InfinityMod<P extends IProxyBase<C>, C extends Configurati
      */
     public final MinecraftServer getMinecraftServer() {
         return this.proxy().getMinecraftServer();
+    }
+
+    /**
+     * @return a registry access object based on the logical side
+     */
+    public final RegistryAccess getRegistryAccess() {
+        return this.proxy().getRegistryAccess();
     }
 
     /**

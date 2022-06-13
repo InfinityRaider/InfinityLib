@@ -6,6 +6,7 @@ import com.infinityraider.infinitylib.modules.dynamiccamera.ModuleDynamicCamera;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateClient;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +21,16 @@ public interface IClientProxyBase<C extends ConfigurationHandler.SidedModConfig>
 
     default void setRenderViewEntity(Entity entity) {
         Minecraft.getInstance().setCameraEntity(entity);
+    }
+
+    @Override
+    default RegistryAccess getRegistryAccess() {
+        if(this.getLogicalSide().isServer()) {
+            return this.getMinecraftServer().registryAccess();
+        } else {
+            Level client = this.getClientWorld();
+            return client == null ? RegistryAccess.BUILTIN.get() : client.registryAccess();
+        }
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.infinityraider.infinitylib.config.ConfigurationHandler;
 import com.infinityraider.infinitylib.modules.dynamiccamera.IDynamicCameraController;
 import com.infinityraider.infinitylib.sound.SidedSoundDelegate;
 import com.infinityraider.infinitylib.sound.SoundDelegateServer;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
@@ -117,6 +118,11 @@ public interface IProxyBase<C extends ConfigurationHandler.SidedModConfig> {
     default MinecraftServer getMinecraftServer() {
         return ServerLifecycleHooks.getCurrentServer();
     }
+
+    /**
+     * @return registry access instance
+     */
+    RegistryAccess getRegistryAccess();
 
     /**
      * @return the instance of the EntityPlayer on the client, null on the server
