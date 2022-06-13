@@ -18,6 +18,6 @@ Library Mod.
 [[dependencies.infinitylib]]
     modId="forge"
     mandatory=true
-    versionRange="[40,)"
+    versionRange="[40.1,)"
     ordering="AFTER"
     side="BOTH"

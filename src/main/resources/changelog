@@ -1,7 +1,7 @@
 Changelog
 ---------
 2.1.3
- - ADDED: Side specific access to the registries
+ - CHANGE: Update to Forge 40.1.51
 
 2.1.2
  - FIXED: crash with Integrated Tunnels
