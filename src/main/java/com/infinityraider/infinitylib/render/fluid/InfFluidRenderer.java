@@ -1,7 +1,6 @@
 package com.infinityraider.infinitylib.render.fluid;
 
 import com.infinityraider.infinitylib.InfinityLib;
-import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.fluid.IInfinityFluid;
 import com.infinityraider.infinitylib.utility.UnsafeUtil;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -14,10 +13,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
@@ -38,6 +35,7 @@ public class InfFluidRenderer extends LiquidBlockRenderer {
         this.setupPreviousSprites();
     }
 
+    // call this to setup the previous fluid renderer's sprites as well
     private void setupPreviousSprites() {
         Arrays.stream(LiquidBlockRenderer.class.getDeclaredMethods())
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
