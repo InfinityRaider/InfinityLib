@@ -1,6 +1,7 @@
 package com.infinityraider.infinitylib.render.fluid;
 
 import com.infinityraider.infinitylib.InfinityLib;
+import com.infinityraider.infinitylib.InfinityMod;
 import com.infinityraider.infinitylib.fluid.IInfinityFluid;
 import com.infinityraider.infinitylib.utility.UnsafeUtil;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -13,8 +14,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 @OnlyIn(Dist.CLIENT)
@@ -26,6 +30,27 @@ public class InfFluidRenderer extends LiquidBlockRenderer {
 
     private InfFluidRenderer(LiquidBlockRenderer previous) {
         this.previous = previous;
+    }
+
+    @Override
+    protected void setupSprites() {
+        super.setupSprites();
+        this.setupPreviousSprites();
+    }
+
+    private void setupPreviousSprites() {
+        Arrays.stream(LiquidBlockRenderer.class.getDeclaredMethods())
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
+                .filter(m -> m.getParameters().length == 0)
+                .forEach(m -> {
+                    try {
+                        m.setAccessible(true);
+                        m.invoke(this.previous);
+                    } catch(Exception e) {
+                        InfinityLib.instance.getLogger().error("Unable to setup LiquidBlockRenderer sprites");
+                        InfinityLib.instance.getLogger().printStackTrace(e);
+                    }
+                });
     }
 
     @Override
