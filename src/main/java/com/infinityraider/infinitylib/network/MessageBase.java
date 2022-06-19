@@ -72,7 +72,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unused")
 public abstract class MessageBase {
-    private static final Map<Class<? extends MessageBase>, List<MessageElement>> ELEMENT_MAP = Maps.newIdentityHashMap();
+    private static final Map<Class<? extends MessageBase>, List<MessageElement<?>>> ELEMENT_MAP = Maps.newIdentityHashMap();
     private static final Map<Class<? extends MessageBase>, INetworkWrapper> WRAPPER_MAP = Maps.newIdentityHashMap();
 
     private INetworkWrapper wrapper;
@@ -112,14 +112,15 @@ public abstract class MessageBase {
      * For a list of default registered serializers, see the list in the javadoc for this class
      * @return a list of IMessageSerializers required to serialize this message
      */
-    protected List<IMessageSerializer> getNecessarySerializers() {
+    protected List<IMessageSerializer<?>> getNecessarySerializers() {
         return Collections.emptyList();
     }
 
+    @SuppressWarnings("unchecked")
     public final <REQ extends MessageBase> REQ fromBytes(FriendlyByteBuf buf) {
-        Map<Class<? extends MessageBase>, List<MessageElement>> map = ELEMENT_MAP;
+        Map<Class<? extends MessageBase>, List<MessageElement<?>>> map = ELEMENT_MAP;
         if (ELEMENT_MAP.containsKey(this.getClass())) {
-            for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
+            for (MessageElement<?> element : ELEMENT_MAP.get(this.getClass())) {
                 element.readFromByteBuf(buf, this);
             }
         }
@@ -128,9 +129,9 @@ public abstract class MessageBase {
 
     @SuppressWarnings("unchecked")
     public final void toBytes(FriendlyByteBuf buf) {
-        Map<Class<? extends MessageBase>, List<MessageElement>> map = ELEMENT_MAP;
+        Map<Class<? extends MessageBase>, List<MessageElement<?>>> map = ELEMENT_MAP;
         if (ELEMENT_MAP.containsKey(this.getClass())) {
-            for (MessageElement element : ELEMENT_MAP.get(this.getClass())) {
+            for (MessageElement<?> element : ELEMENT_MAP.get(this.getClass())) {
                 element.writeToByteBuf(buf, this);
             }
         }
