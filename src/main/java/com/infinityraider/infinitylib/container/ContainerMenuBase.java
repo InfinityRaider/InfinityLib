@@ -1,5 +1,6 @@
 package com.infinityraider.infinitylib.container;
 
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -19,14 +20,14 @@ public class ContainerMenuBase extends AbstractContainerMenu {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
                 //new Slot(inventory, slot index, x coordinate, y coordinate)
-                this.addSlot(new Slot(inventory, j + i * 9 + 9, xOffset + j * 18, yOffset + i * 18));
+                this.addSlot(new PlayerInventorySlot(inventory, j + i * 9 + 9, xOffset + j * 18, yOffset + i * 18));
             }
         }
 
         // Add the player's hotbar inventory to the container.
         for (int i = 0; i < 9; i++) {
             //new Slot(inventory, slot index, x coordinate, y coordinate)
-            this.addSlot(new Slot(inventory, i, xOffset + i * 18, 58 + yOffset));
+            this.addSlot(new PlayerInventorySlot(inventory, i, xOffset + i * 18, 58 + yOffset));
         }
     }
 
@@ -82,4 +83,37 @@ public class ContainerMenuBase extends AbstractContainerMenu {
         return foundSlot;
     }
 
+    public void disablePlayerInventorySlots() {
+        this.slots.stream()
+                .filter(slot -> slot instanceof PlayerInventorySlot)
+                .forEach(slot -> ((PlayerInventorySlot) slot).disable());
+    }
+
+    public void enablePlayerInventorySlots() {
+        this.slots.stream()
+                .filter(slot -> slot instanceof PlayerInventorySlot)
+                .forEach(slot -> ((PlayerInventorySlot) slot).enable());
+    }
+
+    public static class PlayerInventorySlot extends Slot {
+        private boolean active;
+
+        public PlayerInventorySlot(Container container, int index, int x, int y) {
+            super(container, index, x, y);
+            this.active = true;
+        }
+
+        public void enable() {
+            this.active = true;
+        }
+
+        public void disable() {
+            this.active = false;
+        }
+
+        @Override
+        public boolean isActive() {
+            return this.active;
+        }
+    }
 }
