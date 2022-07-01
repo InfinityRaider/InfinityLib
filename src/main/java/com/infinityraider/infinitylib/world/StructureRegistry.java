@@ -64,7 +64,6 @@ public class StructureRegistry {
         BastionSharedPools.bootstrap();
         BastionTreasureRoomPools.bootstrap();
         DesertVillagePools.bootstrap();
-        NoiseData.bootstrap();
         PillagerOutpostPools.bootstrap();
         SavannaVillagePools.bootstrap();
         SnowyVillagePools.bootstrap();
