@@ -53,6 +53,7 @@ import java.util.function.Supplier;
  *      - double (and Double)
  *      - char (and Character)
  *      - String
+ *      - UUID
  *      - Entity (and all subclasses)
  *      - TileEntity (and all subclasses)
  *      - BlockPos

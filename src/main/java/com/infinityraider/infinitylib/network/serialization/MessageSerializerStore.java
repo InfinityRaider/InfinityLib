@@ -14,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @SuppressWarnings("unchecked")
 public final class MessageSerializerStore {
@@ -54,6 +55,7 @@ public final class MessageSerializerStore {
         registerMessageSerializer(char.class, PacketBufferUtil::writeChar, PacketBufferUtil::readChar);
         registerMessageSerializer(Character.class, PacketBufferUtil::writeChar, PacketBufferUtil::readChar);
         registerMessageSerializer(String.class, PacketBufferUtil::writeString, PacketBufferUtil::readString);
+        registerMessageSerializer(UUID.class, PacketBufferUtil::writeUUID, PacketBufferUtil::readUUID);
         registerMessageSerializer(Entity.class, PacketBufferUtil::writeEntity, PacketBufferUtil::readEntity);
         registerMessageSerializer(BlockEntity.class, PacketBufferUtil::writeTileEntity, PacketBufferUtil::readTileEntity);
         registerMessageSerializer(BlockPos.class, PacketBufferUtil::writeBlockPos, PacketBufferUtil::readBlockPos);

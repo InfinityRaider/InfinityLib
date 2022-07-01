@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
+import java.util.UUID;
+
 public class PacketBufferUtil {
     public static FriendlyByteBuf writeBoolean(FriendlyByteBuf buf, boolean data) {
         buf.writeBoolean(data);
@@ -96,6 +98,15 @@ public class PacketBufferUtil {
     
     public static String readString(FriendlyByteBuf buf) {
         return buf.readUtf(32767);
+    }
+
+    public static FriendlyByteBuf writeUUID(FriendlyByteBuf buf, UUID id) {
+        buf.writeUUID(id);
+        return buf;
+    }
+
+    public static UUID readUUID(FriendlyByteBuf buf) {
+        return buf.readUUID();
     }
 
     public static FriendlyByteBuf writeResourceLocation(FriendlyByteBuf buf, ResourceLocation rl) {
