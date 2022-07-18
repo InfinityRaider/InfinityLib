@@ -3,10 +3,7 @@ package com.infinityraider.infinitylib.utility;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -261,8 +258,8 @@ public final class TagUtil {
         // Step 0. Fetch the item.
         final Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(prefix, suffix));
 
-        // Step 1. Check that item is not null.
-        if (block == null) {
+        // Step 1. Check that item is not null, and that it equals the requested block.
+        if (block == null || block.getRegistryName() == null || !block.getRegistryName().equals(new ResourceLocation(prefix, suffix))) {
             InfinityLib.instance.getLogger().error("Unable to resolve block: {0}:{1}.", prefix, suffix);
             return Collections.emptyList();
         }
